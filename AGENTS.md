@@ -2,114 +2,155 @@
 
 ## Project Overview
 Full-stack CV builder with live preview, multi-template support, and PDF export.
-- **Frontend**: React + Vite + Tailwind CSS
-- **Backend**: Spring Boot (Java)
-- **Database**: SQLite (dev) / PostgreSQL (prod)
-- **PDF**: react-pdf + pdf-lib
+- **Frontend**: React 19 + Vite + Tailwind CSS v4 + Zustand
+- **Backend**: Spring Boot 3.2 (Java 21)
+- **Database**: SQLite
+- **PDF**: Apache PDFBox
+
+## IMPORTANT: First Steps on New Clone
+
+```bash
+# 1. Install frontend deps
+cd frontend && npm install
+
+# 2. Build backend (downloads Maven deps automatically)
+cd ../backend && mvn clean compile
+
+# 3. Start both servers
+# Terminal 1:
+cd frontend && npm run dev
+# Terminal 2:
+cd backend && mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+```
+
+**Port note:** Backend runs on 8081 (avoid conflict with common 8080).
 
 ## Repository Structure
 ```
 cv_builder/
-├── frontend/          # React app (Vite)
-├── backend/           # Spring Boot API
-├── skills/            # Reusable agent task templates
-├── AGENTS.md          # This file
-└── opencode.json      # OpenCode tool config
+├── frontend/              # React + Vite app
+│   ├── src/
+│   │   ├── api/          # cvApi.ts - API calls
+│   │   ├── components/    # CvEditor, forms, lists
+│   │   ├── store/        # cvStore.ts (Zustand)
+│   │   ├── templates/    # Classic/Modern/Ats templates + CvPreview
+│   │   ├── types/        # TypeScript types
+│   │   └── App.tsx       # Main app
+│   └── package.json
+├── backend/               # Spring Boot API
+│   ├── src/main/java/com/cvbuilder/
+│   │   ├── controller/   # CvController, PdfController
+│   │   ├── dto/          # Request/Response DTOs
+│   │   ├── entity/        # JPA entities
+│   │   ├── exception/    # Error handling
+│   │   ├── mapper/       # Entity-DTO mapping
+│   │   ├── repository/   # JPA repositories
+│   │   └── service/      # Business logic
+│   └── pom.xml
+├── skills/               # Agent task templates
+├── AGENTS.md
+├── opencode.json
+└── README.md
 ```
 
 ## Developer Commands
 
-### Frontend
+### Frontend (run from `frontend/` dir)
 ```bash
-cd frontend
-npm install
-npm run dev          # Start dev server (http://localhost:5173)
+npm install          # Install deps (DO THIS FIRST on new clone)
+npm run dev          # Dev server → http://localhost:5173
 npm run build        # Production build
-npm run lint         # ESLint check
-npm run typecheck    # TypeScript check
 ```
 
-### Backend
+### Backend (run from `backend/` dir)
 ```bash
-cd backend
-mvn spring-boot:run  # Start API (http://localhost:8080)
-mvn clean package     # Build
-mvn test              # Run tests
+mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+# or (port 8080 if available)
+mvn spring-boot:run
 ```
 
-### Full Stack
-```bash
-cd frontend && npm run dev
-cd backend && mvn spring-boot:run
-```
+### Vite Proxy
+Frontend Vite config proxies `/api` → `http://localhost:8081` (update vite.config.ts if backend port changes).
 
-## Architecture Notes
+## API Design (REST)
 
-### API Design (REST)
-- `GET/POST /api/cv` - List/create CVs
-- `GET/PUT/DELETE /api/cv/{id}` - Get/update/delete CV
-- `POST /api/cv/{id}/export/pdf` - Export to PDF
-- `GET /api/templates` - List available templates
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/cv` | List CVs |
+| POST | `/api/cv` | Create CV |
+| GET | `/api/cv/{id}` | Get CV |
+| PUT | `/api/cv/{id}` | Update CV |
+| DELETE | `/api/cv/{id}` | Delete CV |
+| GET | `/api/cv/{id}/export/pdf` | Download PDF |
 
-### CV Data Model
+## CV Data Model
+
 ```json
 {
   "id": "uuid",
   "title": "string",
-  "templateId": "classic | modern | ats",
-  "personalInfo": { "name", "email", "phone", "location", "summary" },
-  "experience": [{ "company", "role", "startDate", "endDate", "description" }],
-  "education": [{ "institution", "degree", "field", "graduationYear" }],
-  "skills": [{ "name", "level" }],
-  "projects": [{ "name", "description", "url" }],
+  "templateId": "CLASSIC | MODERN | ATS",
+  "personalInfo": {
+    "name": "string",
+    "email": "string",
+    "phone": "string",
+    "location": "string",
+    "summary": "string"
+  },
+  "experiences": [{ "id": "uuid", "company", "role", "startDate", "endDate", "description" }],
+  "educations": [{ "id": "uuid", "institution", "degree", "field", "graduationYear" }],
+  "skills": [{ "id": "uuid", "name", "level" }],
+  "projects": [{ "id": "uuid", "name", "description", "url" }],
   "createdAt": "timestamp",
   "updatedAt": "timestamp"
 }
 ```
 
-### Frontend Entry Points
-- `src/App.tsx` - Main app router
-- `src/pages/` - Route pages
-- `src/components/` - Reusable UI components
-- `src/api/` - API client functions
-- `src/store/` - State management
-- `src/templates/` - CV template renderers
+**Note:** Backend uses `experiences`/`educations` (not `experience`/`education`) - this was a fixed inconsistency.
 
-### Backend Entry Points
-- `src/main/java/com/cvbuilder/CvBuilderApplication.java` - Main class
-- `src/main/java/com/cvbuilder/controller/` - REST controllers
-- `src/main/java/com/cvbuilder/service/` - Business logic
-- `src/main/java/com/cvbuilder/repository/` - Data access
+## Key Patterns
 
-## Conventions
+### Adding a new CV section
+1. Backend: Add entity → repository → service → controller
+2. Frontend: Add type → API call → store action → component
+3. Test with API client (curl or browser dev tools)
 
-### Naming
-- Components: PascalCase (`CvEditor.tsx`)
-- Services/Controllers: PascalCase
-- API functions: camelCase with `use` prefix for hooks
-- CSS classes: kebab-case (Tailwind)
+### State management
+- Zustand store (`cvStore.ts`) manages CV list and current CV
+- Components use store hooks for data
+- Form data is local state, synced on save
 
-### Git Workflow
-- Branch: `feature/<name>` or `fix/<name>`
-- Commit: conventional commits (`feat:`, `fix:`, `docs:`)
-- PR before merge to main
-
-### Code Quality
-- Run lint + typecheck before committing
-- Tests required for new services
-- Frontend: component tests with Vitest
-- Backend: unit tests with JUnit
+### Styling
+- Tailwind CSS v4 (requires `@tailwindcss/vite` plugin in vite.config.ts)
+- Dark glassmorphism theme on main pages
+- CV templates use white backgrounds for printability
 
 ## Skills Available
+
 See `skills/` directory:
-- `new-feature.md` - Adding new CV section/feature
+- `new-feature.md` - Adding new CV section
 - `new-component.md` - Creating React components
 - `new-api-endpoint.md` - Adding REST endpoints
 - `bugfix.md` - Bugfix workflow
 - `testing.md` - Test writing guidance
 
-## Important Notes
-- Always read AGENTS.md before starting new tasks
-- Use skills for repeatable patterns
-- Sub-agents can run parallel research tasks
-- Verify changes with lint/typecheck before marking done
+## Conventions
+
+### Naming
+- Components: PascalCase (`CvEditor.tsx`)
+- API functions: camelCase
+- CSS classes: Tailwind (kebab-case)
+
+### Git Workflow
+```bash
+git checkout -b feature/<name>
+# make changes
+git add .
+git commit -m "feat: description"
+git push origin feature/<name>
+```
+
+### Code Quality
+- Frontend: `npm run build` (runs TypeScript + Vite)
+- Backend: `mvn clean compile`
+- Run both before committing

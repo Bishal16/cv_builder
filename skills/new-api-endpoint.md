@@ -16,9 +16,8 @@ Use this workflow when adding a new REST endpoint.
    - `Dto` - request/response objects
 
 3. **Testing**
-   - Unit test service
-   - Integration test controller (if applicable)
-   - Manual test with curl/httpie
+   - Backend: `./gradlew test`
+   - Manual test: `curl http://localhost:8081/api/...`
 
 ## Endpoint Template
 ```
@@ -26,10 +25,8 @@ Method: GET|POST|PUT|DELETE
 Path: /api/<resource>
 Request: { ... }
 Response: { ... }
-Errors: 400, 404, 500
 ```
 
 ## Files to Update
 - `AGENTS.md` - if architecture changes
-- API client in frontend (`src/api/`)
-- Any documentation
+- Frontend API client in `frontend/src/api/`

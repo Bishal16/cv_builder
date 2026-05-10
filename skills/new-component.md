@@ -11,12 +11,8 @@ Use this workflow when creating a new React component.
 2. **Component structure**
    ```
    src/components/
-   ├── ui/              # Reusable UI primitives
-   ├── cv/              # CV-specific components
-   │   ├── PersonalInfo.tsx
-   │   ├── ExperienceList.tsx
-   │   └── ...
-   └── layout/          # Layout components
+   ├── *.tsx            # One component per file
+   └── CvEditor.tsx     # Main editor container
    ```
 
 3. **Naming conventions**
@@ -26,10 +22,8 @@ Use this workflow when creating a new React component.
 
 4. **Props interface**
    - Define interfaces in same file
-   - Use descriptive names
-   - Document complex props
+   - Import types from `../../types/cv`
 
 ## Verification
-- `npm run lint`
-- `npm run typecheck`
-- Component renders correctly in preview
+- `npm run build`
+- Component renders correctly
