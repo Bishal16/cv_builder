@@ -16,6 +16,7 @@
 /Users/mahathir/Downloads/project/cv_builder/backend/src/main/java/com/cvbuilder/entity/Experience.java
 /Users/mahathir/Downloads/project/cv_builder/backend/src/main/java/com/cvbuilder/entity/Education.java
 /Users/mahathir/Downloads/project/cv_builder/backend/src/main/java/com/cvbuilder/exception/GlobalExceptionHandler.java
+/Users/mahathir/Downloads/project/cv_builder/backend/src/main/java/com/cvbuilder/model/SkillLevelDeserializer.java
 /Users/mahathir/Downloads/project/cv_builder/backend/src/main/java/com/cvbuilder/repository/CvRepository.java
 /Users/mahathir/Downloads/project/cv_builder/backend/src/main/java/com/cvbuilder/dto/EducationDto.java
 /Users/mahathir/Downloads/project/cv_builder/backend/src/main/java/com/cvbuilder/dto/UpdateCvRequest.java

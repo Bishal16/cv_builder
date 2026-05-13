@@ -17,6 +17,7 @@ com/cvbuilder/model/TemplateId.class
 com/cvbuilder/entity/PersonalInfo.class
 com/cvbuilder/entity/Project.class
 com/cvbuilder/service/PdfService.class
+com/cvbuilder/model/SkillLevelDeserializer.class
 com/cvbuilder/mapper/CvMapper.class
 com/cvbuilder/dto/SkillDto.class
 com/cvbuilder/dto/ExperienceDto.class
