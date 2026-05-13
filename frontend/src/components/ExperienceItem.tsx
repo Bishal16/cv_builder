@@ -22,19 +22,19 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
   };
 
   return (
-    <div className="p-6 bg-bg-surface rounded-2xl micro-border">
-      <div className="flex justify-between items-start mb-6">
-        <span className="text-text-muted font-mono text-xs">#{experience.id.substring(0, 4)}</span>
+    <div className="card p-5">
+      <div className="flex justify-between items-start mb-4">
+        <span className="text-xs font-mono text-text-dim">#{experience.id.substring(0, 4)}</span>
         <button
           onClick={onRemove}
-          className="text-text-muted hover:text-rose-400 transition-colors text-xs font-bold uppercase tracking-widest"
+          className="text-rose-500 hover:text-rose-600 text-sm font-medium"
         >
           Remove
         </button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Company</label>
+          <label className="form-label">Company</label>
           <input
             type="text"
             value={experience.company}
@@ -44,7 +44,7 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
           />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Role</label>
+          <label className="form-label">Role</label>
           <input
             type="text"
             value={experience.role}
@@ -54,7 +54,7 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
           />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Start Date</label>
+          <label className="form-label">Start Date</label>
           <input
             type="text"
             value={experience.startDate}
@@ -64,7 +64,7 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
           />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">End Date</label>
+          <label className="form-label">End Date</label>
           <input
             type="text"
             value={experience.endDate}
@@ -74,8 +74,8 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
           />
         </div>
       </div>
-      <div className="mt-6">
-        <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Description</label>
+      <div className="mt-4">
+        <label className="form-label">Description</label>
         <div className="rich-text-editor sm">
           <ReactQuill
             theme="snow"

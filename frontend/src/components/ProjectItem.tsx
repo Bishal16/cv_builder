@@ -22,18 +22,18 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
   };
 
   return (
-    <div className="p-6 bg-bg-surface rounded-2xl micro-border">
-      <div className="flex justify-end mb-6">
+    <div className="card p-5">
+      <div className="flex justify-end mb-4">
         <button
           onClick={onRemove}
-          className="text-text-muted hover:text-rose-400 transition-colors text-xs font-bold uppercase tracking-widest"
+          className="text-rose-500 hover:text-rose-600 text-sm font-medium"
         >
           Remove
         </button>
       </div>
       <div className="space-y-4">
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Project Name</label>
+          <label className="form-label">Project Name</label>
           <input
             type="text"
             value={project.name}
@@ -43,7 +43,7 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
           />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Description</label>
+          <label className="form-label">Description</label>
           <div className="rich-text-editor sm">
             <ReactQuill
               theme="snow"
@@ -55,7 +55,7 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">URL (optional)</label>
+          <label className="form-label">URL (optional)</label>
           <input
             type="url"
             value={project.url}

@@ -53,17 +53,18 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base selection:bg-primary/30 transition-colors duration-300">
+    <div className="min-h-screen bg-bg-base">
       <Toaster 
         position="top-right" 
         toastOptions={{
           duration: 3000,
           style: {
             background: theme === 'dark' ? '#18181b' : '#ffffff',
-            color: theme === 'dark' ? '#f4f4f5' : '#18181b',
-            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
-            borderRadius: '10px',
+            color: theme === 'dark' ? '#f9fafb' : '#111827',
+            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb',
+            borderRadius: '12px',
             fontSize: '14px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
           },
           success: {
             iconTheme: {
@@ -73,17 +74,25 @@ function App() {
           },
         }} 
       />
-      <div className={`${selectedCvId ? 'max-w-full px-6' : 'max-w-6xl mx-auto px-4'} py-12`}>
-        {!selectedCvId && (
-          <header className="mb-16 flex items-end justify-between border-b border-border-subtle pb-8 text-text-base">
-            <div>
-              <h1 className="text-5xl font-black tracking-tight mb-3 italic">CV BUILDER</h1>
-              <p className="text-text-muted font-medium">Design production-grade resumes in a browser-native workspace.</p>
+      
+      {!selectedCvId ? (
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <header className="mb-12 flex items-end justify-between pb-8 border-b border-border-subtle">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight text-text-base">CV Builder</h1>
+                <p className="text-text-dim mt-0.5 text-sm">Create professional resumes in minutes</p>
+              </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={toggleTheme}
-                className="p-3 bg-bg-surface border border-border-subtle rounded-xl hover:bg-bg-muted transition-all active:scale-95 text-text-base"
+                className="p-3 rounded-xl hover:bg-bg-muted transition-all border border-border-subtle text-text-dim hover:text-text-base"
                 title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
               >
                 {theme === 'light' ? (
@@ -104,82 +113,75 @@ function App() {
               </button>
             </div>
           </header>
-        )}
 
-        {cvs.length === 0 && !selectedCvId ? (
-          <div className="text-center py-32 glass-surface rounded-[2rem]">
-            <div className="w-20 h-20 mx-auto mb-8 bg-bg-surface rounded-2xl flex items-center justify-center micro-border">
-              <svg className="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+          {cvs.length === 0 ? (
+            <div className="text-center py-20 card p-12">
+              <div className="w-16 h-16 mx-auto mb-6 bg-bg-muted rounded-2xl flex items-center justify-center">
+                <svg className="w-8 h-8 text-text-dim" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-text-base mb-2">No CVs yet</h2>
+              <p className="text-text-dim mb-6 max-w-md mx-auto">Create your first CV to get started</p>
+              <button onClick={handleNewCv} className="btn-primary">
+                Get Started
+              </button>
             </div>
-            <h2 className="text-2xl font-bold text-text-base mb-2">No documents yet</h2>
-            <p className="text-text-muted mb-8 max-w-md mx-auto text-sm">Your workspace is currently empty. Start by creating a new document to see it appear here.</p>
-            <button
-              onClick={handleNewCv}
-              className="btn-primary"
-            >
-              Get Started
-            </button>
-          </div>
-        ) : selectedCvId ? (
-          <CvEditor cvId={selectedCvId} onBack={() => setSelectedCvId(null)} />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cvs.map(cv => (
-              <div
-                key={cv.id}
-                onClick={() => setSelectedCvId(cv.id)}
-                className="group relative p-8 glass-surface rounded-3xl cursor-pointer transition-all hover:bg-white/[0.05] hover:-translate-y-1 active:scale-[0.99]"
-              >
-                <div className="flex items-start justify-between mb-8">
-                  <div className="w-14 h-14 bg-bg-surface rounded-2xl flex items-center justify-center text-text-muted font-bold text-xl micro-border group-hover:text-text-base transition-colors">
-                    {cv.title.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-bg-surface text-text-muted text-[10px] font-bold tracking-widest uppercase rounded-full micro-border">
-                      {cv.templateId}
-                    </span>
-                    <div className="relative">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setActiveMenuId(activeMenuId === cv.id ? null : cv.id)
-                        }}
-                        className="p-2 text-text-muted hover:text-text-base rounded-xl hover:bg-bg-surface transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                        </svg>
-                      </button>
-                      
-                      {activeMenuId === cv.id && (
-                        <div className="absolute right-0 mt-3 w-40 bg-bg-surface border border-border-subtle rounded-xl shadow-2xl z-20 overflow-hidden premium-shadow">
-                          <button
-                            onClick={(e) => handleDelete(e, cv.id)}
-                            className="w-full px-4 py-3 text-left text-xs font-semibold text-rose-400 hover:bg-rose-500/10 flex items-center gap-3 transition-colors"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a2 2 0 00-2 2v3M4 7h16" />
-                            </svg>
-                            Delete Project
-                          </button>
-                        </div>
-                      )}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {cvs.map(cv => (
+                <div
+                  key={cv.id}
+                  onClick={() => setSelectedCvId(cv.id)}
+                  className="group relative card p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 bg-bg-muted rounded-xl flex items-center justify-center text-text-dim font-bold text-lg group-hover:text-text-base transition-colors">
+                      {cv.title.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="badge">{cv.templateId}</span>
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveMenuId(activeMenuId === cv.id ? null : cv.id)
+                          }}
+                          className="p-2 text-text-dim hover:text-text-base rounded-lg hover:bg-bg-muted transition-colors"
+                        >
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                          </svg>
+                        </button>
+                        
+                        {activeMenuId === cv.id && (
+                          <div className="absolute right-0 mt-2 w-44 card shadow-xl z-20 overflow-hidden p-1">
+                            <button
+                              onClick={(e) => handleDelete(e, cv.id)}
+                              className="w-full px-4 py-3 text-left text-sm font-medium text-rose-500 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-3"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a2 2 0 00-2 2v3M4 7h16" />
+                              </svg>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
+                  <h3 className="text-lg font-semibold text-text-base mb-1">{cv.title}</h3>
+                  <p className="text-sm text-text-dim">
+                    {new Date(cv.updatedAt).toLocaleDateString()}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-text-base mb-2 group-hover:text-primary transition-colors italic uppercase tracking-tight">
-                  {cv.title}
-                </h3>
-                <p className="text-text-muted text-xs font-medium">
-                  Edited {new Date(cv.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <CvEditor cvId={selectedCvId} onBack={() => setSelectedCvId(null)} />
+      )}
     </div>
   )
 }

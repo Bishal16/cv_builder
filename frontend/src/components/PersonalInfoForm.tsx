@@ -24,7 +24,7 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Full Name</label>
+          <label className="form-label">Full Name</label>
           <input
             type="text"
             value={personalInfo.name}
@@ -34,7 +34,7 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
           />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Email Address</label>
+          <label className="form-label">Email Address</label>
           <input
             type="email"
             value={personalInfo.email}
@@ -44,7 +44,7 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
           />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Phone</label>
+          <label className="form-label">Phone</label>
           <input
             type="tel"
             value={personalInfo.phone}
@@ -54,7 +54,7 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
           />
         </div>
         <div>
-          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Location</label>
+          <label className="form-label">Location</label>
           <input
             type="text"
             value={personalInfo.location}
@@ -65,7 +65,7 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
         </div>
       </div>
       <div>
-        <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Professional Summary</label>
+        <label className="form-label">Professional Summary</label>
         <div className="rich-text-editor">
           <ReactQuill
             theme="snow"

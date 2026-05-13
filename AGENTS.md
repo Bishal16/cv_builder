@@ -1,11 +1,11 @@
 # CV Builder - Agent Context
 
 ## Project Overview
-Full-stack CV builder with live preview, multi-template support, and PDF export.
+Full-stack CV builder with live preview, multi-template support, and high-fidelity PDF export.
 - **Frontend**: React 19 + Vite + Tailwind CSS v4 + Zustand
 - **Backend**: Spring Boot 3.2 (Java 17)
 - **Database**: SQLite
-- **PDF**: Apache PDFBox
+- **PDF**: openhtmltopdf + jsoup (HTML-to-PDF)
 
 ## IMPORTANT: First Steps on New Clone
 
@@ -20,57 +20,57 @@ cd ../backend && mvn clean compile
 # Terminal 1:
 cd frontend && npm run dev
 # Terminal 2:
-cd backend && mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
+cd backend && mvn spring-boot:run
 ```
 
-**Port note:** Backend runs on 8081 (avoid conflict with common 8080).
+**Ports:** Frontend 5173, Backend 8081
+
+## Dependencies
+
+### Frontend (run `npm install`)
+- `react-hot-toast` - Toast notifications
+- `react-quill-new` - Rich text editor
+- `zustand` - State management
 
 ## Repository Structure
 ```
 cv_builder/
-├── frontend/              # React + Vite app
+├── frontend/
 │   ├── src/
-│   │   ├── api/          # cvApi.ts - API calls
-│   │   ├── components/    # CvEditor, forms, lists
-│   │   ├── store/        # cvStore.ts (Zustand)
-│   │   ├── templates/    # Classic/Modern/Ats templates + CvPreview
-│   │   ├── types/        # TypeScript types
-│   │   └── App.tsx       # Main app
-│   └── package.json
-├── backend/               # Spring Boot API
+│   │   ├── api/cvApi.ts         # API client
+│   │   ├── components/          # UI components
+│   │   ├── store/
+│   │   │   ├── cvStore.ts      # CV state
+│   │   │   └── themeStore.ts   # Light/Dark mode
+│   │   ├── templates/          # CV template renderers
+│   │   └── types/cv.ts         # TypeScript types
+├── backend/
 │   ├── src/main/java/com/cvbuilder/
-│   │   ├── controller/   # CvController, PdfController
-│   │   ├── dto/          # Request/Response DTOs
-│   │   ├── entity/        # JPA entities
-│   │   ├── exception/    # Error handling
-│   │   ├── mapper/       # Entity-DTO mapping
-│   │   ├── repository/   # JPA repositories
-│   │   └── service/      # Business logic
-│   └── pom.xml
-├── skills/               # Agent task templates
-├── AGENTS.md
-├── opencode.json
-└── README.md
+│   │   ├── controller/         # REST endpoints
+│   │   ├── dto/                # Request/Response DTOs
+│   │   ├── entity/             # JPA entities
+│   │   ├── exception/          # Error handling
+│   │   ├── mapper/             # Entity-DTO mapping
+│   │   ├── repository/         # Data access
+│   │   └── service/            # Business logic + PDF
+├── skills/                     # Agent task templates
+└── GEMINI.md                  # Detailed project notes
 ```
 
 ## Developer Commands
 
-### Frontend (run from `frontend/` dir)
+### Frontend (from `frontend/`)
 ```bash
-npm install          # Install deps (DO THIS FIRST on new clone)
+npm install          # Install deps (DO THIS FIRST)
 npm run dev          # Dev server → http://localhost:5173
 npm run build        # Production build
 ```
 
-### Backend (run from `backend/` dir)
+### Backend (from `backend/`)
 ```bash
-mvn spring-boot:run -Dspring-boot.run.arguments="--server.port=8081"
-# or (port 8080 if available)
-mvn spring-boot:run
+mvn clean compile    # Compile
+mvn spring-boot:run  # Run (port 8081)
 ```
-
-### Vite Proxy
-Frontend Vite config proxies `/api` → `http://localhost:8081` (update vite.config.ts if backend port changes).
 
 ## API Design (REST)
 
@@ -95,35 +95,55 @@ Frontend Vite config proxies `/api` → `http://localhost:8081` (update vite.con
     "email": "string",
     "phone": "string",
     "location": "string",
-    "summary": "string"
+    "summary": "string (HTML)"
   },
-  "experiences": [{ "id": "uuid", "company", "role", "startDate", "endDate", "description" }],
-  "educations": [{ "id": "uuid", "institution", "degree", "field", "graduationYear" }],
-  "skills": [{ "id": "uuid", "name", "level" }],
-  "projects": [{ "id": "uuid", "name", "description", "url" }],
+  "experiences": [{
+    "id": "uuid",
+    "company": "string",
+    "role": "string",
+    "startDate": "string",
+    "endDate": "string",
+    "description": "string (HTML)"
+  }],
+  "educations": [{ "institution", "degree", "field", "graduationYear" }],
+  "skills": [{ "id", "name", "level" }],
+  "projects": [{ "id", "name", "description", "url" }],
   "createdAt": "timestamp",
   "updatedAt": "timestamp"
 }
 ```
 
-**Note:** Backend uses `experiences`/`educations` (not `experience`/`education`) - this was a fixed inconsistency.
-
 ## Key Patterns
 
-### Adding a new CV section
-1. Backend: Add entity → repository → service → controller
-2. Frontend: Add type → API call → store action → component
-3. Test with API client (curl or browser dev tools)
+### State Management
+- `cvStore.ts` - CV data (create, update, delete, list)
+- `themeStore.ts` - Light/Dark mode (persisted)
 
-### State management
-- Zustand store (`cvStore.ts`) manages CV list and current CV
-- Components use store hooks for data
-- Form data is local state, synced on save
+### ID Generation
+- Use `crypto.randomUUID()` for all IDs (frontend)
 
-### Styling
-- Tailwind CSS v4 (requires `@tailwindcss/vite` plugin in vite.config.ts)
-- Dark glassmorphism theme on main pages
-- CV templates use white backgrounds for printability
+### Rich Text
+- Summary and descriptions support Bold, Italic, Lists
+- Stored as HTML, rendered with `dangerouslySetInnerHTML` in templates
+
+### PDF Generation
+- Backend uses `openhtmltopdf` for template-specific HTML-to-PDF
+- HTML sanitized with `jsoup` before conversion
+
+## Conventions
+
+### Naming
+- Components: PascalCase (`CvEditor.tsx`)
+- API functions: camelCase
+- CSS classes: Tailwind (kebab-case)
+
+### Backend
+- Use `UUID` for primary keys
+- `@Column(columnDefinition = "TEXT")` for HTML content
+- `@OneToMany` with `mappedBy` + manual parent linking
+
+### Shortcuts
+- `Ctrl+S` - Save CV (in editor)
 
 ## Skills Available
 
@@ -134,23 +154,8 @@ See `skills/` directory:
 - `bugfix.md` - Bugfix workflow
 - `testing.md` - Test writing guidance
 
-## Conventions
-
-### Naming
-- Components: PascalCase (`CvEditor.tsx`)
-- API functions: camelCase
-- CSS classes: Tailwind (kebab-case)
-
-### Git Workflow
-```bash
-git checkout -b feature/<name>
-# make changes
-git add .
-git commit -m "feat: description"
-git push origin feature/<name>
-```
-
-### Code Quality
-- Frontend: `npm run build` (runs TypeScript + Vite)
-- Backend: `mvn clean compile`
-- Run both before committing
+## Roadmap / Known Issues
+- Authentication and user accounts
+- Template-specific font embedding in PDFs
+- Image/Profile picture upload
+- CV versioning/history

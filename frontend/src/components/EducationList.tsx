@@ -34,12 +34,11 @@ export function EducationList({ education, onChange }: EducationListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-white font-medium">Education</h3>
+      <div className="flex justify-end">
         <button
           type="button"
           onClick={addEducation}
-          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all"
+          className="btn-primary !py-2 !px-4 !text-sm"
         >
           + Add
         </button>
@@ -53,7 +52,7 @@ export function EducationList({ education, onChange }: EducationListProps) {
         />
       ))}
       {education.length === 0 && (
-        <p className="text-gray-400 text-center py-4">No education added yet. Click "Add" to start.</p>
+        <p className="text-center py-4 text-text-dim">No education added yet. Click "Add" to start.</p>
       )}
     </div>
   );
