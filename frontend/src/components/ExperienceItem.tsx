@@ -13,8 +13,6 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
     onChange({ ...experience, [field]: value });
   };
 
-  const inputClass = "w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm";
-
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
@@ -24,60 +22,60 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
   };
 
   return (
-    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-      <div className="flex justify-between items-start mb-3">
-        <span className="text-gray-400 text-sm">#{experience.id.substring(0, 4)}</span>
+    <div className="p-6 bg-bg-surface rounded-2xl micro-border">
+      <div className="flex justify-between items-start mb-6">
+        <span className="text-text-muted font-mono text-xs">#{experience.id.substring(0, 4)}</span>
         <button
           onClick={onRemove}
-          className="text-red-400 hover:text-red-300 text-sm"
+          className="text-text-muted hover:text-rose-400 transition-colors text-xs font-bold uppercase tracking-widest"
         >
           Remove
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Company</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Company</label>
           <input
             type="text"
             value={experience.company}
             onChange={(e) => handleChange('company', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="Company name"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Role</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Role</label>
           <input
             type="text"
             value={experience.role}
             onChange={(e) => handleChange('role', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="Job title"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Start Date</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Start Date</label>
           <input
             type="text"
             value={experience.startDate}
             onChange={(e) => handleChange('startDate', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="Jan 2020"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">End Date</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">End Date</label>
           <input
             type="text"
             value={experience.endDate}
             onChange={(e) => handleChange('endDate', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="Dec 2023 or Present"
           />
         </div>
       </div>
-      <div className="mt-3">
-        <label className="block text-xs text-gray-400 mb-1">Description</label>
+      <div className="mt-6">
+        <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Description</label>
         <div className="rich-text-editor sm">
           <ReactQuill
             theme="snow"

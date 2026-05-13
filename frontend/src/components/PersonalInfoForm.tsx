@@ -12,8 +12,6 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
     onChange({ ...personalInfo, [field]: value });
   };
 
-  const inputClass = "w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all";
-
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
@@ -23,52 +21,51 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-white">Personal Information</h2>
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm text-gray-300 mb-2">Name</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Full Name</label>
           <input
             type="text"
             value={personalInfo.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="John Doe"
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-2">Email</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Email Address</label>
           <input
             type="email"
             value={personalInfo.email}
             onChange={(e) => handleChange('email', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="john@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-2">Phone</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Phone</label>
           <input
             type="tel"
             value={personalInfo.phone}
             onChange={(e) => handleChange('phone', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="+1 234 567 8900"
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-300 mb-2">Location</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Location</label>
           <input
             type="text"
             value={personalInfo.location}
             onChange={(e) => handleChange('location', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="New York, NY"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm text-gray-300 mb-2">Summary</label>
+        <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Professional Summary</label>
         <div className="rich-text-editor">
           <ReactQuill
             theme="snow"

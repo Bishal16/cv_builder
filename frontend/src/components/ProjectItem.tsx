@@ -13,8 +13,6 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
     onChange({ ...project, [field]: value });
   };
 
-  const inputClass = "w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm";
-
   const modules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
@@ -24,28 +22,28 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
   };
 
   return (
-    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-      <div className="flex justify-end mb-3">
+    <div className="p-6 bg-bg-surface rounded-2xl micro-border">
+      <div className="flex justify-end mb-6">
         <button
           onClick={onRemove}
-          className="text-red-400 hover:text-red-300 text-sm"
+          className="text-text-muted hover:text-rose-400 transition-colors text-xs font-bold uppercase tracking-widest"
         >
           Remove
         </button>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Project Name</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Project Name</label>
           <input
             type="text"
             value={project.name}
             onChange={(e) => handleChange('name', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="Project name"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Description</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Description</label>
           <div className="rich-text-editor sm">
             <ReactQuill
               theme="snow"
@@ -57,12 +55,12 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
           </div>
         </div>
         <div>
-          <label className="block text-xs text-gray-400 mb-1">URL (optional)</label>
+          <label className="block text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">URL (optional)</label>
           <input
             type="url"
             value={project.url}
             onChange={(e) => handleChange('url', e.target.value)}
-            className={inputClass}
+            className="input-field"
             placeholder="https://github.com/..."
           />
         </div>

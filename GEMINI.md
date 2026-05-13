@@ -1,23 +1,24 @@
 # Project: CV Builder
 
-Full-stack CV builder with live preview, multi-template support, and PDF export.
+Full-stack CV builder with live preview, multi-template support, and high-fidelity PDF export.
 
 ## Tech Stack
-- **Frontend**: React 19, Vite, Tailwind CSS v4, Zustand.
-- **Backend**: Spring Boot 3.2, Java 17, Apache PDFBox.
+- **Frontend**: React 19, Vite, Tailwind CSS v4, Zustand, `react-quill-new` (Rich Text), `react-hot-toast`.
+- **Backend**: Spring Boot 3.2, Java 17, `openhtmltopdf` (HTML-to-PDF engine), `jsoup` (HTML processing).
 - **Database**: SQLite (local development).
 
 ## Architecture & Data Flow
-- **Backend**: Standard Spring Boot architecture.
-  - `Controller` handles REST endpoints (port 8081).
-  - `Service` contains business logic (e.g., CV generation, PDF creation).
-  - `Repository` (Spring Data JPA) interfaces with SQLite.
-  - `DTOs` are used for data transfer between frontend and backend.
-- **Frontend**: React-based SPA.
-  - `Zustand` (`cvStore.ts`) manages global state (CV list, current selection).
-  - `cvApi.ts` handles all HTTP communication with the backend.
-  - `CvPreview` and template components (`ModernTemplate`, `ClassicTemplate`, `AtsTemplate`) handle real-time rendering.
-- **Integration**: Vite is configured to proxy `/api` requests to `http://localhost:8081`.
+- **Backend**: 
+  - `Controller`: REST endpoints (port 8081). `PdfController` includes cache-control headers.
+  - `Service`: Business logic. `PdfService` generates template-specific HTML for PDF rendering.
+  - `Repository`: Spring Data JPA with SQLite.
+  - `Mapper`: Handles DTO/Entity conversion with proper bidirectional relationship management.
+- **Frontend**: 
+  - `Zustand`: Global state management (`cvStore.ts` for data, `themeStore.ts` for Light/Dark mode).
+  - `cvApi.ts`: HTTP communication. Uses `crypto.randomUUID()` for backend compatibility.
+  - `CvEditor`: Full-screen resizable workspace with `Ctrl+S` support and live pipeline syncing.
+  - `Templates`: A4-proportioned components (`ModernTemplate`, `ClassicTemplate`, `AtsTemplate`) using `dangerouslySetInnerHTML` for rich text.
+- **Integration**: Vite proxies `/api` to `http://localhost:8081`.
 
 ## Key Commands
 
@@ -26,45 +27,43 @@ Full-stack CV builder with live preview, multi-template support, and PDF export.
 # Frontend (from ./frontend)
 npm install         # Install dependencies
 npm run dev         # Start dev server (http://localhost:5173)
-npm run build       # Build for production
 
 # Backend (from ./backend)
-mvn clean compile   # Compile and download dependencies
-mvn spring-boot:run # Run backend (defaults to port 8081 via application.properties)
+mvn clean compile   # Compile and sync dependencies
+mvn spring-boot:run # Run backend (port 8081)
 ```
 
-### Production Build
-```bash
-cd frontend && npm run build
-cd ../backend && mvn clean package
-```
+## UI/UX & Design System
+- **Theme**: Persistent Light/Dark mode support via `useThemeStore`.
+- **Visual Identity**: Professional Zinc/Slate SaaS aesthetic with glassmorphism, micro-borders, and industrial typography.
+- **Responsive Editor**: Resizable split-pane layout with independent panel scrolling.
+- **Rich Text**: Summary and Description fields support Bold, Italic, and Lists.
 
 ## Development Conventions
 
 ### General
-- **Naming**: Use PascalCase for React components and camelCase for API functions and variables.
-- **State**: Prefer `Zustand` for shared state and local `useState` for UI-only state (e.g., form inputs before saving).
-- **Styling**: Use Tailwind CSS v4 utility classes. Prefer layout components for consistency.
+- **Naming**: PascalCase for components, camelCase for variables/APIs.
+- **Persistence**: Auto-save CV state before PDF export or navigation changes.
+- **Styling**: Semantic CSS variables for theme-aware components. Use `glass-surface` and `input-field` utilities.
 
 ### Backend (Java/Spring Boot)
-- **Endpoints**: Return `ResponseEntity` with appropriate HTTP status codes.
-- **Mapping**: Use DTOs for requests and responses; avoid exposing entities directly.
-- **Errors**: Handled via `@ExceptionHandler` in controllers or global exception handlers.
-- **Entities**: Consistent use of `UUID` for primary keys.
+- **Entities**: Use `UUID` for primary keys. `@OneToMany` relationships must use `mappedBy` and manual parent linking in mappers.
+- **Database**: `description` fields should use `@Column(columnDefinition = "TEXT")` for large HTML content.
+- **PDF**: Always use `openhtmltopdf` for rendering. Ensure HTML is sanitized via `jsoup` before conversion.
 
 ### Frontend (React/TypeScript)
-- **Types**: Define interfaces in `src/types/cv.ts` and keep them in sync with backend DTOs.
-- **Store**: All async data fetching for CVs should go through `useCvStore`.
-- **Templates**: CV templates are located in `src/templates/`. They should be designed for high print quality.
+- **IDs**: Always generate IDs using `crypto.randomUUID()`.
+- **Shortcuts**: `Ctrl+S` is standard for saving.
+- **Templates**: Ensure `break-normal` is used for content to prevent mid-word splitting.
 
-## Project Structure Highlights
+## Project Structure
 - `/backend`: Spring Boot project.
 - `/frontend`: Vite/React project.
-- `/skills`: Specialized agent instruction sets for common tasks.
+- `/skills`: Specialized agent instruction sets.
 - `AGENTS.md`: Detailed technical context and developer guide.
-- `opencode.json`: Environment configuration.
 
 ## Roadmap & Known Issues
-- Authentication is not yet implemented.
-- PDF styling improvements for complex layouts are ongoing.
-- See `README.md` for a full TODO list.
+- Authentication and user accounts.
+- Template-specific font embedding in PDFs.
+- Image/Profile picture upload.
+- CV versioning/history.
