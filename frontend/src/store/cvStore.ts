@@ -62,7 +62,9 @@ export const useCvStore = create<CvState>((set) => ({
         loading: false,
       }));
     } catch (err) {
-      set({ error: (err as Error).message, loading: false });
+      const message = (err as Error).message;
+      set({ error: message, loading: false });
+      throw err;
     }
   },
 

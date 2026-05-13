@@ -8,13 +8,13 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className="w-full max-w-[210mm] min-h-[297mm] bg-white text-gray-800">
+    <div className="w-[210mm] min-h-[297mm] bg-white text-gray-800 shadow-xl mx-auto overflow-hidden">
       <header className="relative">
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-8">
           <h1 className="text-3xl font-bold text-white mb-2">{personalInfo.name || 'Your Name'}</h1>
           <div className="flex flex-wrap gap-4 text-sm text-blue-100">
-            {personalInfo.email && <span>✉ {personalInfo.email}</span>}
-            {personalInfo.phone && <span>☎ {personalInfo.phone}</span>}
+            {personalInfo.email && <span className="break-all">✉ {personalInfo.email}</span>}
+            {personalInfo.phone && <span className="break-all">☎ {personalInfo.phone}</span>}
             {personalInfo.location && <span>⌖ {personalInfo.location}</span>}
           </div>
         </div>
@@ -23,9 +23,12 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
 
       <div className="px-8 py-6 space-y-6">
         {personalInfo.summary && (
-          <section className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
+          <section className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500 overflow-hidden">
             <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">About</h2>
-            <p className="text-sm text-gray-700 leading-relaxed">{personalInfo.summary}</p>
+            <div 
+              className="text-sm text-gray-700 leading-relaxed break-normal whitespace-normal"
+              dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
+            />
           </section>
         )}
 
@@ -54,15 +57,18 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
             </h2>
             <div className="space-y-4">
               {experiences.map((exp) => (
-                <div key={exp.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                  <div className="flex justify-between items-start mb-2">
+                <div key={exp.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="flex justify-between items-start mb-2 gap-4">
                     <h3 className="font-bold text-gray-800">{exp.role}</h3>
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded shrink-0">
                       {exp.startDate} - {exp.endDate || 'Present'}
                     </span>
                   </div>
                   <p className="text-sm text-blue-600 mb-2">{exp.company}</p>
-                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{exp.description}</p>
+                  <div 
+                    className="text-sm text-gray-600 leading-relaxed break-normal whitespace-normal"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
                 </div>
               ))}
             </div>
@@ -96,14 +102,17 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
               </h2>
               <div className="space-y-3">
                 {projects.map((project) => (
-                  <div key={project.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start">
+                  <div key={project.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="flex justify-between items-start gap-4">
                       <h3 className="font-bold text-gray-800">{project.name}</h3>
                       {project.url && (
-                        <span className="text-xs text-gray-500 truncate ml-2 max-w-[120px]">{project.url}</span>
+                        <span className="text-xs text-gray-500 truncate ml-2 max-w-[120px] break-all">{project.url}</span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">{project.description}</p>
+                    <div 
+                      className="text-sm text-gray-600 mt-1 break-normal whitespace-normal"
+                      dangerouslySetInnerHTML={{ __html: project.description }}
+                    />
                   </div>
                 ))}
               </div>

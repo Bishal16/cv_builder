@@ -3,7 +3,7 @@
 ## Project Overview
 Full-stack CV builder with live preview, multi-template support, and PDF export.
 - **Frontend**: React 19 + Vite + Tailwind CSS v4 + Zustand
-- **Backend**: Spring Boot 3.2 (Java 21)
+- **Backend**: Spring Boot 3.2 (Java 17)
 - **Database**: SQLite
 - **PDF**: Apache PDFBox
 

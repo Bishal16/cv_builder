@@ -1,3 +1,5 @@
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import type { PersonalInfo } from '../types/cv';
 
 interface PersonalInfoFormProps {
@@ -11,6 +13,14 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
   };
 
   const inputClass = "w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all";
+
+  const modules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ],
+  };
 
   return (
     <div className="space-y-4">
@@ -59,13 +69,15 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
       </div>
       <div>
         <label className="block text-sm text-gray-300 mb-2">Summary</label>
-        <textarea
-          value={personalInfo.summary}
-          onChange={(e) => handleChange('summary', e.target.value)}
-          rows={4}
-          className={`${inputClass} resize-none`}
-          placeholder="A brief summary about yourself..."
-        />
+        <div className="rich-text-editor">
+          <ReactQuill
+            theme="snow"
+            value={personalInfo.summary}
+            onChange={(value) => handleChange('summary', value)}
+            modules={modules}
+            placeholder="A brief summary about yourself..."
+          />
+        </div>
       </div>
     </div>
   );

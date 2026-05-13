@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import type { CVFormData, TemplateId, Experience, Education, Skill, Project, PersonalInfo, Cv } from '../types/cv';
 import { useCvStore } from '../store/cvStore';
 import { PersonalInfoForm } from './PersonalInfoForm';
@@ -37,6 +38,8 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const [formData, setFormData] = useState<CVFormData>(defaultFormData);
   const [expandedSection, setExpandedSection] = useState<string>('personal');
   const [showPreview, setShowPreview] = useState(false);
+  const [leftWidth, setLeftWidth] = useState(50); // percentage
+  const [isResizing, setIsResizing] = useState(false);
 
   useEffect(() => {
     if (cv) {
@@ -51,6 +54,37 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
       });
     }
   }, [cv]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [formData, cvId]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      const newWidth = (e.clientX / window.innerWidth) * 100;
+      if (newWidth > 15 && newWidth < 85) {
+        setLeftWidth(newWidth);
+      }
+    };
+    const handleMouseUp = () => setIsResizing(false);
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing]);
 
   const updatePersonalInfo = (personalInfo: PersonalInfo) => {
     setFormData({ ...formData, personalInfo });
@@ -78,12 +112,25 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
 
   const handleSave = async () => {
     if (cvId) {
-      await updateCv(cvId, formData);
+      console.log('Saving CV...', formData);
+      try {
+        await updateCv(cvId, formData);
+        console.log('Save successful');
+        toast.success('CV saved successfully!');
+      } catch (error) {
+        console.error('Save failed:', error);
+        toast.error('Failed to save CV. Please try again.');
+      }
     }
   };
 
-  const handleDownloadPdf = () => {
-    window.open(`/api/cv/${cvId}/export/pdf`, '_blank');
+  const handleDownloadPdf = async () => {
+    try {
+      await updateCv(cvId, formData);
+      window.open(`/api/cv/${cvId}/export/pdf?t=${Date.now()}`, '_blank');
+    } catch (error) {
+      toast.error('Failed to save CV before download.');
+    }
   };
 
   const toggleSection = (section: string) => {
@@ -112,10 +159,13 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   ];
 
   return (
-    <div className="flex gap-6">
+    <div className="flex h-[calc(100vh-6rem)] overflow-hidden">
       {/* Editor Panel */}
-      <div className="flex-1 bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl p-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
-        <div className="flex items-center mb-6">
+      <div 
+        style={{ width: showPreview ? `${leftWidth}%` : '100%' }}
+        className="bg-white/10 backdrop-blur-md rounded-l-3xl border border-white/20 shadow-2xl p-6 overflow-y-auto custom-scrollbar flex flex-col"
+      >
+        <div className="flex items-center mb-6 shrink-0">
           <button
             onClick={onBack}
             className="mr-4 px-4 py-2 text-blue-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
@@ -134,7 +184,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           />
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 shrink-0">
           <TemplateSelector
             templateId={formData.templateId}
             onChange={updateTemplate}
@@ -204,19 +254,19 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 sticky bottom-0 pt-6 pb-2 bg-gradient-to-t from-slate-900 via-slate-900/90 to-transparent mt-auto shrink-0 z-10">
           <button
             type="button"
             onClick={handleSave}
             disabled={loading}
-            className="flex-1 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-green-500/30 disabled:opacity-50"
+            className="flex-1 py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg hover:shadow-blue-500/30 disabled:opacity-50"
           >
-            {loading ? 'Saving...' : 'Save CV'}
+            {loading ? 'Saving...' : 'Save CV (Ctrl+S)'}
           </button>
           <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
-            className="px-6 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-all border border-white/20"
+            className="px-6 py-4 bg-white/5 backdrop-blur-md text-white font-semibold rounded-xl hover:bg-white/10 transition-all border border-white/10"
           >
             {showPreview ? 'Hide Preview' : 'Show Preview'}
           </button>
@@ -230,15 +280,28 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         </div>
       </div>
 
+      {/* Resize Handle */}
+      {showPreview && (
+        <div
+          onMouseDown={() => setIsResizing(true)}
+          className={`w-1.5 hover:w-2 bg-white/5 hover:bg-blue-500/50 cursor-col-resize transition-all flex items-center justify-center group ${isResizing ? 'bg-blue-500/50 w-2' : ''}`}
+        >
+          <div className="w-0.5 h-8 bg-white/20 group-hover:bg-white/50 rounded-full" />
+        </div>
+      )}
+
       {/* Preview Panel */}
       {showPreview && (
-        <div className="w-1/2 sticky top-0 h-fit">
-          <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
-            <div className="p-4 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-600">Live Preview</span>
-              <span className="text-xs text-gray-400">{formData.templateId}</span>
-            </div>
-            <div className="p-4 bg-white overflow-auto max-h-[calc(100vh-8rem)]">
+        <div 
+          style={{ width: `${100 - leftWidth}%` }}
+          className="bg-white/5 backdrop-blur-sm rounded-r-3xl border-y border-r border-white/20 overflow-hidden flex flex-col shadow-2xl"
+        >
+          <div className="p-4 bg-black/20 border-b border-white/10 flex justify-between items-center shrink-0">
+            <span className="text-sm font-medium text-blue-300">Live Preview</span>
+            <span className="text-xs text-gray-400 font-mono">{formData.templateId}</span>
+          </div>
+          <div className="flex-1 overflow-auto p-12 custom-scrollbar bg-slate-800/30 flex justify-center items-start">
+            <div className="origin-top transition-transform shadow-2xl mb-12 shrink-0">
               <CvPreview cv={previewCv} />
             </div>
           </div>

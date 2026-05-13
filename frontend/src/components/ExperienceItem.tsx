@@ -1,3 +1,5 @@
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import type { Experience } from '../types/cv';
 
 interface ExperienceItemProps {
@@ -13,10 +15,18 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
 
   const inputClass = "w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm";
 
+  const modules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ],
+  };
+
   return (
     <div className="p-4 bg-white/5 rounded-xl border border-white/10">
       <div className="flex justify-between items-start mb-3">
-        <span className="text-gray-400 text-sm">#{Math.random().toString(36).substr(2, 4)}</span>
+        <span className="text-gray-400 text-sm">#{experience.id.substring(0, 4)}</span>
         <button
           onClick={onRemove}
           className="text-red-400 hover:text-red-300 text-sm"
@@ -68,13 +78,15 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
       </div>
       <div className="mt-3">
         <label className="block text-xs text-gray-400 mb-1">Description</label>
-        <textarea
-          value={experience.description}
-          onChange={(e) => handleChange('description', e.target.value)}
-          className={`${inputClass} resize-none`}
-          rows={2}
-          placeholder="Describe your responsibilities and achievements..."
-        />
+        <div className="rich-text-editor sm">
+          <ReactQuill
+            theme="snow"
+            value={experience.description}
+            onChange={(value) => handleChange('description', value)}
+            modules={modules}
+            placeholder="Describe your responsibilities and achievements..."
+          />
+        </div>
       </div>
     </div>
   );

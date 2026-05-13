@@ -17,11 +17,11 @@ public class Experience {
     @Column(nullable = false)
     private String role;
 
-    private LocalDate startDate;
+    private String startDate;
 
-    private LocalDate endDate;
+    private String endDate;
 
-    @Column(length = 2000)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne
@@ -34,10 +34,10 @@ public class Experience {
     public void setCompany(String company) { this.company = company; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
-    public LocalDate getStartDate() { return startDate; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
-    public LocalDate getEndDate() { return endDate; }
-    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+    public String getStartDate() { return startDate; }
+    public void setStartDate(String startDate) { this.startDate = startDate; }
+    public String getEndDate() { return endDate; }
+    public void setEndDate(String endDate) { this.endDate = endDate; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     public Cv getCv() { return cv; }

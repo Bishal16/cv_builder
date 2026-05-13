@@ -74,25 +74,25 @@ public class CvMapper {
         
         if (request.getExperiences() != null) {
             cv.setExperiences(request.getExperiences().stream()
-                    .map(this::toExperienceEntity)
+                    .map(dto -> toExperienceEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
         
         if (request.getEducations() != null) {
             cv.setEducations(request.getEducations().stream()
-                    .map(this::toEducationEntity)
+                    .map(dto -> toEducationEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
         
         if (request.getSkills() != null) {
             cv.setSkills(request.getSkills().stream()
-                    .map(this::toSkillEntity)
+                    .map(dto -> toSkillEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
         
         if (request.getProjects() != null) {
             cv.setProjects(request.getProjects().stream()
-                    .map(this::toProjectEntity)
+                    .map(dto -> toProjectEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
         
@@ -118,23 +118,27 @@ public class CvMapper {
             cv.setPersonalInfo(personalInfo);
         }
         if (request.getExperiences() != null) {
-            cv.setExperiences(request.getExperiences().stream()
-                    .map(this::toExperienceEntity)
+            cv.getExperiences().clear();
+            cv.getExperiences().addAll(request.getExperiences().stream()
+                    .map(dto -> toExperienceEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
         if (request.getEducations() != null) {
-            cv.setEducations(request.getEducations().stream()
-                    .map(this::toEducationEntity)
+            cv.getEducations().clear();
+            cv.getEducations().addAll(request.getEducations().stream()
+                    .map(dto -> toEducationEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
         if (request.getSkills() != null) {
-            cv.setSkills(request.getSkills().stream()
-                    .map(this::toSkillEntity)
+            cv.getSkills().clear();
+            cv.getSkills().addAll(request.getSkills().stream()
+                    .map(dto -> toSkillEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
         if (request.getProjects() != null) {
-            cv.setProjects(request.getProjects().stream()
-                    .map(this::toProjectEntity)
+            cv.getProjects().clear();
+            cv.getProjects().addAll(request.getProjects().stream()
+                    .map(dto -> toProjectEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
     }
@@ -150,7 +154,7 @@ public class CvMapper {
         return dto;
     }
 
-    private Experience toExperienceEntity(ExperienceDto dto) {
+    private Experience toExperienceEntity(ExperienceDto dto, Cv cv) {
         Experience exp = new Experience();
         if (dto.getId() != null) exp.setId(dto.getId());
         exp.setCompany(dto.getCompany());
@@ -158,6 +162,7 @@ public class CvMapper {
         exp.setStartDate(dto.getStartDate());
         exp.setEndDate(dto.getEndDate());
         exp.setDescription(dto.getDescription());
+        exp.setCv(cv);
         return exp;
     }
 
@@ -171,13 +176,14 @@ public class CvMapper {
         return dto;
     }
 
-    private Education toEducationEntity(EducationDto dto) {
+    private Education toEducationEntity(EducationDto dto, Cv cv) {
         Education edu = new Education();
         if (dto.getId() != null) edu.setId(dto.getId());
         edu.setInstitution(dto.getInstitution());
         edu.setDegree(dto.getDegree());
         edu.setField(dto.getField());
         edu.setGraduationYear(dto.getGraduationYear());
+        edu.setCv(cv);
         return edu;
     }
 
@@ -189,11 +195,12 @@ public class CvMapper {
         return dto;
     }
 
-    private Skill toSkillEntity(SkillDto dto) {
+    private Skill toSkillEntity(SkillDto dto, Cv cv) {
         Skill skill = new Skill();
         if (dto.getId() != null) skill.setId(dto.getId());
         skill.setName(dto.getName());
         skill.setLevel(dto.getLevel());
+        skill.setCv(cv);
         return skill;
     }
 
@@ -206,12 +213,13 @@ public class CvMapper {
         return dto;
     }
 
-    private Project toProjectEntity(ProjectDto dto) {
+    private Project toProjectEntity(ProjectDto dto, Cv cv) {
         Project proj = new Project();
         if (dto.getId() != null) proj.setId(dto.getId());
         proj.setName(dto.getName());
         proj.setDescription(dto.getDescription());
         proj.setUrl(dto.getUrl());
+        proj.setCv(cv);
         return proj;
     }
 }

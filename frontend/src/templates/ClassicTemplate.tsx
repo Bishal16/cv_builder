@@ -8,18 +8,18 @@ export function ClassicTemplate({ cv }: ClassicTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className="w-full max-w-[210mm] min-h-[297mm] bg-white text-gray-800 font-serif">
+    <div className="w-[210mm] min-h-[297mm] bg-white text-gray-800 font-serif shadow-xl mx-auto overflow-hidden">
       <header className="border-b-2 border-gray-800 px-8 py-6">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{personalInfo.name || 'Your Name'}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-          {personalInfo.email && <span>{personalInfo.email}</span>}
-          {personalInfo.phone && <span>{personalInfo.phone}</span>}
+          {personalInfo.email && <span className="break-all">{personalInfo.email}</span>}
+          {personalInfo.phone && <span className="break-all">{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
         </div>
       </header>
 
-      <div className="flex">
-        <aside className="w-1/3 bg-gray-50 p-6 border-r border-gray-200">
+      <div className="flex min-h-[250mm]">
+        <aside className="w-1/3 bg-gray-50 p-6 border-r border-gray-200 shrink-0">
           <section className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-gray-800 mb-3 border-b border-gray-300 pb-1">
               Skills
@@ -54,11 +54,14 @@ export function ClassicTemplate({ cv }: ClassicTemplateProps) {
           </section>
         </aside>
 
-        <main className="w-2/3 p-6">
+        <main className="w-2/3 p-6 overflow-hidden">
           {personalInfo.summary && (
             <section className="mb-6">
               <h2 className="text-lg font-bold mb-2">Professional Summary</h2>
-              <p className="text-sm text-gray-700 leading-relaxed">{personalInfo.summary}</p>
+              <div 
+                className="text-sm text-gray-700 leading-relaxed break-normal whitespace-normal"
+                dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
+              />
             </section>
           )}
 
@@ -67,14 +70,17 @@ export function ClassicTemplate({ cv }: ClassicTemplateProps) {
             <ul className="space-y-4">
               {experiences.map((exp) => (
                 <li key={exp.id} className="text-sm">
-                  <div className="flex justify-between items-baseline mb-1">
+                  <div className="flex justify-between items-baseline mb-1 gap-4">
                     <h3 className="font-bold">{exp.role}</h3>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 shrink-0">
                       {exp.startDate} - {exp.endDate || 'Present'}
                     </span>
                   </div>
                   <p className="text-gray-600 mb-1">{exp.company}</p>
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{exp.description}</p>
+                  <div 
+                    className="text-gray-700 leading-relaxed break-normal whitespace-normal"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
                 </li>
               ))}
             </ul>
@@ -86,13 +92,16 @@ export function ClassicTemplate({ cv }: ClassicTemplateProps) {
               <ul className="space-y-3">
                 {projects.map((project) => (
                   <li key={project.id} className="text-sm">
-                    <div className="flex justify-between items-baseline">
+                    <div className="flex justify-between items-baseline gap-4">
                       <h3 className="font-medium">{project.name}</h3>
                       {project.url && (
-                        <span className="text-xs text-gray-500 truncate ml-2">{project.url}</span>
+                        <span className="text-xs text-gray-500 truncate ml-2 break-all">{project.url}</span>
                       )}
                     </div>
-                    <p className="text-gray-700 leading-relaxed">{project.description}</p>
+                    <div 
+                      className="text-gray-700 leading-relaxed break-normal whitespace-normal"
+                      dangerouslySetInnerHTML={{ __html: project.description }}
+                    />
                   </li>
                 ))}
               </ul>

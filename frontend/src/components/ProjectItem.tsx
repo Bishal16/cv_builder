@@ -1,3 +1,5 @@
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import type { Project } from '../types/cv';
 
 interface ProjectItemProps {
@@ -12,6 +14,14 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
   };
 
   const inputClass = "w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm";
+
+  const modules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
+    ],
+  };
 
   return (
     <div className="p-4 bg-white/5 rounded-xl border border-white/10">
@@ -36,13 +46,15 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
         </div>
         <div>
           <label className="block text-xs text-gray-400 mb-1">Description</label>
-          <textarea
-            value={project.description}
-            onChange={(e) => handleChange('description', e.target.value)}
-            className={`${inputClass} resize-none`}
-            rows={2}
-            placeholder="Brief description of the project..."
-          />
+          <div className="rich-text-editor sm">
+            <ReactQuill
+              theme="snow"
+              value={project.description}
+              onChange={(value) => handleChange('description', value)}
+              modules={modules}
+              placeholder="Brief description of the project..."
+            />
+          </div>
         </div>
         <div>
           <label className="block text-xs text-gray-400 mb-1">URL (optional)</label>

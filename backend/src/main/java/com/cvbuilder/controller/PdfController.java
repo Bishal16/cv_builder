@@ -28,6 +28,9 @@ public class PdfController {
         
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"cv-" + id + ".pdf\"")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .header(HttpHeaders.EXPIRES, "0")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdfBytes);
     }
