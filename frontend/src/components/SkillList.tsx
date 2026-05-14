@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Skill } from '../types/cv';
+import { ConfirmDialog } from './ConfirmDialog';
 import { SkillItem } from './SkillItem';
 
 interface SkillListProps {
@@ -11,6 +13,8 @@ function generateId(): string {
 }
 
 export function SkillList({ skills, onChange }: SkillListProps) {
+  const [pendingRemoveIndex, setPendingRemoveIndex] = useState<number | null>(null);
+
   const addSkill = () => {
     const newSkill: Skill = {
       id: generateId(),
@@ -26,9 +30,27 @@ export function SkillList({ skills, onChange }: SkillListProps) {
     onChange(updatedList);
   };
 
-  const removeSkill = (index: number) => {
-    onChange(skills.filter((_, i) => i !== index));
+  const requestRemoveSkill = (index: number) => {
+    setPendingRemoveIndex(index);
   };
+
+  const confirmRemoveSkill = () => {
+    if (pendingRemoveIndex === null) {
+      return;
+    }
+
+    onChange(skills.filter((_, i) => i !== pendingRemoveIndex));
+    setPendingRemoveIndex(null);
+  };
+
+  const cancelRemoveSkill = () => {
+    setPendingRemoveIndex(null);
+  };
+
+  const pendingSkill = pendingRemoveIndex !== null ? skills[pendingRemoveIndex] : null;
+  const pendingLabel =
+    pendingSkill?.name ||
+    (pendingRemoveIndex !== null ? `skill #${pendingRemoveIndex + 1}` : 'this skill');
 
   return (
     <div className="space-y-4">
@@ -46,12 +68,20 @@ export function SkillList({ skills, onChange }: SkillListProps) {
           key={skill.id}
           skill={skill}
           onChange={(updated) => updateSkill(index, updated)}
-          onRemove={() => removeSkill(index)}
+          onRemove={() => requestRemoveSkill(index)}
         />
       ))}
       {skills.length === 0 && (
         <p className="text-center py-4 text-text-dim">No skills added yet. Click "Add" to start.</p>
       )}
+      <ConfirmDialog
+        open={pendingRemoveIndex !== null}
+        title="Remove skill?"
+        message={`You're about to remove ${pendingLabel}. This action cannot be undone.`}
+        confirmLabel="Remove"
+        onConfirm={confirmRemoveSkill}
+        onCancel={cancelRemoveSkill}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import type { CVFormData, TemplateId, Experience, Education, Skill, Project, PersonalInfo, Cv } from '../types/cv';
 import { useCvStore } from '../store/cvStore';
@@ -10,6 +10,7 @@ import { SkillList } from './SkillList';
 import { ProjectList } from './ProjectList';
 import { TemplateSelector } from './TemplateSelector';
 import { CvPreview } from '../templates/CvPreview';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface CvEditorProps {
   cvId: string;
@@ -38,14 +39,19 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const cv = cvs.find(c => c.id === cvId);
   
   const [formData, setFormData] = useState<CVFormData>(defaultFormData);
-  const [expandedSection, setExpandedSection] = useState<string>('personal');
+  const [expandedSection, setExpandedSection] = useState<string>('');
   const [showPreview, setShowPreview] = useState(true);
   const [leftWidth, setLeftWidth] = useState(45);
   const [isResizing, setIsResizing] = useState(false);
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string>(JSON.stringify(defaultFormData));
+  const [showUnsavedLeaveWarning, setShowUnsavedLeaveWarning] = useState(false);
+
+  const currentSnapshot = useMemo(() => JSON.stringify(formData), [formData]);
+  const hasUnsavedChanges = currentSnapshot !== lastSavedSnapshot;
 
   useEffect(() => {
     if (cv) {
-      setFormData({
+      const loadedFormData: CVFormData = {
         title: cv.title,
         templateId: cv.templateId as TemplateId,
         personalInfo: cv.personalInfo,
@@ -53,9 +59,26 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         educations: cv.educations,
         skills: cv.skills,
         projects: cv.projects,
-      });
+      };
+
+      setFormData(loadedFormData);
+      setLastSavedSnapshot(JSON.stringify(loadedFormData));
     }
   }, [cv]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) {
+        return;
+      }
+
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -109,15 +132,40 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   };
 
   const updateTemplate = (templateId: TemplateId) => {
-    setFormData({ ...formData, templateId });
+    if (templateId === formData.templateId) {
+      return;
+    }
+
+    const previousSnapshot = currentSnapshot;
+    const nextFormData: CVFormData = { ...formData, templateId };
+    const nextSnapshot = JSON.stringify(nextFormData);
+    const shouldAutoSaveTemplate = !hasUnsavedChanges && Boolean(cvId);
+
+    setFormData(nextFormData);
+
+    if (!shouldAutoSaveTemplate) {
+      return;
+    }
+
+    // Keep the status as "saved" for template-only switches and persist in background.
+    setLastSavedSnapshot(nextSnapshot);
+    void (async () => {
+      try {
+        await updateCv(cvId, nextFormData);
+      } catch {
+        setLastSavedSnapshot(previousSnapshot);
+        toast.error('Template change was not saved');
+      }
+    })();
   };
 
   const handleSave = async () => {
     if (cvId) {
       try {
         await updateCv(cvId, formData);
+        setLastSavedSnapshot(currentSnapshot);
         toast.success('Saved successfully');
-      } catch (error) {
+      } catch {
         toast.error('Save failed');
       }
     }
@@ -127,11 +175,30 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     const loadingToast = toast.loading('Generating PDF...');
     try {
       await updateCv(cvId, formData);
+      setLastSavedSnapshot(currentSnapshot);
       window.open(`/api/cv/${cvId}/export/pdf?t=${Date.now()}`, '_blank');
       toast.success('PDF ready', { id: loadingToast });
-    } catch (error) {
+    } catch {
       toast.error('Export failed', { id: loadingToast });
     }
+  };
+
+  const handleBackClick = () => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedLeaveWarning(true);
+      return;
+    }
+
+    onBack();
+  };
+
+  const confirmLeaveWithoutSaving = () => {
+    setShowUnsavedLeaveWarning(false);
+    onBack();
+  };
+
+  const cancelLeaveWithoutSaving = () => {
+    setShowUnsavedLeaveWarning(false);
   };
 
   const toggleSection = (section: string) => {
@@ -172,7 +239,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         <div className="p-4 flex items-center justify-between border-b border-border-subtle shrink-0">
           <div className="flex items-center gap-3">
             <button
-              onClick={onBack}
+              onClick={handleBackClick}
               className="p-2 rounded-lg hover:bg-bg-muted transition-colors text-text-dim hover:text-text-base"
               title="Back to Dashboard"
             >
@@ -190,8 +257,18 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`} />
-              <span className="text-xs text-text-dim">{loading ? 'Saving...' : 'Ready'}</span>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  loading
+                    ? 'bg-blue-500 animate-pulse'
+                    : hasUnsavedChanges
+                      ? 'bg-amber-500'
+                      : 'bg-emerald-500'
+                }`}
+              />
+              <span className="text-xs text-text-dim">
+                {loading ? 'Saving...' : hasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}
+              </span>
             </div>
             <button
               onClick={() => setShowPreview(!showPreview)}
@@ -325,6 +402,16 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={showUnsavedLeaveWarning}
+        title="Unsaved changes"
+        message="You have unsaved changes. If you leave now, those edits will be lost."
+        confirmLabel="Leave without saving"
+        cancelLabel="Stay"
+        onConfirm={confirmLeaveWithoutSaving}
+        onCancel={cancelLeaveWithoutSaving}
+      />
     </div>
   );
 }

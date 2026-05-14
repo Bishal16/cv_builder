@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Project } from '../types/cv';
+import { ConfirmDialog } from './ConfirmDialog';
 import { ProjectItem } from './ProjectItem';
 
 interface ProjectListProps {
@@ -11,6 +13,8 @@ function generateId(): string {
 }
 
 export function ProjectList({ projects, onChange }: ProjectListProps) {
+  const [pendingRemoveIndex, setPendingRemoveIndex] = useState<number | null>(null);
+
   const addProject = () => {
     const newProject: Project = {
       id: generateId(),
@@ -27,9 +31,27 @@ export function ProjectList({ projects, onChange }: ProjectListProps) {
     onChange(updatedList);
   };
 
-  const removeProject = (index: number) => {
-    onChange(projects.filter((_, i) => i !== index));
+  const requestRemoveProject = (index: number) => {
+    setPendingRemoveIndex(index);
   };
+
+  const confirmRemoveProject = () => {
+    if (pendingRemoveIndex === null) {
+      return;
+    }
+
+    onChange(projects.filter((_, i) => i !== pendingRemoveIndex));
+    setPendingRemoveIndex(null);
+  };
+
+  const cancelRemoveProject = () => {
+    setPendingRemoveIndex(null);
+  };
+
+  const pendingProject = pendingRemoveIndex !== null ? projects[pendingRemoveIndex] : null;
+  const pendingLabel =
+    pendingProject?.name ||
+    (pendingRemoveIndex !== null ? `project #${pendingRemoveIndex + 1}` : 'this project');
 
   return (
     <div className="space-y-4">
@@ -47,12 +69,20 @@ export function ProjectList({ projects, onChange }: ProjectListProps) {
           key={project.id}
           project={project}
           onChange={(updated) => updateProject(index, updated)}
-          onRemove={() => removeProject(index)}
+          onRemove={() => requestRemoveProject(index)}
         />
       ))}
       {projects.length === 0 && (
         <p className="text-center py-4 text-text-dim">No projects added yet. Click "Add" to start.</p>
       )}
+      <ConfirmDialog
+        open={pendingRemoveIndex !== null}
+        title="Remove project?"
+        message={`You're about to remove ${pendingLabel}. This action cannot be undone.`}
+        confirmLabel="Remove"
+        onConfirm={confirmRemoveProject}
+        onCancel={cancelRemoveProject}
+      />
     </div>
   );
 }

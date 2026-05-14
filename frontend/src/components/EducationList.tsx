@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import type { Education } from '../types/cv';
+import { ConfirmDialog } from './ConfirmDialog';
 import { EducationItem } from './EducationItem';
 
 interface EducationListProps {
@@ -11,6 +13,8 @@ function generateId(): string {
 }
 
 export function EducationList({ education, onChange }: EducationListProps) {
+  const [pendingRemoveIndex, setPendingRemoveIndex] = useState<number | null>(null);
+
   const addEducation = () => {
     const newEducation: Education = {
       id: generateId(),
@@ -28,9 +32,28 @@ export function EducationList({ education, onChange }: EducationListProps) {
     onChange(updatedList);
   };
 
-  const removeEducation = (index: number) => {
-    onChange(education.filter((_, i) => i !== index));
+  const requestRemoveEducation = (index: number) => {
+    setPendingRemoveIndex(index);
   };
+
+  const confirmRemoveEducation = () => {
+    if (pendingRemoveIndex === null) {
+      return;
+    }
+
+    onChange(education.filter((_, i) => i !== pendingRemoveIndex));
+    setPendingRemoveIndex(null);
+  };
+
+  const cancelRemoveEducation = () => {
+    setPendingRemoveIndex(null);
+  };
+
+  const pendingEducation = pendingRemoveIndex !== null ? education[pendingRemoveIndex] : null;
+  const pendingLabel =
+    pendingEducation?.institution ||
+    pendingEducation?.degree ||
+    (pendingRemoveIndex !== null ? `education #${pendingRemoveIndex + 1}` : 'this education');
 
   return (
     <div className="space-y-4">
@@ -48,12 +71,20 @@ export function EducationList({ education, onChange }: EducationListProps) {
           key={edu.id}
           education={edu}
           onChange={(updated) => updateEducation(index, updated)}
-          onRemove={() => removeEducation(index)}
+          onRemove={() => requestRemoveEducation(index)}
         />
       ))}
       {education.length === 0 && (
         <p className="text-center py-4 text-text-dim">No education added yet. Click "Add" to start.</p>
       )}
+      <ConfirmDialog
+        open={pendingRemoveIndex !== null}
+        title="Remove education?"
+        message={`You're about to remove ${pendingLabel}. This action cannot be undone.`}
+        confirmLabel="Remove"
+        onConfirm={confirmRemoveEducation}
+        onCancel={cancelRemoveEducation}
+      />
     </div>
   );
 }
