@@ -58,7 +58,7 @@ public class PdfService {
         html.append("@page { size: A4; margin: 0; }");
         html.append("*, *::before, *::after { box-sizing: border-box; }");
         html.append("body { font-family: 'Helvetica', Arial, sans-serif; margin: 0; padding: 0; color: #333; line-height: 1.4; font-size: 10pt; }");
-        html.append(".page { width: 210mm; min-height: 297mm; margin: 0 auto; background: white; position: relative; box-sizing: border-box; }");
+        html.append(".page { width: 209mm; min-height: 297mm; margin: 0 auto; background: white; position: relative; box-sizing: border-box; }");
         html.append("h1, h2, h3 { margin: 0; padding: 0; }");
         html.append(".text-sm { font-size: 9pt; }");
         html.append(".text-gray { color: #666; }");
@@ -68,8 +68,9 @@ public class PdfService {
         html.append(".mt-1 { margin-top: 4px; }");
         html.append(".mt-4 { margin-top: 16px; }");
         html.append(".clearfix::after { content: ''; clear: both; display: table; }");
-        html.append(".wrap-anywhere { word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }");
-        html.append(".rich-text, .rich-text * { white-space: normal; overflow-wrap: break-word; word-break: keep-all; hyphens: none; max-width: 100%; }");
+        html.append(".page div, .page span, .page p, .page li { max-width: 100%; }");
+        html.append(".wrap-anywhere { word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; hyphens: none; }");
+        html.append(".rich-text, .rich-text * { white-space: normal; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; hyphens: none; max-width: 100%; }");
         html.append(".rich-text p, .rich-text ul, .rich-text ol { margin: 0 0 6px 0; }");
         html.append(".rich-text p:last-child, .rich-text ul:last-child, .rich-text ol:last-child { margin-bottom: 0; }");
         html.append(".rich-text ul, .rich-text ol { padding-left: 16px; }");
@@ -103,9 +104,9 @@ public class PdfService {
         html.append(".name { font-size: 26pt; font-weight: bold; margin-bottom: 5px; color: #1a202c; }");
         html.append(".contact-info { color: #4a5568; font-size: 10pt; }");
         html.append(".content-wrapper { display: block; position: relative; }");
-        html.append(".sidebar { float: left; width: 33.333%; border-right: 1px solid #e2e8f0; min-height: 230mm; }");
+        html.append(".sidebar { float: left; width: 33%; border-right: 1px solid #e2e8f0; min-height: 230mm; }");
         html.append(".sidebar-inner { padding: 8mm; }");
-        html.append(".main-content { float: right; width: 66.667%; }");
+        html.append(".main-content { float: right; width: 67%; }");
         html.append(".main-content-inner { padding: 8mm; }");
         html.append(".section-title { font-size: 13pt; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #cbd5e0; margin-bottom: 10px; margin-top: 20px; padding-bottom: 3px; color: #2d3748; }");
     }
@@ -156,10 +157,10 @@ public class PdfService {
             html.append("<div class='section-title'>Experience</div>");
             for (Experience exp : cv.getExperiences()) {
                 html.append("<div class='mb-4'>");
-                html.append("<div class='clearfix'>");
-                html.append("<span style='float:left;'><strong>").append(escapeHtml(exp.getRole())).append("</strong></span>");
-                html.append("<span style='float:right;' class='text-gray text-sm'>").append(escapeHtml(exp.getStartDate())).append(" - ").append(escapeHtml(exp.getEndDate())).append("</span>");
-                html.append("</div>");
+                html.append("<table style='width:100%; border-collapse:collapse; table-layout:fixed;'><tr>");
+                html.append("<td style='width:72%; vertical-align:top; padding:0;'><strong class='wrap-anywhere'>").append(escapeHtml(exp.getRole())).append("</strong></td>");
+                html.append("<td style='width:28%; vertical-align:top; text-align:right; padding:0;' class='text-gray text-sm wrap-anywhere'>").append(escapeHtml(exp.getStartDate())).append(" - ").append(escapeHtml(exp.getEndDate())).append("</td>");
+                html.append("</tr></table>");
                 html.append("<div style='color: #4a5568;'>").append(escapeHtml(exp.getCompany())).append("</div>");
                 html.append("<div class='mt-1 rich-text'>").append(preserveHyphenLineBreaks(exp.getDescription())).append("</div>");
                 html.append("</div>");
@@ -259,10 +260,10 @@ public class PdfService {
             html.append("<div class='ats-section-title'>Experience</div>");
             for (Experience exp : cv.getExperiences()) {
                 html.append("<div class='mb-2'>");
-                html.append("<div class='clearfix'>");
-                html.append("<span style='float:left;'><strong>").append(escapeHtml(exp.getRole())).append("</strong></span>");
-                html.append("<span style='float:right;'>").append(escapeHtml(exp.getStartDate())).append(" - ").append(escapeHtml(exp.getEndDate())).append("</span>");
-                html.append("</div>");
+                html.append("<table style='width:100%; border-collapse:collapse; table-layout:fixed;'><tr>");
+                html.append("<td style='width:70%; vertical-align:top; padding:0;'><strong class='wrap-anywhere'>").append(escapeHtml(exp.getRole())).append("</strong></td>");
+                html.append("<td style='width:30%; vertical-align:top; text-align:right; padding:0;' class='wrap-anywhere'>").append(escapeHtml(exp.getStartDate())).append(" - ").append(escapeHtml(exp.getEndDate())).append("</td>");
+                html.append("</tr></table>");
                 html.append("<div style='font-style:italic;'>").append(escapeHtml(exp.getCompany())).append("</div>");
                 html.append("<div class='rich-text'>").append(preserveHyphenLineBreaks(exp.getDescription())).append("</div>");
                 html.append("</div>");
@@ -272,10 +273,10 @@ public class PdfService {
         if (cv.getEducations() != null && !cv.getEducations().isEmpty()) {
             html.append("<div class='ats-section-title'>Education</div>");
             for (Education edu : cv.getEducations()) {
-                html.append("<div class='clearfix'>");
-                html.append("<span style='float:left;'><strong>").append(escapeHtml(edu.getInstitution())).append("</strong></span>");
-                html.append("<span style='float:right;'>").append(edu.getGraduationYear()).append("</span>");
-                html.append("</div>");
+                html.append("<table style='width:100%; border-collapse:collapse; table-layout:fixed;'><tr>");
+                html.append("<td style='width:70%; vertical-align:top; padding:0;'><strong class='wrap-anywhere'>").append(escapeHtml(edu.getInstitution())).append("</strong></td>");
+                html.append("<td style='width:30%; vertical-align:top; text-align:right; padding:0;'>").append(edu.getGraduationYear()).append("</td>");
+                html.append("</tr></table>");
                 html.append("<div>").append(escapeHtml(edu.getDegree())).append("</div>");
             }
         }
