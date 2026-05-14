@@ -1,4 +1,5 @@
 import type { Cv } from '../types/cv';
+import { preventHyphenLineBreaks } from './richTextUtils';
 
 interface AtsTemplateProps {
   cv: Cv;
@@ -8,7 +9,7 @@ export function AtsTemplate({ cv }: AtsTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className="w-[210mm] min-h-[297mm] bg-white text-black p-8 font-sans shadow-xl mx-auto overflow-hidden">
+    <div className="w-[210mm] min-h-[297mm] bg-white text-black font-sans shadow-xl mx-auto" style={{ padding: '12mm' }}>
       <header className="text-center mb-6">
         <h1 className="text-2xl font-bold mb-2 break-words">{personalInfo.name || 'Your Name'}</h1>
         <p className="text-sm">
@@ -23,11 +24,11 @@ export function AtsTemplate({ cv }: AtsTemplateProps) {
       </header>
 
       {personalInfo.summary && (
-        <section className="mb-5 overflow-hidden">
+        <section className="mb-5">
           <h2 className="text-base font-bold border-b border-black pb-1 mb-2">PROFESSIONAL SUMMARY</h2>
           <div 
-            className="text-sm leading-relaxed break-normal whitespace-normal"
-            dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
+            className="cv-rich-text text-sm leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
           />
         </section>
       )}
@@ -35,15 +36,15 @@ export function AtsTemplate({ cv }: AtsTemplateProps) {
       <section className="mb-5">
         <h2 className="text-base font-bold border-b border-black pb-1 mb-2">WORK EXPERIENCE</h2>
         {experiences.map((exp) => (
-          <div key={exp.id} className="mb-4 overflow-hidden">
+          <div key={exp.id} className="mb-4">
             <div className="flex justify-between items-baseline gap-4">
               <h3 className="text-sm font-bold">{exp.role}</h3>
               <span className="text-sm shrink-0">{exp.startDate} - {exp.endDate || 'Present'}</span>
             </div>
             <p className="text-sm italic mb-1">{exp.company}</p>
             <div 
-              className="text-sm leading-relaxed break-normal whitespace-normal"
-              dangerouslySetInnerHTML={{ __html: exp.description }}
+              className="cv-rich-text text-sm leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
             />
           </div>
         ))}
@@ -75,14 +76,14 @@ export function AtsTemplate({ cv }: AtsTemplateProps) {
         <section>
           <h2 className="text-base font-bold border-b border-black pb-1 mb-2">PROJECTS</h2>
           {projects.map((project) => (
-            <div key={project.id} className="mb-2 overflow-hidden">
+            <div key={project.id} className="mb-2">
               <div className="flex justify-between items-baseline gap-4">
                 <h3 className="text-sm font-bold">{project.name}</h3>
                 {project.url && <span className="text-sm break-all">{project.url}</span>}
               </div>
               <div 
-                className="text-sm leading-relaxed break-normal whitespace-normal"
-                dangerouslySetInnerHTML={{ __html: project.description }}
+                className="cv-rich-text text-sm leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
               />
             </div>
           ))}

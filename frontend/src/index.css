@@ -221,6 +221,35 @@ select.input-field {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
 }
 
+/* Rendered CV rich text (live preview) */
+.cv-rich-text {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: keep-all;
+  hyphens: none;
+}
+
+.cv-rich-text p,
+.cv-rich-text ul,
+.cv-rich-text ol {
+  margin: 0 0 0.4em 0;
+}
+
+.cv-rich-text p:last-child,
+.cv-rich-text ul:last-child,
+.cv-rich-text ol:last-child {
+  margin-bottom: 0;
+}
+
+.cv-rich-text ul,
+.cv-rich-text ol {
+  padding-left: 1.25em;
+}
+
+.cv-rich-text li {
+  margin-bottom: 0.2em;
+}
+
 /* Checkbox/Radio */
 input[type="checkbox"],
 input[type="radio"] {

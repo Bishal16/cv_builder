@@ -1,4 +1,5 @@
 import type { Cv } from '../types/cv';
+import { preventHyphenLineBreaks } from './richTextUtils';
 
 interface ModernTemplateProps {
   cv: Cv;
@@ -8,9 +9,9 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className="w-[210mm] min-h-[297mm] bg-white text-gray-800 shadow-xl mx-auto overflow-hidden">
+    <div className="w-[210mm] min-h-[297mm] bg-white text-gray-800 shadow-xl mx-auto">
       <header className="relative">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-8">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600" style={{ padding: '10mm 12mm' }}>
           <h1 className="text-3xl font-bold text-white mb-2">{personalInfo.name || 'Your Name'}</h1>
           <div className="flex flex-wrap gap-4 text-sm text-blue-100">
             {personalInfo.email && <span className="break-all">✉ {personalInfo.email}</span>}
@@ -21,13 +22,13 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
         <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-400" />
       </header>
 
-      <div className="px-8 py-6 space-y-6">
+      <div className="space-y-6" style={{ padding: '0 12mm 12mm 12mm' }}>
         {personalInfo.summary && (
-          <section className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500 overflow-hidden">
+          <section className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
             <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">About</h2>
             <div 
-              className="text-sm text-gray-700 leading-relaxed break-normal whitespace-normal"
-              dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
+              className="cv-rich-text text-sm text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
             />
           </section>
         )}
@@ -57,7 +58,7 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
             </h2>
             <div className="space-y-4">
               {experiences.map((exp) => (
-                <div key={exp.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 overflow-hidden">
+                <div key={exp.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                   <div className="flex justify-between items-start mb-2 gap-4">
                     <h3 className="font-bold text-gray-800">{exp.role}</h3>
                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded shrink-0">
@@ -66,8 +67,8 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
                   </div>
                   <p className="text-sm text-blue-600 mb-2">{exp.company}</p>
                   <div 
-                    className="text-sm text-gray-600 leading-relaxed break-normal whitespace-normal"
-                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                    className="cv-rich-text text-sm text-gray-600 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
                   />
                 </div>
               ))}
@@ -102,16 +103,16 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
               </h2>
               <div className="space-y-3">
                 {projects.map((project) => (
-                  <div key={project.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 overflow-hidden">
+                  <div key={project.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
                     <div className="flex justify-between items-start gap-4">
                       <h3 className="font-bold text-gray-800">{project.name}</h3>
                       {project.url && (
-                        <span className="text-xs text-gray-500 truncate ml-2 max-w-[120px] break-all">{project.url}</span>
-                      )}
-                    </div>
+                          <span className="ml-2 max-w-[180px] text-right text-xs text-gray-500 break-all">{project.url}</span>
+                        )}
+                      </div>
                     <div 
-                      className="text-sm text-gray-600 mt-1 break-normal whitespace-normal"
-                      dangerouslySetInnerHTML={{ __html: project.description }}
+                      className="cv-rich-text mt-1 text-sm text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
                     />
                   </div>
                 ))}
