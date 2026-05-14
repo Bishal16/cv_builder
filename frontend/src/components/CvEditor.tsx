@@ -35,7 +35,7 @@ const defaultFormData: CVFormData = {
 
 export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const { cvs, updateCv, loading } = useCvStore();
-  const { theme } = useThemeStore();
+  const { theme, toggleTheme } = useThemeStore();
   const cv = cvs.find(c => c.id === cvId);
   
   const [formData, setFormData] = useState<CVFormData>(defaultFormData);
@@ -43,6 +43,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const [showPreview, setShowPreview] = useState(true);
   const [leftWidth, setLeftWidth] = useState(45);
   const [isResizing, setIsResizing] = useState(false);
+  const [previewZoom, setPreviewZoom] = useState(100);
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string>(JSON.stringify(defaultFormData));
   const [showUnsavedLeaveWarning, setShowUnsavedLeaveWarning] = useState(false);
 
@@ -205,6 +206,18 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     setExpandedSection(expandedSection === section ? '' : section);
   };
 
+  const zoomOutPreview = () => {
+    setPreviewZoom((prev) => Math.max(50, prev - 10));
+  };
+
+  const zoomInPreview = () => {
+    setPreviewZoom((prev) => Math.min(150, prev + 10));
+  };
+
+  const resetPreviewZoom = () => {
+    setPreviewZoom(100);
+  };
+
   const previewCv: Cv = {
     id: cvId,
     title: formData.title,
@@ -227,13 +240,19 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   ];
 
   const isDark = theme === 'dark';
+  const floatingZoomContainerClass =
+    'absolute bottom-6 right-6 z-20 flex items-center gap-1 rounded-2xl border border-border-subtle bg-bg-surface/90 p-1.5 shadow-2xl backdrop-blur supports-[backdrop-filter]:bg-bg-surface/80';
+  const floatingZoomButtonClass =
+    'h-9 w-9 rounded-xl text-sm font-bold text-blue-500 transition-all hover:bg-bg-muted disabled:cursor-not-allowed disabled:opacity-40 active:scale-95';
+  const floatingZoomValueClass =
+    'h-9 min-w-[50px] rounded-xl px-3 text-xs font-semibold font-mono text-white shadow-[0_1px_6px_rgba(37,99,235,0.35)] transition-all hover:brightness-110 active:scale-95';
 
   return (
     <div className="flex h-screen overflow-hidden rounded-none">
       {/* Editor Panel */}
       <div 
         style={{ width: showPreview ? `${leftWidth}%` : '100%' }}
-        className="flex flex-col bg-bg-surface border-r border-border-subtle"
+        className="flex flex-col bg-bg-slate-300 border-r border-border-subtle"
       >
         {/* Header */}
         <div className="p-4 flex items-center justify-between border-b border-border-subtle shrink-0">
@@ -386,18 +405,77 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
       {showPreview && (
         <div 
           style={{ width: `${100 - leftWidth}%` }}
-          className={`flex flex-col ${isDark ? 'bg-zinc-950' : 'bg-gray-100'}`}
+          className={`relative flex flex-col ${isDark ? 'bg-zinc-950' : 'bg-gray-100'}`}
         >
-          <div className="p-3 border-b border-border-subtle flex justify-between items-center shrink-0">
+          <div className="p-4 flex items-center justify-between border-b border-border-subtle shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
               <span className="text-xs font-medium text-text-dim">Live Preview</span>
             </div>
-            <span className="text-xs font-mono text-text-dim">{formData.templateId}</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="p-2 rounded-lg hover:bg-bg-muted transition-all border border-border-subtle text-text-dim hover:text-text-base"
+                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                  </svg>
+                )}
+              </button>
+              <span className="text-xs font-mono text-text-dim">{formData.templateId}</span>
+            </div>
           </div>
-          <div className={`flex-1 overflow-auto p-8 flex justify-center ${isDark ? 'bg-[radial-gradient(#1e1e24_1px,transparent_1px)] [background-size:20px_20px]' : 'bg-gray-200'}`}>
-            <div className="paper-surface shadow-2xl">
-              <CvPreview cv={previewCv} />
+          <div className={floatingZoomContainerClass}>
+            <button
+              type="button"
+              onClick={zoomOutPreview}
+              disabled={previewZoom <= 50}
+              className={floatingZoomButtonClass}
+              title="Zoom out"
+            >
+              -
+            </button>
+            <button
+              type="button"
+              onClick={resetPreviewZoom}
+              className={floatingZoomValueClass}
+              style={{ backgroundColor: 'var(--primary)' }}
+              title="Reset zoom"
+            >
+              {previewZoom}%
+            </button>
+            <button
+              type="button"
+              onClick={zoomInPreview}
+              disabled={previewZoom >= 150}
+              className={floatingZoomButtonClass}
+              title="Zoom in"
+            >
+              +
+            </button>
+          </div>
+          <div className={`flex-1 overflow-auto p-8 flex justify-center 
+          ${isDark
+      ? 'bg-slate-900 bg-[radial-gradient(#2f2f38_1px,transparent_1px)] [background-size:20px_20px]'
+      : 'bg-gray-200 bg-[radial-gradient(#bdbdbd_1px,transparent_1px)] [background-size:20px_20px]'
+  }`}
+>
+            <div
+              className="origin-top"
+              style={{
+                transform: `scale(${previewZoom / 100})`,
+              }}
+            >
+              <div className="paper-surface shadow-2xl">
+                <CvPreview cv={previewCv} />
+              </div>
             </div>
           </div>
         </div>

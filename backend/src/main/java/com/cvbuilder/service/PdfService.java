@@ -69,8 +69,8 @@ public class PdfService {
         html.append(".mt-4 { margin-top: 16px; }");
         html.append(".clearfix::after { content: ''; clear: both; display: table; }");
         html.append(".page div, .page span, .page p, .page li { max-width: 100%; }");
-        html.append(".wrap-anywhere { word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; hyphens: none; }");
-        html.append(".rich-text, .rich-text * { white-space: normal; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; hyphens: none; max-width: 100%; }");
+        html.append(".wrap-anywhere { word-wrap: break-word; overflow-wrap: anywhere; word-break: break-all; hyphens: none; }");
+        html.append(".rich-text, .rich-text * { white-space: normal; word-wrap: break-word; overflow-wrap: anywhere; word-break: break-all; hyphens: none; max-width: 100%; }");
         html.append(".rich-text p, .rich-text ul, .rich-text ol { margin: 0 0 6px 0; }");
         html.append(".rich-text p:last-child, .rich-text ul:last-child, .rich-text ol:last-child { margin-bottom: 0; }");
         html.append(".rich-text ul, .rich-text ol { padding-left: 16px; }");
