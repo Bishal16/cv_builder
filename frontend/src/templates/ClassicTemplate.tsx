@@ -7,107 +7,192 @@ interface ClassicTemplateProps {
   containerStyle?: React.CSSProperties;
 }
 
+const styles = {
+  container: {
+    width: '794px',
+    backgroundColor: '#ffffff',
+    color: '#333333',
+    fontFamily: 'Helvetica, Arial, sans-serif',
+    fontSize: '12px',
+    lineHeight: '1.4',
+    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+  } as React.CSSProperties,
+  header: {
+    padding: '37px 45px 30px 45px',
+    borderBottom: '2px solid #333333',
+  } as React.CSSProperties,
+  name: {
+    fontSize: '26px',
+    fontWeight: 'bold' as const,
+    marginBottom: '5px',
+    color: '#1a202c',
+    letterSpacing: '-0.025em',
+  } as React.CSSProperties,
+  contact: {
+    fontSize: '11px',
+    color: '#4a5568',
+    display: 'flex' as const,
+    flexWrap: 'wrap' as const,
+    gap: '16px',
+  } as React.CSSProperties,
+  content: {
+    display: 'flex' as const,
+    minHeight: '941px',
+  } as React.CSSProperties,
+  sidebar: {
+    width: '33.333%',
+    backgroundColor: '#f7fafc',
+    borderRight: '1px solid #e2e8f0',
+    padding: '30px',
+    flexShrink: 0,
+  } as React.CSSProperties,
+  main: {
+    width: '66.666%',
+    padding: '30px',
+  } as React.CSSProperties,
+  sectionTitle: {
+    fontSize: '13px',
+    fontWeight: 'bold' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
+    color: '#2d3748',
+    borderBottom: '1px solid #cbd5e0',
+    paddingBottom: '3px',
+    marginBottom: '10px',
+    marginTop: '20px',
+  } as React.CSSProperties,
+  body: {
+    fontSize: '12px',
+    lineHeight: '1.4',
+    color: '#333333',
+  } as React.CSSProperties,
+  muted: {
+    color: '#4a5568',
+  } as React.CSSProperties,
+  skillLevel: {
+    fontSize: '10px',
+    color: '#718096',
+    marginLeft: '4px',
+  } as React.CSSProperties,
+  itemSpacing: {
+    marginBottom: '16px',
+  } as React.CSSProperties,
+  roleDate: {
+    display: 'flex' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'baseline' as const,
+    marginBottom: '4px',
+  } as React.CSSProperties,
+  role: {
+    fontWeight: 'bold' as const,
+    fontSize: '12px',
+  } as React.CSSProperties,
+  date: {
+    fontSize: '10px',
+    color: '#718096',
+    flexShrink: 0,
+  } as React.CSSProperties,
+  richText: {
+    fontSize: '12px',
+    lineHeight: '1.4',
+    color: '#333333',
+  } as React.CSSProperties,
+};
+
 export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }: ClassicTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className={`w-[794px] bg-white text-gray-800 font-serif shadow-xl mx-auto ${containerClass}`} style={{ ...containerStyle }}>
-      <header className="border-b-2 border-gray-800" style={{ padding: '37px 45px 30px 45px' }}>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{personalInfo.name || 'Your Name'}</h1>
-        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-          {personalInfo.email && <span className="break-all">{personalInfo.email}</span>}
-          {personalInfo.phone && <span className="break-all">{personalInfo.phone}</span>}
+    <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
+      <header style={styles.header}>
+        <h1 style={styles.name}>{personalInfo.name || 'Your Name'}</h1>
+        <div style={styles.contact}>
+          {personalInfo.email && <span style={{ wordBreak: 'break-all' }}>{personalInfo.email}</span>}
+          {personalInfo.phone && <span style={{ wordBreak: 'break-all' }}>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
         </div>
       </header>
 
-      <div className="flex min-h-[941px]">
-        <aside className="w-1/3 bg-gray-50 border-r border-gray-200 shrink-0" style={{ padding: '30px' }}>
-          <section className="mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-800 mb-3 border-b border-gray-300 pb-1">
-              Skills
-            </h2>
-            <ul className="space-y-2">
-              {skills.map((skill) => (
-                <li key={skill.id} className="text-sm">
-                  <span className="font-medium">{skill.name}</span>
-                  {skill.level && (
-                    <span className="text-gray-500 text-xs ml-1">({skill.level})</span>
-                  )}
-                </li>
-              ))}
-            </ul>
+      <div style={styles.content}>
+        <aside style={styles.sidebar}>
+          <section>
+            <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Skills</h2>
+            {skills.map((skill) => (
+              <div key={skill.id} style={{ ...styles.body, marginBottom: '8px' }}>
+                <span style={{ fontWeight: '500' }}>{skill.name}</span>
+                {skill.level && (
+                  <span style={styles.skillLevel}>({skill.level})</span>
+                )}
+              </div>
+            ))}
           </section>
 
-          <section className="mb-6">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-800 mb-3 border-b border-gray-300 pb-1">
-              Education
-            </h2>
-            <ul className="space-y-3">
-              {educations.map((edu) => (
-                <li key={edu.id} className="text-sm">
-                  <p className="font-medium">{edu.institution}</p>
-                  <p className="text-gray-600">
-                    {edu.degree} {edu.field && `in ${edu.field}`}
-                  </p>
-                  <p className="text-gray-500 text-xs">{edu.graduationYear}</p>
-                </li>
-              ))}
-            </ul>
+          <section style={{ marginTop: '24px' }}>
+            <h2 style={styles.sectionTitle}>Education</h2>
+            {educations.map((edu) => (
+              <div key={edu.id} style={{ marginBottom: '16px' }}>
+                <div style={{ fontWeight: '500' }}>{edu.institution}</div>
+                <div style={{ fontSize: '11px', color: '#4a5568' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
+                <div style={{ fontSize: '10px', color: '#718096' }}>{edu.graduationYear}</div>
+              </div>
+            ))}
           </section>
         </aside>
 
-        <main className="w-2/3" style={{ padding: '30px' }}>
+        <main style={styles.main}>
           {personalInfo.summary && (
-            <section className="mb-6">
-              <h2 className="text-lg font-bold mb-2">Professional Summary</h2>
-              <div 
-                className="cv-rich-text text-sm text-gray-700 leading-relaxed"
+            <section>
+              <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Professional Summary</h2>
+              <div
+                className="cv-rich-text"
+                style={styles.richText}
                 dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
               />
             </section>
           )}
 
-          <section className="mb-6">
-            <h2 className="text-lg font-bold mb-3 border-b border-gray-300 pb-1">Experience</h2>
-            <ul className="space-y-4">
-              {experiences.map((exp) => (
-                <li key={exp.id} className="text-sm">
-                  <div className="flex justify-between items-baseline mb-1 gap-4">
-                    <h3 className="font-bold">{exp.role}</h3>
-                    <span className="text-xs text-gray-500 shrink-0">
-                      {exp.startDate} - {exp.endDate || 'Present'}
-                    </span>
-                  </div>
-                  <p className="text-gray-600 mb-1">{exp.company}</p>
-                  <div 
-                    className="cv-rich-text text-gray-700 leading-relaxed"
+          <section>
+            <h2 style={styles.sectionTitle}>Experience</h2>
+            {experiences.map((exp) => (
+              <div key={exp.id} style={{ marginBottom: '16px' }}>
+                <div style={styles.roleDate}>
+                  <span style={styles.role}>{exp.role}</span>
+                  <span style={styles.date}>{exp.startDate} - {exp.endDate || 'Present'}</span>
+                </div>
+                <div style={{ ...styles.muted, fontSize: '11px' }}>{exp.company}</div>
+                <div style={{ marginTop: '4px' }}>
+                  <div
+                    className="cv-rich-text"
+                    style={styles.richText}
                     dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
                   />
-                </li>
-              ))}
-            </ul>
+                </div>
+              </div>
+            ))}
           </section>
 
           {projects.length > 0 && (
             <section>
-              <h2 className="text-lg font-bold mb-3 border-b border-gray-300 pb-1">Projects</h2>
-              <ul className="space-y-3">
-                {projects.map((project) => (
-                  <li key={project.id} className="text-sm">
-                    <div className="flex justify-between items-baseline gap-4">
-                      <h3 className="font-medium">{project.name}</h3>
-                      {project.url && (
-                        <span className="ml-2 max-w-[180px] text-right text-xs text-gray-500 break-all">{project.url}</span>
-                      )}
-                    </div>
-                    <div 
-                      className="cv-rich-text text-gray-700 leading-relaxed"
+              <h2 style={styles.sectionTitle}>Projects</h2>
+              {projects.map((project) => (
+                <div key={project.id} style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
+                    <span style={{ fontWeight: '500', fontSize: '12px' }}>{project.name}</span>
+                    {project.url && (
+                      <span style={{ fontSize: '10px', color: '#3182ce', maxWidth: '180px', wordBreak: 'break-all', textAlign: 'right' }}>
+                        {project.url}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <div
+                      className="cv-rich-text"
+                      style={styles.richText}
                       dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
                     />
-                  </li>
-                ))}
-              </ul>
+                  </div>
+                </div>
+              ))}
             </section>
           )}
         </main>

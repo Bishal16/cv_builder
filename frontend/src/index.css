@@ -232,7 +232,7 @@ select.input-field {
 .cv-rich-text p,
 .cv-rich-text ul,
 .cv-rich-text ol {
-  margin: 0 0 0.4em 0;
+  margin: 0 0 0.25em 0;
 }
 
 .cv-rich-text p:last-child,
