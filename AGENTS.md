@@ -5,7 +5,7 @@ Full-stack CV builder with live preview, multi-template support, and high-fideli
 - **Frontend**: React 19 + Vite + Tailwind CSS v4 + Zustand
 - **Backend**: Spring Boot 3.2 (Java 17)
 - **Database**: SQLite
-- **PDF**: openhtmltopdf + jsoup (HTML-to-PDF)
+- **PDF**: Playwright (Chromium) HTML-to-PDF
 
 ## IMPORTANT: First Steps on New Clone
 
@@ -127,8 +127,9 @@ mvn spring-boot:run  # Run (port 8081)
 - Stored as HTML, rendered with `dangerouslySetInnerHTML` in templates
 
 ### PDF Generation
-- Backend uses `openhtmltopdf` for template-specific HTML-to-PDF
-- HTML sanitized with `jsoup` before conversion
+- Backend uses Playwright + Chromium for template-specific HTML-to-PDF
+- Rendering is browser-accurate, matching preview line breaks more closely
+- `cvbuilder.frontend.base-url` controls which frontend URL Chromium loads for the print view
 
 ## Conventions
 

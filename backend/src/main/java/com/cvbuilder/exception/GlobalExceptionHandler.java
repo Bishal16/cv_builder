@@ -1,5 +1,6 @@
 package com.cvbuilder.exception;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,12 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(ClientAbortException.class)
+    public ResponseEntity<Void> handleClientAbort(ClientAbortException ex) {
+        log.debug("Client aborted connection", ex);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)

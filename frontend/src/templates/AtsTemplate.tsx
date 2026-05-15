@@ -10,8 +10,13 @@ interface AtsTemplateProps {
 export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: AtsTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
+  const defaultStyle: React.CSSProperties = { padding: '12mm' };
+
   return (
-    <div className={`w-[794px] bg-white text-black font-sans shadow-xl mx-auto ${containerClass}`} style={{ ...containerStyle }}>
+    <div
+      className={`w-[794px] box-border bg-white text-black font-sans shadow-xl mx-auto ${containerClass}`}
+      style={{ ...defaultStyle, ...containerStyle }}
+    >
       <header className="text-center mb-6">
         <h1 className="text-2xl font-bold mb-2 break-words">{personalInfo.name || 'Your Name'}</h1>
         <p className="text-sm">

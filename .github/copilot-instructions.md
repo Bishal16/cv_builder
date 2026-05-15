@@ -30,7 +30,7 @@ cd ../backend && mvn clean compile
 - **Frontend data flow**: `App.tsx` routes between dashboard and editor views using in-memory `selectedCvId`. `cvStore.ts` is the single source of truth for server data (`cvs`, `currentCv`) and wraps all API calls from `src/api/cvApi.ts`. `CvEditor.tsx` maintains a local `formData` draft, then explicitly syncs to backend on save and immediately before PDF export.
 - **PDF export**: Opening `GET /api/cv/{id}/export/pdf` uses a timestamp query parameter to bypass stale browser cache. The export endpoint reloads the CV from DB and generates fresh HTML.
 - **Backend request flow**: `controller` receives requests → `service` handles business logic → `repository` queries SQLite. `CvMapper` owns DTO/entity conversion and manages bidirectional relationship wiring for nested collections (`experiences`, `educations`, `skills`, `projects`).
-- **PDF rendering**: Fully backend-owned (`PdfService`). It builds template-specific HTML (CLASSIC/MODERN/ATS), sanitizes HTML with jsoup to W3C DOM, then renders via `openhtmltopdf`.
+- **PDF rendering**: `PdfService` opens the frontend print view in Chromium via Playwright (`/?print=1&cvId=...`) for browser-accurate layout. The base URL is configured with `cvbuilder.frontend.base-url`.
 - **Template alignment**: Frontend preview templates (`src/templates/*Template.tsx`) and backend PDF templates (conditional branches in `PdfService`) are parallel implementations. Both use A4-proportioned layouts and must stay behaviorally aligned—CSS changes to preview templates often need corresponding HTML template updates in backend.
 - **Vite proxy**: Frontend dev server proxies `/api` requests to `http://localhost:8081`. Keep both ports in sync when changing runtime configuration.
 
@@ -47,7 +47,7 @@ cd ../backend && mvn clean compile
 ### Rich Text Handling
 - Rich text fields (`summary`, `experience.description`, `project.description`) are stored and rendered as HTML.
 - Frontend: Use `dangerouslySetInnerHTML` with rich text fields. Apply `break-normal whitespace-normal` styling to prevent mid-word breaks.
-- Backend: Inject HTML content directly into PDF template strings; jsoup sanitization happens before openhtmltopdf rendering.
+- Backend: Inject HTML content directly into PDF template strings; Chromium rendering preserves browser-like layout and line breaks.
 - Template alignment: Update both frontend (`src/templates/*Template.tsx`) and backend (`PdfService`) when changing rich text styling.
 
 ### Error Handling

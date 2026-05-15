@@ -4,7 +4,7 @@ Full-stack CV builder with live preview, multi-template support, and high-fideli
 
 ## Tech Stack
 - **Frontend**: React 19, Vite, Tailwind CSS v4, Zustand, `react-quill-new` (Rich Text), `react-hot-toast`.
-- **Backend**: Spring Boot 3.2, Java 17, `openhtmltopdf` (HTML-to-PDF engine), `jsoup` (HTML processing).
+- **Backend**: Spring Boot 3.2, Java 17, Playwright (Chromium HTML-to-PDF).
 - **Database**: SQLite (local development).
 
 ## Architecture & Data Flow
@@ -49,7 +49,7 @@ mvn spring-boot:run # Run backend (port 8081)
 ### Backend (Java/Spring Boot)
 - **Entities**: Use `UUID` for primary keys. `@OneToMany` relationships must use `mappedBy` and manual parent linking in mappers.
 - **Database**: `description` fields should use `@Column(columnDefinition = "TEXT")` for large HTML content.
-- **PDF**: Always use `openhtmltopdf` for rendering. Ensure HTML is sanitized via `jsoup` before conversion.
+- **PDF**: Use Playwright (Chromium) for rendering to keep layout consistent with preview. Set `cvbuilder.frontend.base-url` for the frontend print URL.
 
 ### Frontend (React/TypeScript)
 - **IDs**: Always generate IDs using `crypto.randomUUID()`.

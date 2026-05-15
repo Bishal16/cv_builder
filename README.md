@@ -29,7 +29,7 @@ Open http://localhost:5173
 - **Frontend**: React 19 + Vite + Tailwind CSS v4 + Zustand
 - **Backend**: Spring Boot 3.2 + Java 21
 - **Database**: SQLite (dev)
-- **PDF**: Apache PDFBox
+- **PDF**: Playwright (Chromium)
 
 ## Project Structure
 
@@ -70,7 +70,10 @@ npm run lint     # ESLint
 ```bash
 mvn spring-boot:run  # Run (port 8081)
 mvn clean package    # Build JAR
+mvn -q org.codehaus.mojo:exec-maven-plugin:3.1.0:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install chromium"  # Install Chromium for PDF export
 ```
+
+PDF export renders the frontend in Chromium. Set `cvbuilder.frontend.base-url` if the UI is hosted elsewhere (default: `http://localhost:5173`).
 
 ## API Endpoints
 

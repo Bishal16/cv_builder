@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { CvEditor } from './components/CvEditor'
+import { CvPrintView } from './components/CvPrintView'
 import { useCvStore } from './store/cvStore'
 import { useThemeStore } from './store/themeStore'
 
@@ -9,21 +10,43 @@ function App() {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const { cvs, loadCvs, createCv, deleteCv } = useCvStore()
   const { theme, toggleTheme } = useThemeStore()
+  const searchParams = new URLSearchParams(window.location.search)
+  const isPrintMode = searchParams.get('print') === '1'
+  const printCvId = searchParams.get('cvId')
 
   useEffect(() => {
-    loadCvs()
-  }, [loadCvs])
+    if (!isPrintMode) {
+      loadCvs()
+    }
+  }, [loadCvs, isPrintMode])
 
   useEffect(() => {
+    if (isPrintMode) {
+      return
+    }
     document.documentElement.classList.remove('light', 'dark')
     document.documentElement.classList.add(theme)
-  }, [theme])
+  }, [theme, isPrintMode])
 
   useEffect(() => {
+    if (isPrintMode) {
+      return
+    }
     const handleClickOutside = () => setActiveMenuId(null)
     window.addEventListener('click', handleClickOutside)
     return () => window.removeEventListener('click', handleClickOutside)
-  }, [])
+  }, [isPrintMode])
+
+  if (isPrintMode) {
+    if (!printCvId) {
+      return (
+        <div style={{ padding: '24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
+          Missing cvId in print mode.
+        </div>
+      )
+    }
+    return <CvPrintView cvId={printCvId} />
+  }
 
   const handleNewCv = async () => {
     const newCv = await createCv({
