@@ -3,13 +3,15 @@ import { preventHyphenLineBreaks } from './richTextUtils';
 
 interface AtsTemplateProps {
   cv: Cv;
+  containerClass?: string;
+  containerStyle?: React.CSSProperties;
 }
 
-export function AtsTemplate({ cv }: AtsTemplateProps) {
+export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: AtsTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className="w-[210mm] min-h-[297mm] bg-white text-black font-sans shadow-xl mx-auto" style={{ padding: '12mm' }}>
+    <div className={`w-[794px] bg-white text-black font-sans shadow-xl mx-auto ${containerClass}`} style={{ ...containerStyle }}>
       <header className="text-center mb-6">
         <h1 className="text-2xl font-bold mb-2 break-words">{personalInfo.name || 'Your Name'}</h1>
         <p className="text-sm">

@@ -256,6 +256,13 @@ input[type="radio"] {
   accent-color: var(--primary);
 }
 
+/* Paper surface */
+.paper-surface {
+  background: #ffffff;
+  border-radius: 0;
+  overflow: visible;
+}
+
 /* Badge styling */
 .badge {
   @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;

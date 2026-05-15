@@ -3,14 +3,16 @@ import { preventHyphenLineBreaks } from './richTextUtils';
 
 interface ClassicTemplateProps {
   cv: Cv;
+  containerClass?: string;
+  containerStyle?: React.CSSProperties;
 }
 
-export function ClassicTemplate({ cv }: ClassicTemplateProps) {
+export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }: ClassicTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className="w-[210mm] min-h-[297mm] bg-white text-gray-800 font-serif shadow-xl mx-auto">
-      <header className="border-b-2 border-gray-800" style={{ padding: '10mm 12mm 8mm 12mm' }}>
+    <div className={`w-[794px] bg-white text-gray-800 font-serif shadow-xl mx-auto ${containerClass}`} style={{ ...containerStyle }}>
+      <header className="border-b-2 border-gray-800" style={{ padding: '37px 45px 30px 45px' }}>
         <h1 className="text-3xl font-bold tracking-tight mb-2">{personalInfo.name || 'Your Name'}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
           {personalInfo.email && <span className="break-all">{personalInfo.email}</span>}
@@ -19,8 +21,8 @@ export function ClassicTemplate({ cv }: ClassicTemplateProps) {
         </div>
       </header>
 
-      <div className="flex min-h-[250mm]">
-        <aside className="w-1/3 bg-gray-50 border-r border-gray-200 shrink-0" style={{ padding: '8mm' }}>
+      <div className="flex min-h-[941px]">
+        <aside className="w-1/3 bg-gray-50 border-r border-gray-200 shrink-0" style={{ padding: '30px' }}>
           <section className="mb-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-gray-800 mb-3 border-b border-gray-300 pb-1">
               Skills
@@ -55,7 +57,7 @@ export function ClassicTemplate({ cv }: ClassicTemplateProps) {
           </section>
         </aside>
 
-        <main className="w-2/3" style={{ padding: '8mm' }}>
+        <main className="w-2/3" style={{ padding: '30px' }}>
           {personalInfo.summary && (
             <section className="mb-6">
               <h2 className="text-lg font-bold mb-2">Professional Summary</h2>

@@ -3,15 +3,17 @@ import { preventHyphenLineBreaks } from './richTextUtils';
 
 interface ModernTemplateProps {
   cv: Cv;
+  containerClass?: string;
+  containerStyle?: React.CSSProperties;
 }
 
-export function ModernTemplate({ cv }: ModernTemplateProps) {
+export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }: ModernTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
   return (
-    <div className="w-[210mm] min-h-[297mm] bg-white text-gray-800 shadow-xl mx-auto">
+    <div className={`w-[794px] bg-white text-gray-800 shadow-xl mx-auto ${containerClass}`} style={{ ...containerStyle }}>
       <header className="relative">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600" style={{ padding: '10mm 12mm' }}>
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600" style={{ padding: '37px 45px' }}>
           <h1 className="text-3xl font-bold text-white mb-2">{personalInfo.name || 'Your Name'}</h1>
           <div className="flex flex-wrap gap-4 text-sm text-blue-100">
             {personalInfo.email && <span className="break-all">✉ {personalInfo.email}</span>}
@@ -22,7 +24,7 @@ export function ModernTemplate({ cv }: ModernTemplateProps) {
         <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-400" />
       </header>
 
-      <div className="space-y-6" style={{ padding: '0 12mm 12mm 12mm' }}>
+      <div className="space-y-6" style={{ padding: '0 45px 45px 45px' }}>
         {personalInfo.summary && (
           <section className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-500">
             <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">About</h2>

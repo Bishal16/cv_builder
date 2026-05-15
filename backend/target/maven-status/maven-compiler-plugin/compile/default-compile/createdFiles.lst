@@ -5,8 +5,8 @@ com/cvbuilder/dto/EducationDto.class
 com/cvbuilder/model/SkillLevel.class
 com/cvbuilder/controller/CvController.class
 com/cvbuilder/service/CvService.class
-com/cvbuilder/repository/CvRepository.class
 com/cvbuilder/dto/CvDto.class
+com/cvbuilder/repository/CvRepository.class
 com/cvbuilder/dto/CreateCvRequest.class
 com/cvbuilder/controller/CvController$ErrorResponse.class
 com/cvbuilder/exception/ResourceNotFoundException.class
@@ -22,7 +22,7 @@ com/cvbuilder/mapper/CvMapper.class
 com/cvbuilder/dto/SkillDto.class
 com/cvbuilder/dto/ExperienceDto.class
 com/cvbuilder/dto/PersonalInfoDto.class
-com/cvbuilder/dto/UpdateCvRequest.class
 com/cvbuilder/dto/ProjectDto.class
-com/cvbuilder/controller/PdfController.class
+com/cvbuilder/dto/UpdateCvRequest.class
 com/cvbuilder/entity/Experience.class
+com/cvbuilder/controller/PdfController.class

@@ -9,7 +9,7 @@ import { EducationList } from './EducationList';
 import { SkillList } from './SkillList';
 import { ProjectList } from './ProjectList';
 import { TemplateSelector } from './TemplateSelector';
-import { CvPreview } from '../templates/CvPreview';
+import { MultiPagePreview, PAGE_HEIGHT, PAGE_WIDTH } from '../templates/CvPreview';
 import { ConfirmDialog } from './ConfirmDialog';
 
 interface CvEditorProps {
@@ -461,21 +461,23 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
               +
             </button>
           </div>
-          <div className={`flex-1 overflow-auto p-8 flex justify-center 
+          <div className={`flex-1 overflow-y-auto overflow-x-hidden flex flex-col items-center py-8
           ${isDark
       ? 'bg-slate-900 bg-[radial-gradient(#2f2f38_1px,transparent_1px)] [background-size:20px_20px]'
       : 'bg-gray-200 bg-[radial-gradient(#bdbdbd_1px,transparent_1px)] [background-size:20px_20px]'
   }`}
 >
             <div
-              className="origin-top"
+              className="origin-top-left"
               style={{
                 transform: `scale(${previewZoom / 100})`,
+                width: `${PAGE_WIDTH}px`,
+                height: `${PAGE_HEIGHT}px`,
+                flexShrink: 0,
+                overflow: 'hidden',
               }}
             >
-              <div className="paper-surface shadow-2xl">
-                <CvPreview cv={previewCv} />
-              </div>
+              <MultiPagePreview cv={previewCv} />
             </div>
           </div>
         </div>
