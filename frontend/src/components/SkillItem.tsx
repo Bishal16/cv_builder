@@ -14,7 +14,7 @@ export function SkillItem({ skill, onChange, onRemove }: SkillItemProps) {
   const levels = ['', 'Beginner', 'Intermediate', 'Advanced', 'Expert'];
 
   return (
-    <div className="flex gap-3 items-center p-3 card">
+    <div className="card flex items-center gap-2.5 p-2.5">
       <div className="flex-1">
         <input
           type="text"
@@ -24,7 +24,7 @@ export function SkillItem({ skill, onChange, onRemove }: SkillItemProps) {
           placeholder="Skill name"
         />
       </div>
-      <div className="w-44">
+      <div className="w-40">
         <select
           value={skill.level}
           onChange={(e) => handleChange('level', e.target.value)}
@@ -39,7 +39,7 @@ export function SkillItem({ skill, onChange, onRemove }: SkillItemProps) {
       </div>
       <button
         onClick={onRemove}
-        className="text-rose-500 hover:text-rose-600 p-2"
+        className="rounded-lg p-1.5 text-rose-500 transition-colors hover:bg-rose-500/10 hover:text-rose-600"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

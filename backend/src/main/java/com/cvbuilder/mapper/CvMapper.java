@@ -3,10 +3,14 @@ package com.cvbuilder.mapper;
 import com.cvbuilder.dto.*;
 import com.cvbuilder.entity.*;
 import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
 public class CvMapper {
+
+    private static final List<String> DEFAULT_SECTION_ORDER = List.of("personal", "experience", "education", "skills", "projects");
 
     public CvDto toDto(Cv cv) {
         if (cv == null) return null;
@@ -15,6 +19,7 @@ public class CvMapper {
         dto.setId(cv.getId());
         dto.setTitle(cv.getTitle());
         dto.setTemplateId(cv.getTemplateId());
+        dto.setSectionOrder(normalizeSectionOrder(cv.getSectionOrder()));
         dto.setCreatedAt(cv.getCreatedAt());
         dto.setUpdatedAt(cv.getUpdatedAt());
         
@@ -24,6 +29,8 @@ public class CvMapper {
             personalInfo.setEmail(cv.getPersonalInfo().getEmail());
             personalInfo.setPhone(cv.getPersonalInfo().getPhone());
             personalInfo.setLocation(cv.getPersonalInfo().getLocation());
+            personalInfo.setLinkedinUrl(cv.getPersonalInfo().getLinkedinUrl());
+            personalInfo.setGithubUrl(cv.getPersonalInfo().getGithubUrl());
             personalInfo.setSummary(cv.getPersonalInfo().getSummary());
             dto.setPersonalInfo(personalInfo);
         }
@@ -61,6 +68,7 @@ public class CvMapper {
         Cv cv = new Cv();
         cv.setTitle(request.getTitle());
         cv.setTemplateId(request.getTemplateId());
+        cv.setSectionOrder(normalizeSectionOrder(request.getSectionOrder()));
         
         if (request.getPersonalInfo() != null) {
             PersonalInfo personalInfo = new PersonalInfo();
@@ -68,6 +76,8 @@ public class CvMapper {
             personalInfo.setEmail(request.getPersonalInfo().getEmail());
             personalInfo.setPhone(request.getPersonalInfo().getPhone());
             personalInfo.setLocation(request.getPersonalInfo().getLocation());
+            personalInfo.setLinkedinUrl(request.getPersonalInfo().getLinkedinUrl());
+            personalInfo.setGithubUrl(request.getPersonalInfo().getGithubUrl());
             personalInfo.setSummary(request.getPersonalInfo().getSummary());
             cv.setPersonalInfo(personalInfo);
         }
@@ -108,12 +118,17 @@ public class CvMapper {
         if (request.getTemplateId() != null) {
             cv.setTemplateId(request.getTemplateId());
         }
+        if (request.getSectionOrder() != null) {
+            cv.setSectionOrder(normalizeSectionOrder(request.getSectionOrder()));
+        }
         if (request.getPersonalInfo() != null) {
             PersonalInfo personalInfo = new PersonalInfo();
             personalInfo.setName(request.getPersonalInfo().getName());
             personalInfo.setEmail(request.getPersonalInfo().getEmail());
             personalInfo.setPhone(request.getPersonalInfo().getPhone());
             personalInfo.setLocation(request.getPersonalInfo().getLocation());
+            personalInfo.setLinkedinUrl(request.getPersonalInfo().getLinkedinUrl());
+            personalInfo.setGithubUrl(request.getPersonalInfo().getGithubUrl());
             personalInfo.setSummary(request.getPersonalInfo().getSummary());
             cv.setPersonalInfo(personalInfo);
         }
@@ -221,5 +236,22 @@ public class CvMapper {
         proj.setUrl(dto.getUrl());
         proj.setCv(cv);
         return proj;
+    }
+
+    private List<String> normalizeSectionOrder(List<String> sectionOrder) {
+        List<String> normalized = new ArrayList<>();
+        if (sectionOrder != null) {
+            for (String section : sectionOrder) {
+                if (DEFAULT_SECTION_ORDER.contains(section) && !normalized.contains(section)) {
+                    normalized.add(section);
+                }
+            }
+        }
+        for (String section : DEFAULT_SECTION_ORDER) {
+            if (!normalized.contains(section)) {
+                normalized.add(section);
+            }
+        }
+        return normalized;
     }
 }

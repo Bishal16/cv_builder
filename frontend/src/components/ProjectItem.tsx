@@ -22,16 +22,16 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
   };
 
   return (
-    <div className="card p-5">
-      <div className="flex justify-end mb-4">
+    <div className="card p-4">
+      <div className="mb-3 flex justify-end">
         <button
           onClick={onRemove}
-          className="text-rose-500 hover:text-rose-600 text-sm font-medium"
+          className="text-xs font-semibold uppercase tracking-[0.08em] text-rose-500 transition-colors hover:text-rose-600"
         >
           Remove
         </button>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div>
           <label className="form-label">Project Name</label>
           <input

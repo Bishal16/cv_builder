@@ -10,7 +10,7 @@ interface CvState {
   loadCvs: () => Promise<void>;
   selectCv: (id: string) => Promise<void>;
   createCv: (data: CreateCvData) => Promise<Cv>;
-  updateCv: (id: string, data: UpdateCvData) => Promise<void>;
+  updateCv: (id: string, data: UpdateCvData) => Promise<Cv>;
   deleteCv: (id: string) => Promise<void>;
 }
 
@@ -61,6 +61,7 @@ export const useCvStore = create<CvState>((set) => ({
         currentCv: state.currentCv?.id === id ? cv : state.currentCv,
         loading: false,
       }));
+      return cv;
     } catch (err) {
       const message = (err as Error).message;
       set({ error: message, loading: false });

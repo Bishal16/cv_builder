@@ -1,6 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import type { CVFormData, TemplateId, Experience, Education, Skill, Project, PersonalInfo, Cv } from '../types/cv';
+import {
+  DEFAULT_SECTION_ORDER,
+  normalizeSectionOrder,
+  type CVFormData,
+  type TemplateId,
+  type SectionId,
+  type Experience,
+  type Education,
+  type Skill,
+  type Project,
+  type PersonalInfo,
+  type Cv,
+} from '../types/cv';
 import { useCvStore } from '../store/cvStore';
 import { useThemeStore } from '../store/themeStore';
 import { PersonalInfoForm } from './PersonalInfoForm';
@@ -20,17 +32,69 @@ interface CvEditorProps {
 const defaultFormData: CVFormData = {
   title: 'My CV',
   templateId: 'CLASSIC',
+  sectionOrder: [...DEFAULT_SECTION_ORDER],
   personalInfo: {
     name: '',
     email: '',
     phone: '',
     location: '',
+    linkedinUrl: '',
+    githubUrl: '',
     summary: '',
   },
   experiences: [],
   educations: [],
   skills: [],
   projects: [],
+};
+
+const normalizeSkillLevel = (value: unknown): Skill['level'] => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  switch (value.trim().toLowerCase()) {
+    case 'beginner':
+      return 'Beginner';
+    case 'intermediate':
+      return 'Intermediate';
+    case 'advanced':
+      return 'Advanced';
+    case 'expert':
+      return 'Expert';
+    default:
+      return '';
+  }
+};
+
+const toFormData = (cv: Cv): CVFormData => ({
+  title: cv.title,
+  templateId: cv.templateId as TemplateId,
+  sectionOrder: normalizeSectionOrder(cv.sectionOrder),
+  personalInfo: {
+    name: cv.personalInfo?.name ?? '',
+    email: cv.personalInfo?.email ?? '',
+    phone: cv.personalInfo?.phone ?? '',
+    location: cv.personalInfo?.location ?? '',
+    linkedinUrl: cv.personalInfo?.linkedinUrl ?? '',
+    githubUrl: cv.personalInfo?.githubUrl ?? '',
+    summary: cv.personalInfo?.summary ?? '',
+  },
+  experiences: cv.experiences ?? [],
+  educations: cv.educations ?? [],
+  skills: (cv.skills ?? []).map((skill) => ({
+    ...skill,
+    level: normalizeSkillLevel(skill.level),
+  })),
+  projects: cv.projects ?? [],
+});
+
+const SECTION_DEFINITIONS: Record<SectionId, { label: string; icon: string }> = {
+  personal: { label: 'Identity', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+  experience: { label: 'Experience', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+  education: { label: 'Education', icon: 'M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z' },
+  skills: { label: 'Skills', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+  projects: { label: 'Projects', icon: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z' },
 };
 
 export function CvEditor({ cvId, onBack }: CvEditorProps) {
@@ -46,26 +110,26 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const [previewZoom, setPreviewZoom] = useState(100);
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string>(JSON.stringify(defaultFormData));
   const [showUnsavedLeaveWarning, setShowUnsavedLeaveWarning] = useState(false);
+  const [hydratedCvId, setHydratedCvId] = useState<string | null>(null);
+  const [draggedSection, setDraggedSection] = useState<SectionId | null>(null);
 
   const currentSnapshot = useMemo(() => JSON.stringify(formData), [formData]);
   const hasUnsavedChanges = currentSnapshot !== lastSavedSnapshot;
 
   useEffect(() => {
-    if (cv) {
-      const loadedFormData: CVFormData = {
-        title: cv.title,
-        templateId: cv.templateId as TemplateId,
-        personalInfo: cv.personalInfo,
-        experiences: cv.experiences,
-        educations: cv.educations,
-        skills: cv.skills,
-        projects: cv.projects,
-      };
+    setHydratedCvId(null);
+  }, [cvId]);
 
-      setFormData(loadedFormData);
-      setLastSavedSnapshot(JSON.stringify(loadedFormData));
+  useEffect(() => {
+    if (!cv || hydratedCvId === cv.id) {
+      return;
     }
-  }, [cv]);
+
+    const loadedFormData = toFormData(cv);
+    setFormData(loadedFormData);
+    setLastSavedSnapshot(JSON.stringify(loadedFormData));
+    setHydratedCvId(cv.id);
+  }, [cv, hydratedCvId]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -163,8 +227,14 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const handleSave = async () => {
     if (cvId) {
       try {
-        await updateCv(cvId, formData);
-        setLastSavedSnapshot(currentSnapshot);
+        const attemptedSnapshot = currentSnapshot;
+        const savedCv = await updateCv(cvId, formData);
+        const savedSnapshot = JSON.stringify(toFormData(savedCv));
+        setLastSavedSnapshot(savedSnapshot);
+        if (savedSnapshot !== attemptedSnapshot) {
+          toast.error('Some fields were not saved. Please restart backend and try again.');
+          return;
+        }
         toast.success('Saved successfully');
       } catch {
         toast.error('Save failed');
@@ -175,8 +245,14 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const handleDownloadPdf = async () => {
     const loadingToast = toast.loading('Generating PDF...');
     try {
-      await updateCv(cvId, formData);
-      setLastSavedSnapshot(currentSnapshot);
+      const attemptedSnapshot = currentSnapshot;
+      const savedCv = await updateCv(cvId, formData);
+      const savedSnapshot = JSON.stringify(toFormData(savedCv));
+      setLastSavedSnapshot(savedSnapshot);
+      if (savedSnapshot !== attemptedSnapshot) {
+        toast.error('Export blocked because latest edits were not saved', { id: loadingToast });
+        return;
+      }
       window.open(`/api/cv/${cvId}/export/pdf?t=${Date.now()}`, '_blank');
       toast.success('PDF ready', { id: loadingToast });
     } catch {
@@ -222,6 +298,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     id: cvId,
     title: formData.title,
     templateId: formData.templateId,
+    sectionOrder: formData.sectionOrder,
     personalInfo: formData.personalInfo,
     experiences: formData.experiences,
     educations: formData.educations,
@@ -231,13 +308,27 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     updatedAt: new Date().toISOString(),
   };
 
-  const sections: { id: string; label: string; icon: string }[] = [
-    { id: 'personal', label: 'Identity', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-    { id: 'experience', label: 'Experience', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-    { id: 'education', label: 'Education', icon: 'M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z' },
-    { id: 'skills', label: 'Skills', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-    { id: 'projects', label: 'Projects', icon: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z' },
-  ];
+  const sections = normalizeSectionOrder(formData.sectionOrder).map((id) => ({
+    id,
+    ...SECTION_DEFINITIONS[id],
+  }));
+
+  const moveSection = (sourceSection: SectionId, targetSection: SectionId) => {
+    if (sourceSection === targetSection) {
+      return;
+    }
+
+    const order = [...normalizeSectionOrder(formData.sectionOrder)];
+    const sourceIndex = order.indexOf(sourceSection);
+    const targetIndex = order.indexOf(targetSection);
+    if (sourceIndex < 0 || targetIndex < 0) {
+      return;
+    }
+
+    order.splice(sourceIndex, 1);
+    order.splice(targetIndex, 0, sourceSection);
+    setFormData({ ...formData, sectionOrder: order });
+  };
 
   const isDark = theme === 'dark';
   const floatingZoomContainerClass =
@@ -308,14 +399,51 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           </div>
 
           <div className="space-y-3">
+            <p className="px-1 text-xs text-text-dim">Drag sections to reorder how they appear in your CV.</p>
             {sections.map((section) => (
-              <div key={section.id} className="card overflow-hidden">
+              <div
+                key={section.id}
+                className={`card overflow-hidden transition-colors ${draggedSection === section.id ? 'opacity-75' : ''}`}
+                draggable
+                onDragStart={(event) => {
+                  setDraggedSection(section.id);
+                  event.dataTransfer.effectAllowed = 'move';
+                  event.dataTransfer.setData('text/plain', section.id);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = 'move';
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  const source = (event.dataTransfer.getData('text/plain') || draggedSection) as SectionId | null;
+                  if (source) {
+                    moveSection(source, section.id);
+                  }
+                  setDraggedSection(null);
+                }}
+                onDragEnd={() => setDraggedSection(null)}
+              >
                 <button
                   type="button"
                   onClick={() => toggleSection(section.id)}
                   className={`w-full flex items-center justify-between p-4 transition-all ${expandedSection === section.id ? '' : ''}`}
                 >
                   <div className="flex items-center gap-3">
+                    <span
+                      className="cursor-grab text-text-dim active:cursor-grabbing"
+                      title="Drag to reorder section"
+                      aria-hidden="true"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="8" cy="6" r="1.5" />
+                        <circle cx="8" cy="12" r="1.5" />
+                        <circle cx="8" cy="18" r="1.5" />
+                        <circle cx="16" cy="6" r="1.5" />
+                        <circle cx="16" cy="12" r="1.5" />
+                        <circle cx="16" cy="18" r="1.5" />
+                      </svg>
+                    </span>
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDark ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary'}`}>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={section.icon} />

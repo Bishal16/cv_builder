@@ -4,6 +4,7 @@ import { CvEditor } from './components/CvEditor'
 import { CvPrintView } from './components/CvPrintView'
 import { useCvStore } from './store/cvStore'
 import { useThemeStore } from './store/themeStore'
+import { DEFAULT_SECTION_ORDER } from './types/cv'
 
 function App() {
   const [selectedCvId, setSelectedCvId] = useState<string | null>(null)
@@ -52,11 +53,14 @@ function App() {
     const newCv = await createCv({
       title: 'My CV',
       templateId: 'CLASSIC',
+      sectionOrder: [...DEFAULT_SECTION_ORDER],
       personalInfo: {
         name: '',
         email: '',
         phone: '',
         location: '',
+        linkedinUrl: '',
+        githubUrl: '',
         summary: ''
       },
       experiences: [],

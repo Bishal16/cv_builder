@@ -22,17 +22,17 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
   };
 
   return (
-    <div className="card p-5">
-      <div className="flex justify-between items-start mb-4">
+    <div className="card p-4">
+      <div className="mb-3 flex items-start justify-between">
         <span className="text-xs font-mono text-text-dim">#{experience.id.substring(0, 4)}</span>
         <button
           onClick={onRemove}
-          className="text-rose-500 hover:text-rose-600 text-sm font-medium"
+          className="text-xs font-semibold uppercase tracking-[0.08em] text-rose-500 transition-colors hover:text-rose-600"
         >
           Remove
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <label className="form-label">Company</label>
           <input
@@ -74,7 +74,7 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
           />
         </div>
       </div>
-      <div className="mt-4">
+      <div className="mt-3">
         <label className="form-label">Description</label>
         <div className="rich-text-editor sm">
           <ReactQuill

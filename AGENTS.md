@@ -64,12 +64,22 @@ cv_builder/
 npm install          # Install deps (DO THIS FIRST)
 npm run dev          # Dev server → http://localhost:5173
 npm run build        # Production build
+npm run lint         # ESLint check
 ```
 
 ### Backend (from `backend/`)
 ```bash
 mvn clean compile    # Compile
-mvn spring-boot:run  # Run (port 8081)
+mvn spring-boot:run # Run (port 8081)
+mvn test            # Run tests
+```
+
+### PDF Export Setup
+```bash
+# Install Chromium (required for PDF export)
+mvn -q org.codehaus.mojo:exec-maven-plugin:3.1.0:java \
+  -Dexec.mainClass=com.microsoft.playwright.CLI \
+  -Dexec.args="install chromium"
 ```
 
 ## API Design (REST)

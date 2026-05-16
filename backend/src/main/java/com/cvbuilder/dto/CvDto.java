@@ -16,6 +16,7 @@ public class CvDto {
     private List<EducationDto> educations;
     private List<SkillDto> skills;
     private List<ProjectDto> projects;
+    private List<String> sectionOrder;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -35,6 +36,8 @@ public class CvDto {
     public void setSkills(List<SkillDto> skills) { this.skills = skills; }
     public List<ProjectDto> getProjects() { return projects; }
     public void setProjects(List<ProjectDto> projects) { this.projects = projects; }
+    public List<String> getSectionOrder() { return sectionOrder; }
+    public void setSectionOrder(List<String> sectionOrder) { this.sectionOrder = sectionOrder; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

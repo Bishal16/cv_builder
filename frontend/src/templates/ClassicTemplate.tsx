@@ -1,5 +1,6 @@
 import type { Cv } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
+import { getOrderedContentSections } from './sectionOrder';
 
 interface ClassicTemplateProps {
   cv: Cv;
@@ -99,8 +100,28 @@ const styles = {
   } as React.CSSProperties,
 };
 
+const toExternalUrl = (value: string): string =>
+  /^https?:\/\//i.test(value) ? value : `https://${value}`;
+const toDisplayUrl = (value: string): string =>
+  value.replace(/^https?:\/\//i, '');
+
 export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }: ClassicTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
+  const orderedContentSections = getOrderedContentSections(cv);
+  const rankBySection = (section: 'experience' | 'education' | 'skills' | 'projects'): number => {
+    const rank = orderedContentSections.indexOf(section);
+    return rank === -1 ? Number.MAX_SAFE_INTEGER : rank;
+  };
+
+  const sidebarSections = ['skills', 'education'] as const;
+  const orderedSidebarSections = [...sidebarSections].sort(
+    (a, b) => rankBySection(a) - rankBySection(b),
+  );
+
+  const mainSections = ['experience', 'projects'] as const;
+  const orderedMainSections = [...mainSections].sort(
+    (a, b) => rankBySection(a) - rankBySection(b),
+  );
 
   return (
     <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
@@ -110,33 +131,59 @@ export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }
           {personalInfo.email && <span style={{ wordBreak: 'break-all' }}>{personalInfo.email}</span>}
           {personalInfo.phone && <span style={{ wordBreak: 'break-all' }}>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
+          {personalInfo.linkedinUrl && (
+            <a
+              href={toExternalUrl(personalInfo.linkedinUrl)}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: '#2b6cb0', wordBreak: 'break-all' }}
+            >
+              {toDisplayUrl(personalInfo.linkedinUrl)}
+            </a>
+          )}
+          {personalInfo.githubUrl && (
+            <a
+              href={toExternalUrl(personalInfo.githubUrl)}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: '#2b6cb0', wordBreak: 'break-all' }}
+            >
+              {toDisplayUrl(personalInfo.githubUrl)}
+            </a>
+          )}
         </div>
       </header>
 
       <div style={styles.content}>
         <aside style={styles.sidebar}>
-          <section>
-            <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Skills</h2>
-            {skills.map((skill) => (
-              <div key={skill.id} style={{ ...styles.body, marginBottom: '8px' }}>
-                <span style={{ fontWeight: '500' }}>{skill.name}</span>
-                {skill.level && (
-                  <span style={styles.skillLevel}>({skill.level})</span>
-                )}
-              </div>
-            ))}
-          </section>
-
-          <section style={{ marginTop: '24px' }}>
-            <h2 style={styles.sectionTitle}>Education</h2>
-            {educations.map((edu) => (
-              <div key={edu.id} style={{ marginBottom: '16px' }}>
-                <div style={{ fontWeight: '500' }}>{edu.institution}</div>
-                <div style={{ fontSize: '11px', color: '#4a5568' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
-                <div style={{ fontSize: '10px', color: '#718096' }}>{edu.graduationYear}</div>
-              </div>
-            ))}
-          </section>
+          {orderedSidebarSections.map((sectionId, index) => (
+            <section key={sectionId} style={{ marginTop: index === 0 ? 0 : '24px' }}>
+              {sectionId === 'skills' ? (
+                <>
+                  <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Skills</h2>
+                  {skills.map((skill) => (
+                    <div key={skill.id} style={{ ...styles.body, marginBottom: '8px' }}>
+                      <span style={{ fontWeight: '500' }}>{skill.name}</span>
+                      {skill.level && (
+                        <span style={styles.skillLevel}>({skill.level})</span>
+                      )}
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Education</h2>
+                  {educations.map((edu) => (
+                    <div key={edu.id} style={{ marginBottom: '16px' }}>
+                      <div style={{ fontWeight: '500' }}>{edu.institution}</div>
+                      <div style={{ fontSize: '11px', color: '#4a5568' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
+                      <div style={{ fontSize: '10px', color: '#718096' }}>{edu.graduationYear}</div>
+                    </div>
+                  ))}
+                </>
+              )}
+            </section>
+          ))}
         </aside>
 
         <main style={styles.main}>
@@ -151,50 +198,60 @@ export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }
             </section>
           )}
 
-          <section>
-            <h2 style={styles.sectionTitle}>Experience</h2>
-            {experiences.map((exp) => (
-              <div key={exp.id} style={{ marginBottom: '16px' }}>
-                <div style={styles.roleDate}>
-                  <span style={styles.role}>{exp.role}</span>
-                  <span style={styles.date}>{exp.startDate} - {exp.endDate || 'Present'}</span>
-                </div>
-                <div style={{ ...styles.muted, fontSize: '11px' }}>{exp.company}</div>
-                <div style={{ marginTop: '4px' }}>
-                  <div
-                    className="cv-rich-text"
-                    style={styles.richText}
-                    dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
-                  />
-                </div>
-              </div>
-            ))}
-          </section>
+          {orderedMainSections.map((sectionId) => {
+            if (sectionId === 'projects' && projects.length === 0) {
+              return null;
+            }
 
-          {projects.length > 0 && (
-            <section>
-              <h2 style={styles.sectionTitle}>Projects</h2>
-              {projects.map((project) => (
-                <div key={project.id} style={{ marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
-                    <span style={{ fontWeight: '500', fontSize: '12px' }}>{project.name}</span>
-                    {project.url && (
-                      <span style={{ fontSize: '10px', color: '#3182ce', maxWidth: '180px', wordBreak: 'break-all', textAlign: 'right' }}>
-                        {project.url}
-                      </span>
-                    )}
+            if (sectionId === 'experience') {
+              return (
+                <section key="experience">
+                  <h2 style={styles.sectionTitle}>Experience</h2>
+                  {experiences.map((exp) => (
+                    <div key={exp.id} style={{ marginBottom: '16px' }}>
+                      <div style={styles.roleDate}>
+                        <span style={styles.role}>{exp.role}</span>
+                        <span style={styles.date}>{exp.startDate} - {exp.endDate || 'Present'}</span>
+                      </div>
+                      <div style={{ ...styles.muted, fontSize: '11px' }}>{exp.company}</div>
+                      <div style={{ marginTop: '4px' }}>
+                        <div
+                          className="cv-rich-text"
+                          style={styles.richText}
+                          dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </section>
+              );
+            }
+
+            return (
+              <section key="projects">
+                <h2 style={styles.sectionTitle}>Projects</h2>
+                {projects.map((project) => (
+                  <div key={project.id} style={{ marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
+                      <span style={{ fontWeight: '500', fontSize: '12px' }}>{project.name}</span>
+                      {project.url && (
+                        <span style={{ fontSize: '10px', color: '#3182ce', maxWidth: '180px', wordBreak: 'break-all', textAlign: 'right' }}>
+                          {project.url}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <div
+                        className="cv-rich-text"
+                        style={styles.richText}
+                        dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <div
-                      className="cv-rich-text"
-                      style={styles.richText}
-                      dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </section>
-          )}
+                ))}
+              </section>
+            );
+          })}
         </main>
       </div>
     </div>

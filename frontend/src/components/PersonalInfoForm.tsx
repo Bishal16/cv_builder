@@ -21,8 +21,8 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="form-label">Full Name</label>
           <input
@@ -63,8 +63,28 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
             placeholder="New York, NY"
           />
         </div>
+        <div>
+          <label className="form-label">LinkedIn URL</label>
+          <input
+            type="url"
+            value={personalInfo.linkedinUrl}
+            onChange={(e) => handleChange('linkedinUrl', e.target.value)}
+            className="input-field"
+            placeholder="https://linkedin.com/in/your-handle"
+          />
+        </div>
+        <div>
+          <label className="form-label">GitHub URL</label>
+          <input
+            type="url"
+            value={personalInfo.githubUrl}
+            onChange={(e) => handleChange('githubUrl', e.target.value)}
+            className="input-field"
+            placeholder="https://github.com/your-username"
+          />
+        </div>
       </div>
-      <div>
+      <div className="pt-1">
         <label className="form-label">Professional Summary</label>
         <div className="rich-text-editor">
           <ReactQuill

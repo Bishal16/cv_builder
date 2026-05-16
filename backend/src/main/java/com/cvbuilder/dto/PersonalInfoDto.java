@@ -8,6 +8,8 @@ public class PersonalInfoDto {
     private String email;
     private String phone;
     private String location;
+    private String linkedinUrl;
+    private String githubUrl;
     private String summary;
 
     public String getName() { return name; }
@@ -18,6 +20,10 @@ public class PersonalInfoDto {
     public void setPhone(String phone) { this.phone = phone; }
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+    public String getLinkedinUrl() { return linkedinUrl; }
+    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
+    public String getGithubUrl() { return githubUrl; }
+    public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
     public String getSummary() { return summary; }
     public void setSummary(String summary) { this.summary = summary; }
 }

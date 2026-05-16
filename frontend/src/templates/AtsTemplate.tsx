@@ -1,5 +1,6 @@
 import type { Cv } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
+import { getOrderedContentSections, type ContentSectionId } from './sectionOrder';
 
 interface AtsTemplateProps {
   cv: Cv;
@@ -96,37 +97,25 @@ const styles = {
   } as React.CSSProperties,
 };
 
+const toExternalUrl = (value: string): string =>
+  /^https?:\/\//i.test(value) ? value : `https://${value}`;
+const toDisplayUrl = (value: string): string =>
+  value.replace(/^https?:\/\//i, '');
+
 export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: AtsTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
 
-  const contactItems = [personalInfo.email, personalInfo.phone, personalInfo.location].filter(Boolean);
+  const contactItems: Array<{ label: string; href?: string }> = [
+    personalInfo.email ? { label: personalInfo.email } : null,
+    personalInfo.phone ? { label: personalInfo.phone } : null,
+    personalInfo.location ? { label: personalInfo.location } : null,
+    personalInfo.linkedinUrl ? { label: toDisplayUrl(personalInfo.linkedinUrl), href: toExternalUrl(personalInfo.linkedinUrl) } : null,
+    personalInfo.githubUrl ? { label: toDisplayUrl(personalInfo.githubUrl), href: toExternalUrl(personalInfo.githubUrl) } : null,
+  ].filter((item): item is { label: string; href?: string } => item !== null);
 
-  return (
-    <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
-      <header style={styles.header}>
-        <h1 style={styles.name}>{personalInfo.name || 'Your Name'}</h1>
-        <p style={styles.contact}>
-          {contactItems.map((text, i) => (
-            <span key={text}>
-              {i > 0 && ' | '}
-              <span style={{ wordBreak: 'break-all' }}>{text}</span>
-            </span>
-          ))}
-        </p>
-      </header>
-
-      {personalInfo.summary && (
-        <section>
-          <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Professional Summary</h2>
-          <div
-            className="cv-rich-text"
-            style={styles.richText}
-            dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
-          />
-        </section>
-      )}
-
-      <section>
+  const sectionNodes: Record<ContentSectionId, React.ReactNode> = {
+    experience: (
+      <section key="experience">
         <h2 style={styles.sectionTitle}>Work Experience</h2>
         {experiences.map((exp) => (
           <div key={exp.id} style={styles.expItem}>
@@ -143,8 +132,9 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
           </div>
         ))}
       </section>
-
-      <section>
+    ),
+    education: (
+      <section key="education">
         <h2 style={styles.sectionTitle}>Education</h2>
         {educations.map((edu) => (
           <div key={edu.id} style={{ marginBottom: '8px' }}>
@@ -156,36 +146,73 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
           </div>
         ))}
       </section>
-
-      <section>
+    ),
+    skills: (
+      <section key="skills">
         <h2 style={styles.sectionTitle}>Skills</h2>
         <p style={styles.skillsText}>
           {skills.map((s) => s.name).join(', ')}
         </p>
       </section>
-
-      {projects.length > 0 && (
-        <section>
-          <h2 style={styles.sectionTitle}>Projects</h2>
-          {projects.map((project) => (
-            <div key={project.id} style={{ marginBottom: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '12px' }}>{project.name}</span>
-                {project.url && (
-                  <span style={{ fontSize: '10px', color: '#333333', wordBreak: 'break-all' }}>
-                    {project.url}
-                  </span>
-                )}
-              </div>
-              <div
-                className="cv-rich-text"
-                style={styles.richText}
-                dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
-              />
+    ),
+    projects: projects.length > 0 ? (
+      <section key="projects">
+        <h2 style={styles.sectionTitle}>Projects</h2>
+        {projects.map((project) => (
+          <div key={project.id} style={{ marginBottom: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '16px' }}>
+              <span style={{ fontWeight: 'bold', fontSize: '12px' }}>{project.name}</span>
+              {project.url && (
+                <span style={{ fontSize: '10px', color: '#333333', wordBreak: 'break-all' }}>
+                  {project.url}
+                </span>
+              )}
             </div>
+            <div
+              className="cv-rich-text"
+              style={styles.richText}
+              dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
+            />
+          </div>
+        ))}
+      </section>
+    ) : null,
+  };
+
+  const orderedSections = getOrderedContentSections(cv).filter((section) => sectionNodes[section] !== null);
+
+  return (
+    <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
+      <header style={styles.header}>
+        <h1 style={styles.name}>{personalInfo.name || 'Your Name'}</h1>
+        <p style={styles.contact}>
+          {contactItems.map((item, i) => (
+            <span key={`${item.label}-${i}`}>
+              {i > 0 && ' | '}
+              {item.href ? (
+                <a href={item.href} target="_blank" rel="noreferrer" style={{ color: '#1f2937' }}>
+                  <span style={{ wordBreak: 'break-all' }}>{item.label}</span>
+                </a>
+              ) : (
+                <span style={{ wordBreak: 'break-all' }}>{item.label}</span>
+              )}
+            </span>
           ))}
+        </p>
+      </header>
+
+      {personalInfo.summary && (
+        <section>
+          <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Professional Summary</h2>
+          <div
+            className="cv-rich-text"
+            style={styles.richText}
+            dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
+          />
         </section>
       )}
+
+      {orderedSections.map((section) => sectionNodes[section])}
     </div>
   );
 }

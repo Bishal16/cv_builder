@@ -36,6 +36,12 @@ public class Cv {
     @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Project> projects = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "cv_section_order", joinColumns = @JoinColumn(name = "cv_id"))
+    @Column(name = "section_key")
+    @OrderColumn(name = "sort_index")
+    private List<String> sectionOrder = new ArrayList<>(List.of("personal", "experience", "education", "skills", "projects"));
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -58,6 +64,8 @@ public class Cv {
     public void setSkills(List<Skill> skills) { this.skills = skills; }
     public List<Project> getProjects() { return projects; }
     public void setProjects(List<Project> projects) { this.projects = projects; }
+    public List<String> getSectionOrder() { return sectionOrder; }
+    public void setSectionOrder(List<String> sectionOrder) { this.sectionOrder = sectionOrder; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

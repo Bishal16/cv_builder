@@ -13,15 +13,15 @@ export function EducationItem({ education, onChange, onRemove }: EducationItemPr
 
   return (
     <div className="card p-4">
-      <div className="flex justify-end mb-3">
+      <div className="mb-3 flex justify-end">
         <button
           onClick={onRemove}
-          className="text-rose-500 hover:text-rose-600 text-sm font-medium"
+          className="text-xs font-semibold uppercase tracking-[0.08em] text-rose-500 transition-colors hover:text-rose-600"
         >
           Remove
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <label className="form-label">Institution</label>
           <input

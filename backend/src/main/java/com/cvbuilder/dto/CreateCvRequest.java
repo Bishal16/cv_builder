@@ -13,6 +13,7 @@ public class CreateCvRequest {
     private List<EducationDto> educations;
     private List<SkillDto> skills;
     private List<ProjectDto> projects;
+    private List<String> sectionOrder;
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -28,4 +29,6 @@ public class CreateCvRequest {
     public void setSkills(List<SkillDto> skills) { this.skills = skills; }
     public List<ProjectDto> getProjects() { return projects; }
     public void setProjects(List<ProjectDto> projects) { this.projects = projects; }
+    public List<String> getSectionOrder() { return sectionOrder; }
+    public void setSectionOrder(List<String> sectionOrder) { this.sectionOrder = sectionOrder; }
 }

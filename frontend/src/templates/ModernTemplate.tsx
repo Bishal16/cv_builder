@@ -1,5 +1,6 @@
 import type { Cv } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
+import { getOrderedContentSections, type ContentSectionId } from './sectionOrder';
 
 interface ModernTemplateProps {
   cv: Cv;
@@ -144,8 +145,112 @@ const styles = {
   } as React.CSSProperties,
 };
 
+const toExternalUrl = (value: string): string =>
+  /^https?:\/\//i.test(value) ? value : `https://${value}`;
+const toDisplayUrl = (value: string): string =>
+  value.replace(/^https?:\/\//i, '');
+
 export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }: ModernTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
+  const orderedSections = getOrderedContentSections(cv).filter(
+    (section) => section !== 'projects' || projects.length > 0,
+  );
+  const sectionRows: ContentSectionId[][] = [];
+  for (let i = 0; i < orderedSections.length; i += 2) {
+    sectionRows.push(orderedSections.slice(i, i + 2));
+  }
+
+  const renderSection = (sectionId: ContentSectionId): React.ReactNode => {
+    if (sectionId === 'skills') {
+      return (
+        <section>
+          <h2 style={{ ...styles.sectionTitle, borderBottom: 'none', marginBottom: '8px' }}>
+            <span style={{ ...styles.dot, backgroundColor: '#3b82f6' }} />
+            Skills
+          </h2>
+          <div>
+            {skills.map((skill) => (
+              <div key={skill.id} style={styles.skillPill}>
+                <span style={{ fontWeight: '500' }}>{skill.name}</span>
+                {skill.level && (
+                  <div style={{ fontSize: '9px', color: '#6b7280' }}>{skill.level}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    if (sectionId === 'experience') {
+      return (
+        <section>
+          <h2 style={styles.sectionTitle}>
+            <span style={{ ...styles.dot, backgroundColor: '#6366f1' }} />
+            Experience
+          </h2>
+          {experiences.map((exp) => (
+            <div key={exp.id} style={styles.expCard}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px', gap: '16px' }}>
+                <span style={styles.role}>{exp.role}</span>
+                <span style={styles.date}>{exp.startDate} - {exp.endDate || 'Present'}</span>
+              </div>
+              <p style={styles.company}>{exp.company}</p>
+              <div
+                className="cv-rich-text"
+                style={styles.richText}
+                dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
+              />
+            </div>
+          ))}
+        </section>
+      );
+    }
+
+    if (sectionId === 'education') {
+      return (
+        <section>
+          <h2 style={{ ...styles.sectionTitle, color: '#92400e' }}>
+            <span style={{ ...styles.dot, backgroundColor: '#f59e0b' }} />
+            Education
+          </h2>
+          {educations.map((edu) => (
+            <div key={edu.id} style={styles.eduCard}>
+              <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{edu.institution}</div>
+              <div style={{ fontSize: '11px', color: '#475569' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
+              <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>{edu.graduationYear}</div>
+            </div>
+          ))}
+        </section>
+      );
+    }
+
+    return (
+      <section>
+        <h2 style={{ ...styles.sectionTitle, color: '#065f46' }}>
+          <span style={{ ...styles.dot, backgroundColor: '#059669' }} />
+          Projects
+        </h2>
+        {projects.map((project) => (
+          <div key={project.id} style={styles.projectCard}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '4px' }}>
+              <span style={{ fontWeight: '500', fontSize: '12px' }}>{project.name}</span>
+              {project.url && (
+                <span style={{ fontSize: '10px', color: '#6b7280', maxWidth: '180px', wordBreak: 'break-all', textAlign: 'right' }}>
+                  {project.url}
+                </span>
+              )}
+            </div>
+            <div
+              className="cv-rich-text"
+              style={styles.richText}
+              dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
+            />
+          </div>
+        ))}
+      </section>
+    );
+  };
 
   return (
     <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
@@ -155,6 +260,26 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
           {personalInfo.email && <span style={{ wordBreak: 'break-all' }}>{personalInfo.email}</span>}
           {personalInfo.phone && <span style={{ wordBreak: 'break-all' }}>{personalInfo.phone}</span>}
           {personalInfo.location && <span>{personalInfo.location}</span>}
+          {personalInfo.linkedinUrl && (
+            <a
+              href={toExternalUrl(personalInfo.linkedinUrl)}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: '#dbeafe', textDecoration: 'underline', wordBreak: 'break-all' }}
+            >
+              {toDisplayUrl(personalInfo.linkedinUrl)}
+            </a>
+          )}
+          {personalInfo.githubUrl && (
+            <a
+              href={toExternalUrl(personalInfo.githubUrl)}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: '#dbeafe', textDecoration: 'underline', wordBreak: 'break-all' }}
+            >
+              {toDisplayUrl(personalInfo.githubUrl)}
+            </a>
+          )}
         </div>
       </header>
 
@@ -172,87 +297,15 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
           </section>
         )}
 
-        <div style={styles.twoColumn}>
-          <section style={styles.col1}>
-            <h2 style={{ ...styles.sectionTitle, borderBottom: 'none', marginBottom: '8px' }}>
-              <span style={{ ...styles.dot, backgroundColor: '#3b82f6' }} />
-              Skills
-            </h2>
-            <div>
-              {skills.map((skill) => (
-                <div key={skill.id} style={styles.skillPill}>
-                  <span style={{ fontWeight: '500' }}>{skill.name}</span>
-                  {skill.level && (
-                    <div style={{ fontSize: '9px', color: '#6b7280' }}>{skill.level}</div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section style={styles.col2}>
-            <h2 style={styles.sectionTitle}>
-              <span style={{ ...styles.dot, backgroundColor: '#6366f1' }} />
-              Experience
-            </h2>
-            {experiences.map((exp) => (
-              <div key={exp.id} style={styles.expCard}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px', gap: '16px' }}>
-                  <span style={styles.role}>{exp.role}</span>
-                  <span style={styles.date}>{exp.startDate} - {exp.endDate || 'Present'}</span>
-                </div>
-                <p style={styles.company}>{exp.company}</p>
-                <div
-                  className="cv-rich-text"
-                  style={styles.richText}
-                  dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
-                />
+        {sectionRows.map((row, index) => (
+          <div key={`row-${index}`} style={{ display: 'flex', gap: '24px', marginBottom: index === sectionRows.length - 1 ? 0 : '24px' }}>
+            {row.map((sectionId) => (
+              <div key={sectionId} style={{ width: row.length === 1 ? '100%' : '50%' }}>
+                {renderSection(sectionId)}
               </div>
             ))}
-          </section>
-        </div>
-
-        <div style={{ display: 'flex', gap: '24px' }}>
-          <section style={{ width: '50%' }}>
-            <h2 style={{ ...styles.sectionTitle, color: '#92400e' }}>
-              <span style={{ ...styles.dot, backgroundColor: '#f59e0b' }} />
-              Education
-            </h2>
-            {educations.map((edu) => (
-              <div key={edu.id} style={styles.eduCard}>
-                <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{edu.institution}</div>
-                <div style={{ fontSize: '11px', color: '#475569' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
-                <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>{edu.graduationYear}</div>
-              </div>
-            ))}
-          </section>
-
-          {projects.length > 0 && (
-            <section style={{ width: '50%' }}>
-              <h2 style={{ ...styles.sectionTitle, color: '#065f46' }}>
-                <span style={{ ...styles.dot, backgroundColor: '#059669' }} />
-                Projects
-              </h2>
-              {projects.map((project) => (
-                <div key={project.id} style={styles.projectCard}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: '500', fontSize: '12px' }}>{project.name}</span>
-                    {project.url && (
-                      <span style={{ fontSize: '10px', color: '#6b7280', maxWidth: '180px', wordBreak: 'break-all', textAlign: 'right' }}>
-                        {project.url}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    className="cv-rich-text"
-                    style={styles.richText}
-                    dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
-                  />
-                </div>
-              ))}
-            </section>
-          )}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );
