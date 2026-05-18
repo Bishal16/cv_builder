@@ -206,6 +206,7 @@ public class CvMapper {
         SkillDto dto = new SkillDto();
         dto.setId(skill.getId());
         dto.setName(skill.getName());
+        dto.setCategory(skill.getCategory());
         dto.setLevel(skill.getLevel());
         return dto;
     }
@@ -214,6 +215,7 @@ public class CvMapper {
         Skill skill = new Skill();
         if (dto.getId() != null) skill.setId(dto.getId());
         skill.setName(dto.getName());
+        skill.setCategory(dto.getCategory());
         skill.setLevel(dto.getLevel());
         skill.setCv(cv);
         return skill;

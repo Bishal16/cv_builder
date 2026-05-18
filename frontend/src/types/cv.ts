@@ -1,4 +1,4 @@
-export type TemplateId = 'CLASSIC' | 'MODERN' | 'ATS';
+export type TemplateId = 'CLASSIC' | 'MODERN' | 'ATS' | 'PRO';
 export type SectionId = 'personal' | 'experience' | 'education' | 'skills' | 'projects';
 
 export const DEFAULT_SECTION_ORDER: SectionId[] = ['personal', 'experience', 'education', 'skills', 'projects'];
@@ -60,6 +60,7 @@ export interface Education {
 export interface Skill {
   id: string;
   name: string;
+  category?: string;
   level: SkillLevel;
 }
 

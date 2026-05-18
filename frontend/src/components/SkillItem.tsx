@@ -15,6 +15,15 @@ export function SkillItem({ skill, onChange, onRemove }: SkillItemProps) {
 
   return (
     <div className="card flex items-center gap-2.5 p-2.5">
+      <div className="w-48">
+        <input
+          type="text"
+          value={skill.category || ''}
+          onChange={(e) => handleChange('category', e.target.value)}
+          className="input-field"
+          placeholder="Category (e.g. Backend)"
+        />
+      </div>
       <div className="flex-1">
         <input
           type="text"
@@ -24,7 +33,7 @@ export function SkillItem({ skill, onChange, onRemove }: SkillItemProps) {
           placeholder="Skill name"
         />
       </div>
-      <div className="w-40">
+      <div className="w-32">
         <select
           value={skill.level}
           onChange={(e) => handleChange('level', e.target.value)}

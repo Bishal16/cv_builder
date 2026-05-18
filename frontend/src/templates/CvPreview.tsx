@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Cv } from '../types/cv';
-import { ClassicTemplate } from './ClassicTemplate';
-import { ModernTemplate } from './ModernTemplate';
-import { AtsTemplate } from './AtsTemplate';
+import { ClassicTemplate, ModernTemplate, AtsTemplate, ProTemplate } from './index';
 
 export const PAGE_WIDTH = 794;
 export const PAGE_HEIGHT = 1123;
@@ -19,6 +17,8 @@ export function CvPreview({ cv, containerClass = '', containerStyle = {} }: CvPr
       return <ModernTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
     case 'ATS':
       return <AtsTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'PRO':
+      return <ProTemplate cv={cv} />;
     case 'CLASSIC':
     default:
       return <ClassicTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;

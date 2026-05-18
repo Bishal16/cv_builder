@@ -10,16 +10,17 @@ const templates = [
   { id: 'CLASSIC' as TemplateId, name: 'Classic', description: 'Traditional layout' },
   { id: 'MODERN' as TemplateId, name: 'Modern', description: 'Clean & creative' },
   { id: 'ATS' as TemplateId, name: 'ATS-Friendly', description: 'Optimized for bots' },
+  { id: 'PRO' as TemplateId, name: 'Pro', description: 'Academic & technical' },
 ];
 
-export function TemplateSelector({ templateId, onChange }: TemplateSelectorProps) {
+export function TemplateSelector({ templateId, onChange }: TemplateSelectorProps) { 
   const { theme } = useThemeStore();
   const isDark = theme === 'dark';
 
   return (
     <div className="space-y-3">
       <h2 className="text-base font-semibold text-text-base">Select Template</h2>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {templates.map((template) => (
           <label
             key={template.id}
@@ -45,6 +46,7 @@ export function TemplateSelector({ templateId, onChange }: TemplateSelectorProps
               {template.id === 'CLASSIC' && '📄'}
               {template.id === 'MODERN' && '✨'}
               {template.id === 'ATS' && '🤖'}
+              {template.id === 'PRO' && '🎓'}
             </div>
             <h3 className={`font-semibold ${templateId === template.id ? '' : isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {template.name}

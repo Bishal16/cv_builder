@@ -18,7 +18,7 @@ public class Cv {
     private String title;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private TemplateId templateId;
 
     @Embedded

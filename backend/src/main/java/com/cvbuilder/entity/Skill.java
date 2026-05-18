@@ -14,7 +14,10 @@ public class Skill {
     @Column(nullable = false)
     private String name;
 
+    private String category;
+
     @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "VARCHAR(255)")
     private SkillLevel level;
 
     @ManyToOne
@@ -25,6 +28,8 @@ public class Skill {
     public void setId(UUID id) { this.id = id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
     public SkillLevel getLevel() { return level; }
     public void setLevel(SkillLevel level) { this.level = level; }
     public Cv getCv() { return cv; }
