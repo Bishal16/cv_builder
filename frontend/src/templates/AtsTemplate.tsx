@@ -1,6 +1,6 @@
-import type { Cv } from '../types/cv';
+import type { Cv, SectionId } from '../types/cv';
+import { normalizeSectionOrder } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
-import { getOrderedContentSections, type ContentSectionId } from './sectionOrder';
 
 interface AtsTemplateProps {
   cv: Cv;
@@ -113,7 +113,17 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
     personalInfo.githubUrl ? { label: toDisplayUrl(personalInfo.githubUrl), href: toExternalUrl(personalInfo.githubUrl) } : null,
   ].filter((item): item is { label: string; href?: string } => item !== null);
 
-  const sectionNodes: Record<ContentSectionId, React.ReactNode> = {
+  const sectionNodes: Record<SectionId, React.ReactNode> = {
+    personal: personalInfo.summary ? (
+      <section key="personal">
+        <h2 style={styles.sectionTitle}>Professional Summary</h2>
+        <div
+          className="cv-rich-text"
+          style={styles.richText}
+          dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
+        />
+      </section>
+    ) : null,
     experience: (
       <section key="experience">
         <h2 style={styles.sectionTitle}>Work Experience</h2>
@@ -179,7 +189,7 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
     ) : null,
   };
 
-  const orderedSections = getOrderedContentSections(cv).filter((section) => sectionNodes[section] !== null);
+  const orderedSections = normalizeSectionOrder(cv.sectionOrder).filter((section) => sectionNodes[section] !== null);
 
   return (
     <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
@@ -200,17 +210,6 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
           ))}
         </p>
       </header>
-
-      {personalInfo.summary && (
-        <section>
-          <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Professional Summary</h2>
-          <div
-            className="cv-rich-text"
-            style={styles.richText}
-            dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
-          />
-        </section>
-      )}
 
       {orderedSections.map((section) => sectionNodes[section])}
     </div>

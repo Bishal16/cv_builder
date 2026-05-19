@@ -1,6 +1,6 @@
-import type { Cv } from '../types/cv';
+import type { Cv, SectionId } from '../types/cv';
+import { normalizeSectionOrder } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
-import { getOrderedContentSections, type ContentSectionId } from './sectionOrder';
 
 interface ModernTemplateProps {
   cv: Cv;
@@ -40,13 +40,14 @@ const styles = {
     background: 'linear-gradient(to right, #f59e0b, #ea580c)',
   } as React.CSSProperties,
   body: {
-    padding: '0 45px 45px 45px',
+    padding: '30px 45px 45px 45px',
   } as React.CSSProperties,
   aboutCard: {
     backgroundColor: '#f8fafc',
     padding: '15px',
     borderLeft: '5px solid #3b82f6',
     marginBottom: '24px',
+    width: '100%',
   } as React.CSSProperties,
   aboutTitle: {
     fontSize: '11px',
@@ -55,28 +56,6 @@ const styles = {
     letterSpacing: '0.05em',
     color: '#6b7280',
     marginBottom: '8px',
-  } as React.CSSProperties,
-  twoColumn: {
-    display: 'flex' as const,
-    gap: '24px',
-    marginBottom: '24px',
-  } as React.CSSProperties,
-  col1: {
-    width: '33%',
-    flexShrink: 0,
-  } as React.CSSProperties,
-  col2: {
-    width: '67%',
-  } as React.CSSProperties,
-  skillPill: {
-    display: 'inline-block',
-    padding: '3px 10px',
-    backgroundColor: '#ffffff',
-    borderRadius: '6px',
-    border: '1px solid #e2e8f0',
-    fontSize: '10px',
-    marginRight: '6px',
-    marginBottom: '6px',
   } as React.CSSProperties,
   sectionTitle: {
     fontSize: '14px',
@@ -143,6 +122,16 @@ const styles = {
     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
     marginBottom: '12px',
   } as React.CSSProperties,
+  skillPill: {
+    display: 'inline-block',
+    padding: '3px 10px',
+    backgroundColor: '#ffffff',
+    borderRadius: '6px',
+    border: '1px solid #e2e8f0',
+    fontSize: '10px',
+    marginRight: '6px',
+    marginBottom: '6px',
+  } as React.CSSProperties,
 };
 
 const toExternalUrl = (value: string): string =>
@@ -152,81 +141,75 @@ const toDisplayUrl = (value: string): string =>
 
 export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }: ModernTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
-  const orderedSections = getOrderedContentSections(cv).filter(
-    (section) => section !== 'projects' || projects.length > 0,
-  );
-  const sectionRows: ContentSectionId[][] = [];
-  for (let i = 0; i < orderedSections.length; i += 2) {
-    sectionRows.push(orderedSections.slice(i, i + 2));
-  }
 
-  const renderSection = (sectionId: ContentSectionId): React.ReactNode => {
-    if (sectionId === 'skills') {
-      return (
-        <section>
-          <h2 style={{ ...styles.sectionTitle, borderBottom: 'none', marginBottom: '8px' }}>
-            <span style={{ ...styles.dot, backgroundColor: '#3b82f6' }} />
-            Skills
-          </h2>
-          <div>
-            {skills.map((skill) => (
-              <div key={skill.id} style={styles.skillPill}>
-                <span style={{ fontWeight: '500' }}>{skill.name}</span>
-                {skill.level && (
-                  <div style={{ fontSize: '9px', color: '#6b7280' }}>{skill.level}</div>
-                )}
-              </div>
-            ))}
+  const sectionNodes: Record<SectionId, React.ReactNode> = {
+    personal: personalInfo.summary ? (
+      <section key="personal" style={styles.aboutCard}>
+        <h2 style={styles.aboutTitle}>About</h2>
+        <div
+          className="cv-rich-text"
+          style={styles.richText}
+          dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
+        />
+      </section>
+    ) : null,
+    skills: skills.length > 0 ? (
+      <section key="skills" style={{ marginBottom: '24px' }}>
+        <h2 style={{ ...styles.sectionTitle, borderBottom: 'none', marginBottom: '8px' }}>
+          <span style={{ ...styles.dot, backgroundColor: '#3b82f6' }} />
+          Skills
+        </h2>
+        <div>
+          {skills.map((skill) => (
+            <div key={skill.id} style={styles.skillPill}>
+              <span style={{ fontWeight: '500' }}>{skill.name}</span>
+              {skill.level && (
+                <div style={{ fontSize: '9px', color: '#6b7280' }}>{skill.level}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null,
+    experience: experiences.length > 0 ? (
+      <section key="experience" style={{ marginBottom: '24px' }}>
+        <h2 style={styles.sectionTitle}>
+          <span style={{ ...styles.dot, backgroundColor: '#6366f1' }} />
+          Experience
+        </h2>
+        {experiences.map((exp) => (
+          <div key={exp.id} style={styles.expCard}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px', gap: '16px' }}>
+              <span style={styles.role}>{exp.role}</span>
+              <span style={styles.date}>{exp.startDate} - {exp.endDate || 'Present'}</span>
+            </div>
+            <p style={styles.company}>{exp.company}</p>
+            <div
+              className="cv-rich-text"
+              style={styles.richText}
+              dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
+            />
           </div>
-        </section>
-      );
-    }
-
-    if (sectionId === 'experience') {
-      return (
-        <section>
-          <h2 style={styles.sectionTitle}>
-            <span style={{ ...styles.dot, backgroundColor: '#6366f1' }} />
-            Experience
-          </h2>
-          {experiences.map((exp) => (
-            <div key={exp.id} style={styles.expCard}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px', gap: '16px' }}>
-                <span style={styles.role}>{exp.role}</span>
-                <span style={styles.date}>{exp.startDate} - {exp.endDate || 'Present'}</span>
-              </div>
-              <p style={styles.company}>{exp.company}</p>
-              <div
-                className="cv-rich-text"
-                style={styles.richText}
-                dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
-              />
-            </div>
-          ))}
-        </section>
-      );
-    }
-
-    if (sectionId === 'education') {
-      return (
-        <section>
-          <h2 style={{ ...styles.sectionTitle, color: '#92400e' }}>
-            <span style={{ ...styles.dot, backgroundColor: '#f59e0b' }} />
-            Education
-          </h2>
-          {educations.map((edu) => (
-            <div key={edu.id} style={styles.eduCard}>
-              <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{edu.institution}</div>
-              <div style={{ fontSize: '11px', color: '#475569' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
-              <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>{edu.graduationYear}</div>
-            </div>
-          ))}
-        </section>
-      );
-    }
-
-    return (
-      <section>
+        ))}
+      </section>
+    ) : null,
+    education: educations.length > 0 ? (
+      <section key="education" style={{ marginBottom: '24px' }}>
+        <h2 style={{ ...styles.sectionTitle, color: '#92400e' }}>
+          <span style={{ ...styles.dot, backgroundColor: '#f59e0b' }} />
+          Education
+        </h2>
+        {educations.map((edu) => (
+          <div key={edu.id} style={styles.eduCard}>
+            <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{edu.institution}</div>
+            <div style={{ fontSize: '11px', color: '#475569' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
+            <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>{edu.graduationYear}</div>
+          </div>
+        ))}
+      </section>
+    ) : null,
+    projects: projects.length > 0 ? (
+      <section key="projects" style={{ marginBottom: '24px' }}>
         <h2 style={{ ...styles.sectionTitle, color: '#065f46' }}>
           <span style={{ ...styles.dot, backgroundColor: '#059669' }} />
           Projects
@@ -249,9 +232,16 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
           </div>
         ))}
       </section>
-    );
+    ) : null,
   };
 
+  const orderedSections = normalizeSectionOrder(cv.sectionOrder).filter((id) => sectionNodes[id] !== null);
+
+  // Layout logic: render personal full-width if it's the first or last, 
+  // otherwise try to group other sections in rows of 2.
+  // Actually, for simplicity and predictable reordering, let's render them in a single column 
+  // or a smart grid that respects the order.
+  
   return (
     <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
       <header style={styles.header}>
@@ -286,24 +276,9 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
       <div style={styles.accentBar} />
 
       <div style={styles.body}>
-        {personalInfo.summary && (
-          <section style={styles.aboutCard}>
-            <h2 style={styles.aboutTitle}>About</h2>
-            <div
-              className="cv-rich-text"
-              style={styles.richText}
-              dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
-            />
-          </section>
-        )}
-
-        {sectionRows.map((row, index) => (
-          <div key={`row-${index}`} style={{ display: 'flex', gap: '24px', marginBottom: index === sectionRows.length - 1 ? 0 : '24px' }}>
-            {row.map((sectionId) => (
-              <div key={sectionId} style={{ width: row.length === 1 ? '100%' : '50%' }}>
-                {renderSection(sectionId)}
-              </div>
-            ))}
+        {orderedSections.map((id) => (
+          <div key={id}>
+            {sectionNodes[id]}
           </div>
         ))}
       </div>

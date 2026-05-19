@@ -1,4 +1,5 @@
-import type { Cv, Skill } from '../types/cv';
+import type { Cv, Skill, SectionId } from '../types/cv';
+import { normalizeSectionOrder } from '../types/cv';
 
 interface ProTemplateProps {
   cv: Cv;
@@ -23,6 +24,111 @@ export function ProTemplate({ cv }: ProTemplateProps) {
       <div className="h-[0.5px] bg-[#990000]/30 w-full" />
     </div>
   );
+
+  const renderSection = (id: SectionId) => {
+    switch (id) {
+      case 'personal':
+        return personalInfo.summary ? (
+          <section key="personal" className="mb-5">
+            <SectionHeader title="Professional Summary" />
+            <div 
+              className="text-[13px] leading-[1.5] text-[#222222] break-normal text-justify cv-rich-text"
+              dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
+            />
+          </section>
+        ) : null;
+
+      case 'skills':
+        return skills.length > 0 ? (
+          <section key="skills" className="mb-5">
+            <SectionHeader title="Technical Skills" />
+            <div className="space-y-1.5">
+              {Object.entries(groupedSkills).map(([category, items]) => (
+                <div key={category} className="text-[12.5px] flex gap-2 leading-tight">
+                  <span className="font-bold min-w-[140px] text-black">{category}:</span>
+                  <span className="text-[#222222]">
+                    {items.map((s, idx) => (
+                      <span key={s.id}>
+                        {s.name}
+                        {s.level && <span className="text-[#666666] italic text-[11.5px]"> ({s.level})</span>}
+                        {idx < items.length - 1 ? ', ' : ''}
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'experience':
+        return experiences.length > 0 ? (
+          <section key="experience" className="mb-5">
+            <SectionHeader title="Work Experience" />
+            <div className="space-y-5">
+              {experiences.map((exp) => (
+                <div key={exp.id} className="text-[13px]">
+                  <div className="flex justify-between items-baseline font-bold text-black mb-1">
+                    <div className="text-[13.5px]">{exp.role}, <span className="font-semibold">{exp.company}</span></div>
+                    <div className="font-sans text-[11px] font-medium text-[#444444]">{exp.startDate} – {exp.endDate || 'Present'}</div>
+                  </div>
+                  <div 
+                    className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'education':
+        return educations.length > 0 ? (
+          <section key="education" className="mb-5">
+            <SectionHeader title="Education" />
+            <div className="space-y-4">
+              {educations.map((edu) => (
+                <div key={edu.id} className="text-[13px]">
+                  <div className="flex justify-between items-baseline font-bold text-black mb-0.5">
+                    <div className="text-[13.5px] font-bold">{edu.institution}</div>
+                    <div className="font-sans text-[11px] font-medium text-[#444444]">{edu.graduationYear}</div>
+                  </div>
+                  <div className="italic text-[#333333] text-[12.5px]">
+                    {edu.degree} {edu.field && `in ${edu.field}`}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'projects':
+        return projects.length > 0 ? (
+          <section key="projects" className="mb-5">
+            <SectionHeader title="Projects" />
+            <div className="space-y-5">
+              {projects.map((project) => (
+                <div key={project.id} className="text-[13px]">
+                  <div className="flex justify-between items-baseline font-bold text-black mb-1">
+                    <div className="text-[13.5px]">{project.name}</div>
+                    {project.url && <div className="font-mono text-[10.5px] text-blue-700 italic underline decoration-blue-700/30">{project.url}</div>}
+                  </div>
+                  <div 
+                    className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
+                    dangerouslySetInnerHTML={{ __html: project.description }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      default:
+        return null;
+    }
+  };
+
+  const orderedSections = normalizeSectionOrder(cv.sectionOrder);
 
   return (
     <div className="w-[210mm] min-h-[297mm] bg-white text-[#111111] p-14 font-serif mx-auto overflow-hidden">
@@ -52,101 +158,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
         </div>
       </header>
 
-      {/* Summary Section */}
-      {personalInfo.summary && (
-        <section className="mb-5">
-          <SectionHeader title="Professional Summary" />
-          <div 
-            className="text-[13px] leading-[1.5] text-[#222222] break-normal text-justify cv-rich-text"
-            dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
-          />
-        </section>
-      )}
-
-      {/* Technical Skills */}
-      {skills.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Technical Skills" />
-          <div className="space-y-1.5">
-            {Object.entries(groupedSkills).map(([category, items]) => (
-              <div key={category} className="text-[12.5px] flex gap-2 leading-tight">
-                <span className="font-bold min-w-[140px] text-black">{category}:</span>
-                <span className="text-[#222222]">
-                  {items.map((s, idx) => (
-                    <span key={s.id}>
-                      {s.name}
-                      {s.level && <span className="text-[#666666] italic text-[11.5px]"> ({s.level})</span>}
-                      {idx < items.length - 1 ? ', ' : ''}
-                    </span>
-                  ))}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Work Experience */}
-      {experiences.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Work Experience" />
-          <div className="space-y-5">
-            {experiences.map((exp) => (
-              <div key={exp.id} className="text-[13px]">
-                <div className="flex justify-between items-baseline font-bold text-black mb-1">
-                  <div className="text-[13.5px]">{exp.role}, <span className="font-semibold">{exp.company}</span></div>
-                  <div className="font-sans text-[11px] font-medium text-[#444444]">{exp.startDate} – {exp.endDate || 'Present'}</div>
-                </div>
-                <div 
-                  className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
-                  dangerouslySetInnerHTML={{ __html: exp.description }}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Education */}
-      {educations.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Education" />
-          <div className="space-y-4">
-            {educations.map((edu) => (
-              <div key={edu.id} className="text-[13px]">
-                <div className="flex justify-between items-baseline font-bold text-black mb-0.5">
-                  <div className="text-[13.5px] font-bold">{edu.institution}</div>
-                  <div className="font-sans text-[11px] font-medium text-[#444444]">{edu.graduationYear}</div>
-                </div>
-                <div className="italic text-[#333333] text-[12.5px]">
-                  {edu.degree} {edu.field && `in ${edu.field}`}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Projects */}
-      {projects.length > 0 && (
-        <section className="mb-5">
-          <SectionHeader title="Projects" />
-          <div className="space-y-5">
-            {projects.map((project) => (
-              <div key={project.id} className="text-[13px]">
-                <div className="flex justify-between items-baseline font-bold text-black mb-1">
-                  <div className="text-[13.5px]">{project.name}</div>
-                  {project.url && <div className="font-mono text-[10.5px] text-blue-700 italic underline decoration-blue-700/30">{project.url}</div>}
-                </div>
-                <div 
-                  className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
-                  dangerouslySetInnerHTML={{ __html: project.description }}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {orderedSections.map(renderSection)}
     </div>
   );
 }
