@@ -2,58 +2,49 @@ import { useEffect, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 import { CvEditor } from './components/CvEditor'
 import { CvPrintView } from './components/CvPrintView'
+import { AuthScreen } from './components/AuthScreen'
 import { useCvStore } from './store/cvStore'
 import { useThemeStore } from './store/themeStore'
-import { DEFAULT_SECTION_ORDER } from './types/cv'
+import { useAuthStore } from './store/authStore'
 
 function App() {
   const [selectedCvId, setSelectedCvId] = useState<string | null>(null)
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
   const { cvs, loadCvs, createCv, deleteCv } = useCvStore()
   const { theme, toggleTheme } = useThemeStore()
-  const searchParams = new URLSearchParams(window.location.search)
-  const isPrintMode = searchParams.get('print') === '1'
-  const printCvId = searchParams.get('cvId')
+  const { isAuthenticated, logout, user } = useAuthStore()
+
+  // Handle print view from URL
+  const queryParams = new URLSearchParams(window.location.search)
+  const isPrintMode = queryParams.get('print') === '1'
+  const printCvId = queryParams.get('cvId')
 
   useEffect(() => {
-    if (!isPrintMode) {
+    if (isAuthenticated && !isPrintMode) {
       loadCvs()
     }
-  }, [loadCvs, isPrintMode])
+  }, [loadCvs, isAuthenticated, isPrintMode])
 
   useEffect(() => {
-    if (isPrintMode) {
-      return
-    }
     document.documentElement.classList.remove('light', 'dark')
     document.documentElement.classList.add(theme)
-  }, [theme, isPrintMode])
+  }, [theme])
 
   useEffect(() => {
-    if (isPrintMode) {
-      return
-    }
     const handleClickOutside = () => setActiveMenuId(null)
     window.addEventListener('click', handleClickOutside)
     return () => window.removeEventListener('click', handleClickOutside)
-  }, [isPrintMode])
+  }, [])
 
-  if (isPrintMode) {
-    if (!printCvId) {
-      return (
-        <div style={{ padding: '24px', fontFamily: 'Inter, system-ui, sans-serif' }}>
-          Missing cvId in print mode.
-        </div>
-      )
-    }
+  if (isPrintMode && printCvId) {
     return <CvPrintView cvId={printCvId} />
   }
 
   const handleNewCv = async () => {
     const newCv = await createCv({
-      title: 'My CV',
+      title: 'New Document',
       templateId: 'CLASSIC',
-      sectionOrder: [...DEFAULT_SECTION_ORDER],
+      sectionOrder: ['personal', 'experience', 'education', 'skills', 'projects'],
       personalInfo: {
         name: '',
         email: '',
@@ -73,25 +64,42 @@ function App() {
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    if (confirm('Are you sure you want to delete this CV?')) {
+    if (confirm('Are you sure you want to delete this project?')) {
       await deleteCv(id)
     }
     setActiveMenuId(null)
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-bg-base flex flex-col transition-colors duration-300">
+        <Toaster position="top-right" />
+        <header className="p-8 flex justify-between items-center shrink-0">
+           <h1 className="text-2xl font-black tracking-tighter italic text-text-base">CV_B.</h1>
+           <button
+             onClick={toggleTheme}
+             className="p-2.5 bg-bg-surface border border-border-subtle rounded-xl hover:bg-bg-muted transition-all text-text-base"
+           >
+             {theme === 'light' ? '🌙' : '☀️'}
+           </button>
+        </header>
+        <AuthScreen onSuccess={() => {}} />
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-bg-base">
+    <div className="min-h-screen bg-bg-base selection:bg-primary/30 transition-colors duration-300">
       <Toaster 
         position="top-right" 
         toastOptions={{
           duration: 3000,
           style: {
             background: theme === 'dark' ? '#18181b' : '#ffffff',
-            color: theme === 'dark' ? '#f9fafb' : '#111827',
-            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid #e5e7eb',
-            borderRadius: '12px',
+            color: theme === 'dark' ? '#f4f4f5' : '#18181b',
+            border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
+            borderRadius: '10px',
             fontSize: '14px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
           },
           success: {
             iconTheme: {
@@ -102,79 +110,82 @@ function App() {
         }} 
       />
       
-      {!selectedCvId ? (
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <header className="mb-12 flex items-end justify-between pb-8 border-b border-border-subtle">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+      {selectedCvId ? (
+        <div className="p-6 h-screen overflow-hidden flex flex-col">
+           <CvEditor cvId={selectedCvId} onBack={() => setSelectedCvId(null)} />
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-8 py-12">
+          <header className="mb-20 flex items-end justify-between border-b border-border-subtle pb-10 text-text-base">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 mb-4">
+                 <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-black italic">B.</div>
+                 <span className="text-xs font-black tracking-[0.3em] text-zinc-500 uppercase">Pro Workspace</span>
               </div>
-              <div>
-                <h1 className="text-4xl font-bold tracking-tight text-text-base">CV Builder</h1>
-                <p className="text-text-dim mt-0.5 text-sm">Create professional resumes in minutes</p>
-              </div>
+              <h1 className="text-6xl font-black tracking-tighter italic uppercase leading-[0.8] mb-4">Your_Vault</h1>
+              <p className="text-text-muted font-medium text-sm tracking-wide">Logged in as <span className="text-text-base font-bold underline decoration-primary/30">{user?.email}</span></p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <button
                 onClick={toggleTheme}
-                className="p-3 rounded-xl hover:bg-bg-muted transition-all border border-border-subtle text-text-dim hover:text-text-base"
-                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                className="p-4 bg-bg-surface border border-border-subtle rounded-2xl hover:bg-bg-muted transition-all active:scale-95 text-text-base shadow-lg"
               >
-                {theme === 'light' ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
-                  </svg>
-                )}
+                {theme === 'light' ? '🌙' : '☀️'}
+              </button>
+              <button
+                onClick={logout}
+                className="px-6 py-4 bg-bg-surface border border-border-subtle text-rose-500 font-bold rounded-2xl hover:bg-rose-500/5 transition-all active:scale-95 shadow-lg"
+              >
+                DISCONNECT
               </button>
               <button
                 onClick={handleNewCv}
-                className="btn-primary"
+                className="btn-primary !py-4 !px-8 shadow-xl shadow-primary/20"
               >
-                + Create New CV
+                + NEW_DOCUMENT
               </button>
             </div>
           </header>
 
           {cvs.length === 0 ? (
-            <div className="text-center py-20 card p-12">
-              <div className="w-16 h-16 mx-auto mb-6 bg-bg-muted rounded-2xl flex items-center justify-center">
-                <svg className="w-8 h-8 text-text-dim" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <div className="text-center py-40 glass-surface rounded-[3rem] border-dashed">
+              <div className="w-24 h-24 mx-auto mb-10 bg-bg-muted rounded-3xl flex items-center justify-center micro-border">
+                <svg className="w-10 h-10 text-text-muted opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" />
                 </svg>
               </div>
-              <h2 className="text-xl font-bold text-text-base mb-2">No CVs yet</h2>
-              <p className="text-text-dim mb-6 max-w-md mx-auto">Create your first CV to get started</p>
-              <button onClick={handleNewCv} className="btn-primary">
-                Get Started
+              <h2 className="text-3xl font-black text-text-base mb-3 italic tracking-tight">VAULT_IS_VACANT</h2>
+              <p className="text-text-muted mb-12 max-w-sm mx-auto text-sm font-medium">Initialize your professional trajectory by creating your first document signature.</p>
+              <button
+                onClick={handleNewCv}
+                className="btn-primary !py-5 !px-10"
+              >
+                INITIALIZE_PROJECT
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {cvs.map(cv => (
                 <div
                   key={cv.id}
                   onClick={() => setSelectedCvId(cv.id)}
-                  className="group relative card p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5"
+                  className="group relative p-8 glass-surface rounded-[2.5rem] cursor-pointer transition-all hover:bg-white/[0.04] hover:-translate-y-2 active:scale-[0.98] premium-shadow"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-bg-muted rounded-xl flex items-center justify-center text-text-dim font-bold text-lg group-hover:text-text-base transition-colors">
+                  <div className="flex items-start justify-between mb-12">
+                    <div className="w-16 h-16 bg-bg-surface rounded-2xl flex items-center justify-center text-text-muted font-black text-2xl micro-border group-hover:text-primary transition-all group-hover:scale-110 group-hover:rotate-3 shadow-inner">
                       {cv.title.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="badge">{cv.templateId}</span>
+                      <span className="px-3 py-1 bg-bg-muted text-text-muted text-[9px] font-black tracking-[0.2em] uppercase rounded-lg micro-border">
+                        {cv.templateId}
+                      </span>
                       <div className="relative">
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             setActiveMenuId(activeMenuId === cv.id ? null : cv.id)
                           }}
-                          className="p-2 text-text-dim hover:text-text-base rounded-lg hover:bg-bg-muted transition-colors"
+                          className="p-2.5 text-text-muted hover:text-text-base rounded-xl hover:bg-bg-surface transition-colors"
                         >
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
@@ -182,32 +193,35 @@ function App() {
                         </button>
                         
                         {activeMenuId === cv.id && (
-                          <div className="absolute right-0 mt-2 w-44 card shadow-xl z-20 overflow-hidden p-1">
+                          <div className="absolute right-0 mt-4 w-48 bg-bg-surface border border-border-subtle rounded-2xl shadow-2xl z-20 overflow-hidden premium-shadow backdrop-blur-3xl">
                             <button
                               onClick={(e) => handleDelete(e, cv.id)}
-                              className="w-full px-4 py-3 text-left text-sm font-medium text-rose-500 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-3"
+                              className="w-full px-5 py-4 text-left text-[10px] font-black tracking-widest text-rose-500 hover:bg-rose-500/10 flex items-center gap-3 transition-colors uppercase"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a2 2 0 00-2 2v3M4 7h16" />
                               </svg>
-                              Delete
+                              Destroy_Record
                             </button>
                           </div>
                         )}
                       </div>
                     </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-text-base mb-1">{cv.title}</h3>
-                  <p className="text-sm text-text-dim">
-                    {new Date(cv.updatedAt).toLocaleDateString()}
-                  </p>
+                  <h3 className="text-xl font-black text-text-base mb-2 group-hover:text-primary transition-colors italic uppercase tracking-tighter leading-none">
+                    {cv.title}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-4 opacity-60">
+                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                     <p className="text-text-muted text-[10px] font-bold uppercase tracking-widest">
+                       Synced {new Date(cv.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                     </p>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-      ) : (
-        <CvEditor cvId={selectedCvId} onBack={() => setSelectedCvId(null)} />
       )}
     </div>
   )

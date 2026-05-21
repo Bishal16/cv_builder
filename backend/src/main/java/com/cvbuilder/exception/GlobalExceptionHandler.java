@@ -28,6 +28,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @org.springframework.web.bind.annotation.ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+        log.warn("Registration conflict: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidCredentials(InvalidCredentialsException ex) {
+        log.warn("Auth failure: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+
     @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGenericException(Exception ex) {
         log.error("Internal server error", ex);

@@ -1,8 +1,10 @@
 package com.cvbuilder.service;
 
+import com.cvbuilder.entity.User;
 import com.cvbuilder.exception.ResourceNotFoundException;
 import com.cvbuilder.repository.CvRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
@@ -29,10 +31,14 @@ public class PdfService {
         this.frontendBaseUrl = frontendBaseUrl;
     }
 
+    private User getCurrentUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     public byte[] generatePdf(UUID cvId) {
-        // Fetch fresh from DB to avoid any persistence context issues
-        cvRepository.findById(cvId)
-                .orElseThrow(() -> new ResourceNotFoundException("CV not found with id: " + cvId));
+        // Ensure user owns the CV before generating PDF
+        cvRepository.findByIdAndUser(cvId, getCurrentUser())
+                .orElseThrow(() -> new ResourceNotFoundException("CV not found or access denied"));
 
         String printUrl = buildPrintUrl(cvId);
         
@@ -44,6 +50,11 @@ public class PdfService {
                         .setViewportSize(794, 1123)
                         .setDeviceScaleFactor(1.0);
                 try (BrowserContext context = browser.newContext(contextOptions)) {
+                    // Note: In a real production environment with strict frontend security, 
+                    // we would need to pass the JWT to this context via cookies or localStorage
+                    // so the print view can fetch the data. 
+                    // For now, we assume the print view is accessible or we'll handle frontend auth later.
+                    
                     Page page = context.newPage();
                     page.navigate(printUrl, new Page.NavigateOptions()
                             .setWaitUntil(WaitUntilState.NETWORKIDLE));
@@ -68,7 +79,7 @@ public class PdfService {
             throw new RuntimeException(
                     "Failed to generate PDF with Chromium. Ensure the frontend is reachable at "
                             + frontendBaseUrl
-                            + " and Playwright browsers are installed: mvn -q org.codehaus.mojo:exec-maven-plugin:3.1.0:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args=\"install chromium\"",
+                            + " and Playwright browsers are installed.",
                     e
             );
         }

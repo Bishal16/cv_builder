@@ -1,16 +1,14 @@
 package com.cvbuilder.repository;
 
-import com.cvbuilder.entity.Cv;
 import com.cvbuilder.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface CvRepository extends JpaRepository<Cv, UUID> {
-    List<Cv> findAllByUserOrderByUpdatedAtDesc(User user);
-    Optional<Cv> findByIdAndUser(UUID id, User user);
+public interface UserRepository extends JpaRepository<User, UUID> {
+    Optional<User> findByEmail(String email);
+    Optional<User> findByProviderAndProviderId(String provider, String providerId);
 }
