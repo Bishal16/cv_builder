@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import type { Experience } from '../types/cv';
+import { generateId } from '../utils/id';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ExperienceItem } from './ExperienceItem';
 
 interface ExperienceListProps {
   experiences: Experience[];
   onChange: (experiences: Experience[]) => void;
-}
-
-function generateId(): string {
-  return crypto.randomUUID();
 }
 
 export function ExperienceList({ experiences, onChange }: ExperienceListProps) {

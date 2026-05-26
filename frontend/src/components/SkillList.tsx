@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import type { Skill } from '../types/cv';
+import { generateId } from '../utils/id';
 import { ConfirmDialog } from './ConfirmDialog';
 import { SkillItem } from './SkillItem';
 
 interface SkillListProps {
   skills: Skill[];
   onChange: (skills: Skill[]) => void;
-}
-
-function generateId(): string {
-  return crypto.randomUUID();
 }
 
 export function SkillList({ skills, onChange }: SkillListProps) {

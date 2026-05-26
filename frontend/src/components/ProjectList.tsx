@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import type { Project } from '../types/cv';
+import { generateId } from '../utils/id';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ProjectItem } from './ProjectItem';
 
 interface ProjectListProps {
   projects: Project[];
   onChange: (projects: Project[]) => void;
-}
-
-function generateId(): string {
-  return crypto.randomUUID();
 }
 
 export function ProjectList({ projects, onChange }: ProjectListProps) {

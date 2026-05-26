@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import type { Education } from '../types/cv';
+import { generateId } from '../utils/id';
 import { ConfirmDialog } from './ConfirmDialog';
 import { EducationItem } from './EducationItem';
 
 interface EducationListProps {
   education: Education[];
   onChange: (educations: Education[]) => void;
-}
-
-function generateId(): string {
-  return crypto.randomUUID();
 }
 
 export function EducationList({ education, onChange }: EducationListProps) {
