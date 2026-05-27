@@ -14,6 +14,7 @@ import {
   type Cv,
 } from '../types/cv';
 import { useCvStore } from '../store/cvStore';
+import { exportPdf } from '../api/cvApi';
 import { useThemeStore } from '../store/themeStore';
 import { PersonalInfoForm } from './PersonalInfoForm';
 import { ExperienceList } from './ExperienceList';
@@ -66,6 +67,21 @@ const normalizeSkillLevel = (value: unknown): Skill['level'] => {
       return '';
   }
 };
+
+// Sort arrays by ID so comparison is order-insensitive (backend returns
+// collections ordered by UUID, which may differ from the user's insertion order)
+type WithId = { id: string };
+const sortById = <T extends WithId>(arr: T[]): T[] =>
+  [...arr].sort((a, b) => a.id.localeCompare(b.id));
+
+const normalizeForSnapshot = (data: CVFormData): string =>
+  JSON.stringify({
+    ...data,
+    experiences: sortById(data.experiences),
+    educations: sortById(data.educations),
+    skills: sortById(data.skills),
+    projects: sortById(data.projects),
+  });
 
 const toFormData = (cv: Cv): CVFormData => ({
   title: cv.title,
@@ -204,7 +220,9 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     const previousSnapshot = currentSnapshot;
     const nextFormData: CVFormData = { ...formData, templateId };
     const nextSnapshot = JSON.stringify(nextFormData);
-    const shouldAutoSaveTemplate = !hasUnsavedChanges && Boolean(cvId);
+    // Only auto-save if the CV data has already been hydrated into the form.
+    // Without this guard, switching templates before data loads would save an empty CV.
+    const shouldAutoSaveTemplate = !hasUnsavedChanges && Boolean(cvId) && hydratedCvId === cvId;
 
     setFormData(nextFormData);
 
@@ -227,14 +245,16 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const handleSave = async () => {
     if (cvId) {
       try {
-        const attemptedSnapshot = currentSnapshot;
+        const attemptedNormalized = normalizeForSnapshot(formData);
         const savedCv = await updateCv(cvId, formData);
-        const savedSnapshot = JSON.stringify(toFormData(savedCv));
-        setLastSavedSnapshot(savedSnapshot);
-        if (savedSnapshot !== attemptedSnapshot) {
+        const savedNormalized = normalizeForSnapshot(toFormData(savedCv));
+        if (savedNormalized !== attemptedNormalized) {
           toast.error('Some fields were not saved. Please restart backend and try again.');
           return;
         }
+        // Mark the form as saved against its current state so the
+        // "Unsaved changes" indicator clears correctly.
+        setLastSavedSnapshot(currentSnapshot);
         toast.success('Saved successfully');
       } catch {
         toast.error('Save failed');
@@ -245,16 +265,27 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const handleDownloadPdf = async () => {
     const loadingToast = toast.loading('Generating PDF...');
     try {
-      const attemptedSnapshot = currentSnapshot;
+      const attemptedNormalized = normalizeForSnapshot(formData);
       const savedCv = await updateCv(cvId, formData);
-      const savedSnapshot = JSON.stringify(toFormData(savedCv));
-      setLastSavedSnapshot(savedSnapshot);
-      if (savedSnapshot !== attemptedSnapshot) {
+      const savedNormalized = normalizeForSnapshot(toFormData(savedCv));
+      if (savedNormalized !== attemptedNormalized) {
         toast.error('Export blocked because latest edits were not saved', { id: loadingToast });
         return;
       }
-      window.open(`/api/cv/${cvId}/export/pdf?t=${Date.now()}`, '_blank');
-      toast.success('PDF ready', { id: loadingToast });
+      setLastSavedSnapshot(currentSnapshot);
+
+      // Fetch the PDF as a blob (carries the JWT), then trigger a browser download.
+      const blob = await exportPdf(cvId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cv.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('PDF downloaded', { id: loadingToast });
     } catch {
       toast.error('Export failed', { id: loadingToast });
     }

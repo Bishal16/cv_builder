@@ -33,8 +33,9 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
         toast.success('Account created successfully!');
       }
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || 'Authentication failed');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Authentication failed';
+      toast.error(message);
     } finally {
       setLoading(false);
     }

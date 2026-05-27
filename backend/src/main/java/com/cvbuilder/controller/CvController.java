@@ -1,8 +1,8 @@
 package com.cvbuilder.controller;
 
 import com.cvbuilder.dto.*;
-import com.cvbuilder.exception.ResourceNotFoundException;
 import com.cvbuilder.service.CvService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/cv")
+@RequestMapping("/api/v1/cv")
 public class CvController {
 
     private static final Logger log = LoggerFactory.getLogger(CvController.class);
@@ -24,7 +24,7 @@ public class CvController {
     }
 
     @PostMapping
-    public ResponseEntity<CvDto> createCv(@RequestBody CreateCvRequest request) {
+    public ResponseEntity<CvDto> createCv(@Valid @RequestBody CreateCvRequest request) {
         log.info("Creating new CV with title: {}", request.getTitle());
         return ResponseEntity.status(HttpStatus.CREATED).body(cvService.createCv(request));
     }
@@ -40,7 +40,7 @@ public class CvController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CvDto> updateCv(@PathVariable UUID id, @RequestBody UpdateCvRequest request) {
+    public ResponseEntity<CvDto> updateCv(@PathVariable UUID id, @Valid @RequestBody UpdateCvRequest request) {
         log.info("Updating CV with id: {}", id);
         return ResponseEntity.ok(cvService.updateCv(id, request));
     }
@@ -51,12 +51,4 @@ public class CvController {
         cvService.deleteCv(id);
         return ResponseEntity.noContent().build();
     }
-
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(ex.getMessage()));
-    }
-
-    public record ErrorResponse(String message) {}
 }

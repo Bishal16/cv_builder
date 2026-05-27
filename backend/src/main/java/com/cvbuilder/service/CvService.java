@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CvService {
 
     private final CvRepository cvRepository;
@@ -52,7 +53,7 @@ public class CvService {
     public CvDto updateCv(UUID id, UpdateCvRequest request) {
         Cv cv = cvRepository.findByIdAndUser(id, getCurrentUser())
                 .orElseThrow(() -> new ResourceNotFoundException("CV not found or access denied"));
-        
+
         cvMapper.updateEntityFromRequest(request, cv);
         Cv updatedCv = cvRepository.save(cv);
         return cvMapper.toDto(updatedCv);

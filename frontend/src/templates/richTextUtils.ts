@@ -1,7 +1,13 @@
-export function preventHyphenLineBreaks(html: string): string {
-  if (!html) {
-    return '';
-  }
+import DOMPurify from 'dompurify';
 
-  return html.replace(/([\p{L}\p{N}])-([\p{L}\p{N}])/gu, '$1&#8209;$2');
+export function sanitizeHtml(html: string): string {
+  if (!html) return '';
+  return DOMPurify.sanitize(html);
+}
+
+export function preventHyphenLineBreaks(html: string): string {
+  if (!html) return '';
+  return DOMPurify.sanitize(
+    html.replace(/([\p{L}\p{N}])-([\p{L}\p{N}])/gu, '$1&#8209;$2')
+  );
 }

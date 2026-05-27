@@ -5,7 +5,41 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ab78d57a-d731-4f62-8a0e-005265ffcd64" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/cvbuilder.db" beforeDir="false" afterPath="$PROJECT_DIR$/backend/cvbuilder.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.claude/scheduled_tasks.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/AuthController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/CvController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/CvController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/PdfController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/PdfController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/CreateCvRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/CreateCvRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/EducationDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/EducationDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/ExperienceDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/ExperienceDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/LoginRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/ProjectDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/ProjectDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/RegisterRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/SkillDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/SkillDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/entity/Cv.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/entity/Cv.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/mapper/CvMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/mapper/CvMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/repository/CvRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/repository/CvRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/service/CvService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/service/CvService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/service/PdfService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/service/PdfService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/cvApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/cvApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/AuthScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AuthScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/store/cvStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/store/cvStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/store/themeStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/store/themeStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/ProTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/ProTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/richTextUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/richTextUtils.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,9 +54,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 7
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
   <component name="ProjectId" id="3DiGiGOvHpNDqWMlD8a7IfeKzEm" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -31,15 +65,24 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "Spring Boot.CvBuilderApplication.executor": "Run",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/mahathir/Downloads/cv_builder",
+    "last_opened_file_path": "/Users/mahathir/Downloads/project/cv_builder",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "ts.external.directory.path": "/Users/mahathir/Downloads/project/cv_builder/frontend/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -55,11 +98,12 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.31033.145" />
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.153" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.153" />
       </set>
     </attachedChunks>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="ab78d57a-d731-4f62-8a0e-005265ffcd64" name="Changes" comment="" />
@@ -68,6 +112,7 @@
       <option name="presentableId" value="Default" />
       <updated>1778757602145</updated>
       <workItem from="1778757603283" duration="2204000" />
+      <workItem from="1779814623914" duration="10029000" />
     </task>
     <servers />
   </component>

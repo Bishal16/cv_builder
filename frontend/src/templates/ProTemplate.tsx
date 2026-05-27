@@ -1,5 +1,6 @@
 import type { Cv, Skill, SectionId } from '../types/cv';
 import { normalizeSectionOrder } from '../types/cv';
+import { preventHyphenLineBreaks } from './richTextUtils';
 
 interface ProTemplateProps {
   cv: Cv;
@@ -33,7 +34,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
             <SectionHeader title="Professional Summary" />
             <div 
               className="text-[13px] leading-[1.5] text-[#222222] break-normal text-justify cv-rich-text"
-              dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
+              dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
             />
           </section>
         ) : null;
@@ -74,7 +75,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
                   </div>
                   <div 
                     className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
-                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                    dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
                   />
                 </div>
               ))}
@@ -115,7 +116,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
                   </div>
                   <div 
                     className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
-                    dangerouslySetInnerHTML={{ __html: project.description }}
+                    dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
                   />
                 </div>
               ))}

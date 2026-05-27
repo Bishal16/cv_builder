@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Use class-based dark mode (not OS media query).
+   This makes dark: utilities AND @tailwindcss/forms dark styles
+   respond to the .dark class on <html>, not prefers-color-scheme. */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif";
   
@@ -9,6 +14,7 @@
 }
 
 :root {
+  color-scheme: light;
   /* Light Mode - Clean, professional */
   --app-bg: #f1f5f9;
   --surface-bg: #ffffff;

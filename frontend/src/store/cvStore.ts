@@ -6,6 +6,7 @@ interface CvState {
   cvs: Cv[];
   currentCv: Cv | null;
   loading: boolean;
+  loaded: boolean;   // true once the list has been fetched at least once this session
   error: string | null;
   loadCvs: () => Promise<void>;
   selectCv: (id: string) => Promise<void>;
@@ -18,13 +19,14 @@ export const useCvStore = create<CvState>((set) => ({
   cvs: [],
   currentCv: null,
   loading: false,
+  loaded: false,
   error: null,
 
   loadCvs: async () => {
     set({ loading: true, error: null });
     try {
       const cvs = await cvApi.getAllCvs();
-      set({ cvs, loading: false });
+      set({ cvs, loaded: true, loading: false });
     } catch (err) {
       set({ error: (err as Error).message, loading: false });
     }

@@ -3,9 +3,9 @@ package com.cvbuilder.mapper;
 import com.cvbuilder.dto.*;
 import com.cvbuilder.entity.*;
 import org.springframework.stereotype.Component;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Comparator;
 
 @Component
 public class CvMapper {
@@ -37,24 +37,28 @@ public class CvMapper {
         
         if (cv.getExperiences() != null) {
             dto.setExperiences(cv.getExperiences().stream()
+                    .sorted(Comparator.comparing(Experience::getId))
                     .map(this::toExperienceDto)
                     .collect(Collectors.toList()));
         }
-        
+
         if (cv.getEducations() != null) {
             dto.setEducations(cv.getEducations().stream()
+                    .sorted(Comparator.comparing(Education::getId))
                     .map(this::toEducationDto)
                     .collect(Collectors.toList()));
         }
-        
+
         if (cv.getSkills() != null) {
             dto.setSkills(cv.getSkills().stream()
+                    .sorted(Comparator.comparing(Skill::getId))
                     .map(this::toSkillDto)
                     .collect(Collectors.toList()));
         }
-        
+
         if (cv.getProjects() != null) {
             dto.setProjects(cv.getProjects().stream()
+                    .sorted(Comparator.comparing(Project::getId))
                     .map(this::toProjectDto)
                     .collect(Collectors.toList()));
         }
@@ -85,27 +89,27 @@ public class CvMapper {
         if (request.getExperiences() != null) {
             cv.setExperiences(request.getExperiences().stream()
                     .map(dto -> toExperienceEntity(dto, cv))
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
         }
-        
+
         if (request.getEducations() != null) {
             cv.setEducations(request.getEducations().stream()
                     .map(dto -> toEducationEntity(dto, cv))
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
         }
-        
+
         if (request.getSkills() != null) {
             cv.setSkills(request.getSkills().stream()
                     .map(dto -> toSkillEntity(dto, cv))
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
         }
-        
+
         if (request.getProjects() != null) {
             cv.setProjects(request.getProjects().stream()
                     .map(dto -> toProjectEntity(dto, cv))
-                    .collect(Collectors.toList()));
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
         }
-        
+
         return cv;
     }
 

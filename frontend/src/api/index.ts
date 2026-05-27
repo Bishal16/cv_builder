@@ -8,4 +8,10 @@ export {
   register,
 } from './cvApi';
 
-export type { ApiError } from './cvApi';
+export type {
+  ApiError,
+  LoginCredentials,
+  RegisterData,
+  AuthResponse,
+  UserDetails,
+} from './cvApi';

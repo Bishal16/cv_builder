@@ -5,7 +5,7 @@ import type {
   UpdateCvRequest,
 } from '../types/cv';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = '/api/v1';
 
 export class ApiError extends Error {
   status: number;
@@ -35,37 +35,62 @@ async function handleResponse<T>(response: Response): Promise<T> {
   if (response.status === 401) {
     useAuthStore.getState().logout();
   }
-  
+
   if (!response.ok) {
     const errorText = await response.text().catch(() => 'Unknown error');
     try {
-      // Try to parse as JSON for cleaner error messages
       const errorJson = JSON.parse(errorText);
-      throw new ApiError(response.status, errorJson.error || errorJson.message || 'Unknown error');
-    } catch {
+      throw new ApiError(response.status, errorJson.message || errorJson.error || 'Unknown error');
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
       throw new ApiError(response.status, errorText);
     }
   }
   return response.json();
 }
 
+// Auth types
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface RegisterData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName?: string;
+}
+
+export interface UserDetails {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: UserDetails;
+}
+
 // Auth API
-export async function login(credentials: any): Promise<any> {
+export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: await getHeaders(false),
     body: JSON.stringify(credentials),
   });
-  return handleResponse(response);
+  return handleResponse<AuthResponse>(response);
 }
 
-export async function register(userData: any): Promise<any> {
+export async function register(userData: RegisterData): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: await getHeaders(false),
     body: JSON.stringify(userData),
   });
-  return handleResponse(response);
+  return handleResponse<AuthResponse>(response);
 }
 
 // CV API
@@ -99,6 +124,20 @@ export async function updateCv(id: string, data: UpdateCvRequest): Promise<Cv> {
     body: JSON.stringify(data),
   });
   return handleResponse<Cv>(response);
+}
+
+export async function exportPdf(id: string): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/cv/${id}/export/pdf`, {
+    headers: await getHeaders(),
+  });
+  if (response.status === 401) {
+    useAuthStore.getState().logout();
+  }
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Export failed');
+    throw new ApiError(response.status, errorText);
+  }
+  return response.blob();
 }
 
 export async function deleteCv(id: string): Promise<void> {

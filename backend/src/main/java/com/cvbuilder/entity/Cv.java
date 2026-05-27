@@ -4,9 +4,7 @@ import com.cvbuilder.model.TemplateId;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "cvs")
@@ -34,21 +32,21 @@ public class Cv {
     @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
-    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<Experience> experiences = new ArrayList<>();
+    private Set<Experience> experiences = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<Education> educations = new ArrayList<>();
+    private Set<Education> educations = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<Skill> skills = new ArrayList<>();
+    private Set<Skill> skills = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
-    private List<Project> projects = new ArrayList<>();
+    private Set<Project> projects = new LinkedHashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "cv_section_order", joinColumns = @JoinColumn(name = "cv_id"))
