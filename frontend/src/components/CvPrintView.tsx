@@ -9,16 +9,16 @@ interface CvPrintViewProps {
 
 export function CvPrintView({ cvId }: CvPrintViewProps) {
   const { currentCv, selectCv, loading, error } = useCvStore();
-  const { setTheme } = useThemeStore();
+  const { setMode } = useThemeStore();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setTheme('light');
+    setMode('light');
     document.documentElement.classList.remove('dark');
     document.documentElement.classList.add('light');
     document.body.style.margin = '0';
     document.body.style.backgroundColor = '#ffffff';
-  }, [setTheme]);
+  }, [setMode]);
 
   useEffect(() => {
     let active = true;

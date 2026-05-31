@@ -15,12 +15,12 @@
 
 :root {
   color-scheme: light;
-  /* Light Mode - Clean, professional */
-  --app-bg: #f1f5f9;
-  --surface-bg: #ffffff;
-  --muted-bg: #f8fafc;
-  --section-bg: #f8fafc;
-  --border-color: #e2e8f0;
+  /* Light Mode - Clear elevation: gray floor → white surfaces */
+  --app-bg: #e8e8e8;         /* clearly gray, not near-white */
+  --surface-bg: #ffffff;     /* sidebar, panels — pop off the floor */
+  --muted-bg: #f5f5f5;
+  --section-bg: #f5f5f5;
+  --border-color: #d4d4d4;   /* visible, not invisible gray-100 */
   --text-main: #0f172a;
   --text-dim: #64748b;
   --text-placeholder: #94a3b8;
@@ -39,27 +39,27 @@
 }
 
 .dark {
-  /* Dark Mode - Professional, not harsh */
-  --app-bg: #0f172a;
-  --surface-bg: #1e293b;
-  --muted-bg: #263344;
-  --section-bg: #243045;
-  --border-color: #334155;
-  --text-main: #f1f5f9;
-  --text-dim: #94a3b8;
-  --text-placeholder: #64748b;
+  /* Dark Mode — clear elevation: floor → surface → card */
+  --app-bg: #161616;         /* darkest floor */
+  --surface-bg: #1e1e1e;     /* sidebar, panels — clearly above floor */
+  --muted-bg: #252525;       /* card background */
+  --section-bg: #252525;
+  --border-color: #3a3a3a;   /* visible but not harsh */
+  --text-main: #e8e8e8;
+  --text-dim: #8d8d8d;
+  --text-placeholder: #5a5a5a;
   --primary: #3b82f6;
-  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
-  
+  --scrollbar-thumb: rgba(255, 255, 255, 0.12);
+
   /* Form controls */
-  --label-text: #94a3b8;
-  --input-bg: #0f172a;
-  --input-bg-hover: #111f35;
-  --input-text: #f1f5f9;
-  --input-border: #3d4f6a;
-  --input-border-hover: #4f6687;
-  --input-shadow: 0 1px 2px rgba(2, 6, 23, 0.4);
-  --input-focus-ring: rgba(59, 130, 246, 0.3);
+  --label-text: #8d8d8d;
+  --input-bg: #1e1e1e;
+  --input-bg-hover: #252525;
+  --input-text: #e8e8e8;
+  --input-border: #3a3a3a;
+  --input-border-hover: #525252;
+  --input-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --input-focus-ring: rgba(59, 130, 246, 0.25);
 }
 
 /* Background utilities */

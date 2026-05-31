@@ -14,7 +14,7 @@ const templates = [
 ];
 
 export function TemplateSelector({ templateId, onChange }: TemplateSelectorProps) { 
-  const { theme } = useThemeStore();
+  const { resolved: theme } = useThemeStore();
   const isDark = theme === 'dark';
 
   return (

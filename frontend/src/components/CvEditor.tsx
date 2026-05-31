@@ -115,7 +115,7 @@ const SECTION_DEFINITIONS: Record<SectionId, { label: string; icon: string }> = 
 
 export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const { cvs, updateCv, loading } = useCvStore();
-  const { theme, toggleTheme } = useThemeStore();
+  const { resolved: theme, setMode } = useThemeStore();
   const cv = cvs.find(c => c.id === cvId);
   
   const [formData, setFormData] = useState<CVFormData>(defaultFormData);
@@ -574,7 +574,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={toggleTheme}
+                onClick={() => setMode(theme === 'light' ? 'dark' : 'light')}
                 className="p-2 rounded-lg hover:bg-bg-muted transition-all border border-border-subtle text-text-dim hover:text-text-base"
                 title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
               >

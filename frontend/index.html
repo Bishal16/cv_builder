@@ -15,12 +15,18 @@
          Reads the Zustand-persisted value from localStorage synchronously. -->
     <script>
       (function () {
+        var theme;
         try {
           var stored = localStorage.getItem('theme-storage');
           var parsed = stored ? JSON.parse(stored) : null;
-          var theme = parsed && parsed.state && parsed.state.theme === 'light' ? 'light' : 'dark';
+          var mode = (parsed && parsed.state && parsed.state.mode) || 'system';
+          if (mode === 'system') {
+            theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          } else {
+            theme = mode;
+          }
         } catch (_) {
-          var theme = 'dark';
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
         document.documentElement.classList.add(theme);
       })();
