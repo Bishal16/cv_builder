@@ -38,6 +38,7 @@ const TEMPLATE_META: Record<TemplateId, { label: string; accent: string; bg: str
   MODERN:  { label: 'Modern',   accent: '#111111', bg: '#f0f0f0' },
   ATS:     { label: 'ATS',      accent: '#374151', bg: '#f3f4f6' },
   PRO:     { label: 'Pro',      accent: '#7f1d1d', bg: '#fdf2f2' },
+  MINIMAL: { label: 'Minimal',  accent: '#0a0a0a', bg: '#fafafa' },
 };
 
 /* ─────────────────────── TemplateThumbnail ─────────────────────── */
@@ -673,7 +674,7 @@ export function Dashboard() {
 
               {/* Template filter */}
               <div className="flex items-center gap-1 bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#3a3a3a] rounded-xl p-1">
-                {(['all', 'CLASSIC', 'MODERN', 'ATS', 'PRO'] as const).map(t => (
+                {(['all', 'CLASSIC', 'MODERN', 'ATS', 'PRO', 'MINIMAL'] as const).map(t => (
                   <button
                     key={t}
                     onClick={() => setTemplateFilter(t)}

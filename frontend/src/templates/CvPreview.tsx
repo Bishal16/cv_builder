@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Cv } from '../types/cv';
-import { ClassicTemplate, ModernTemplate, AtsTemplate, ProTemplate } from './index';
+import { ClassicTemplate, ModernTemplate, AtsTemplate, ProTemplate, MinimalTemplate } from './index';
 
 export const PAGE_WIDTH = 794;
 export const PAGE_HEIGHT = 1123;
@@ -19,6 +19,8 @@ export function CvPreview({ cv, containerClass = '', containerStyle = {} }: CvPr
       return <AtsTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
     case 'PRO':
       return <ProTemplate cv={cv} />;
+    case 'MINIMAL':
+      return <MinimalTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
     case 'CLASSIC':
     default:
       return <ClassicTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
@@ -27,9 +29,10 @@ export function CvPreview({ cv, containerClass = '', containerStyle = {} }: CvPr
 
 interface MultiPagePreviewProps {
   cv: Cv;
+  onPageCountChange?: (count: number) => void;
 }
 
-export function MultiPagePreview({ cv }: MultiPagePreviewProps) {
+export function MultiPagePreview({ cv, onPageCountChange }: MultiPagePreviewProps) {
   const [page, setPage] = useState(0);
   const measureRef = useRef<HTMLDivElement>(null);
   const [totalHeight, setTotalHeight] = useState(PAGE_HEIGHT);
@@ -53,6 +56,17 @@ export function MultiPagePreview({ cv }: MultiPagePreviewProps) {
   const pageCount = Math.max(1, Math.ceil(totalHeight / PAGE_HEIGHT));
   const offsetY = page * PAGE_HEIGHT;
 
+  // Notify parent of page count changes
+  useEffect(() => {
+    onPageCountChange?.(pageCount);
+  }, [pageCount, onPageCountChange]);
+
+  // Page break lines visible within the current page viewport
+  const pageBreakLines = Array.from({ length: pageCount - 1 }, (_, i) => {
+    const absoluteBreakY = (i + 1) * PAGE_HEIGHT;
+    return absoluteBreakY - offsetY;
+  }).filter(y => y > 0 && y < PAGE_HEIGHT);
+
   return (
     <div className="flex flex-col items-center gap-3">
       <div
@@ -70,6 +84,40 @@ export function MultiPagePreview({ cv }: MultiPagePreviewProps) {
             />
           </div>
         </div>
+
+        {/* Page break indicator lines */}
+        {pageBreakLines.map((y) => (
+          <div
+            key={y}
+            className="absolute left-0 right-0 pointer-events-none z-10"
+            style={{ top: `${y}px` }}
+          >
+            <div
+              style={{
+                width: '100%',
+                height: '1px',
+                backgroundImage: 'repeating-linear-gradient(90deg, #ef4444 0px, #ef4444 6px, transparent 6px, transparent 12px)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '-10px',
+                backgroundColor: '#ef4444',
+                color: '#ffffff',
+                fontSize: '9px',
+                fontWeight: '600',
+                padding: '1px 6px',
+                borderRadius: '3px',
+                letterSpacing: '0.04em',
+                pointerEvents: 'none',
+              }}
+            >
+              PAGE BREAK
+            </div>
+          </div>
+        ))}
       </div>
 
       {pageCount > 1 && (

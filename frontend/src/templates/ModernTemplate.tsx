@@ -19,7 +19,7 @@ const styles = {
     boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
   } as React.CSSProperties,
   header: {
-    background: 'linear-gradient(to right, #2563eb, #6366f1)',
+    backgroundColor: '#0f172a',
     padding: '37px 45px',
   } as React.CSSProperties,
   name: {
@@ -30,14 +30,10 @@ const styles = {
   } as React.CSSProperties,
   contact: {
     fontSize: '11px',
-    color: '#dbeafe',
+    color: '#94a3b8',
     display: 'flex' as const,
     flexWrap: 'wrap' as const,
     gap: '16px',
-  } as React.CSSProperties,
-  accentBar: {
-    height: '4px',
-    background: 'linear-gradient(to right, #f59e0b, #ea580c)',
   } as React.CSSProperties,
   body: {
     padding: '30px 45px 45px 45px',
@@ -58,27 +54,23 @@ const styles = {
     marginBottom: '8px',
   } as React.CSSProperties,
   sectionTitle: {
-    fontSize: '14px',
+    fontSize: '12px',
     fontWeight: 'bold' as const,
-    color: '#1e293b',
-    borderBottom: '2px solid #3b82f6',
+    color: '#0f172a',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.08em',
+    borderBottom: '1.5px solid #0f172a',
     paddingBottom: '4px',
     marginBottom: '12px',
     display: 'flex' as const,
     alignItems: 'center' as const,
     gap: '8px',
   } as React.CSSProperties,
-  dot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    flexShrink: 0,
-  } as React.CSSProperties,
   expCard: {
     backgroundColor: '#ffffff',
     padding: '15px',
     borderRadius: '8px',
-    border: '1px solid #f1f5f9',
+    border: '1px solid #e2e8f0',
     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
     marginBottom: '16px',
   } as React.CSSProperties,
@@ -110,7 +102,7 @@ const styles = {
     backgroundColor: '#ffffff',
     padding: '15px',
     borderRadius: '8px',
-    border: '1px solid #f1f5f9',
+    border: '1px solid #e2e8f0',
     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
     marginBottom: '12px',
   } as React.CSSProperties,
@@ -118,7 +110,7 @@ const styles = {
     backgroundColor: '#ffffff',
     padding: '15px',
     borderRadius: '8px',
-    border: '1px solid #f1f5f9',
+    border: '1px solid #e2e8f0',
     boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
     marginBottom: '12px',
   } as React.CSSProperties,
@@ -155,10 +147,7 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
     ) : null,
     skills: skills.length > 0 ? (
       <section key="skills" style={{ marginBottom: '24px' }}>
-        <h2 style={{ ...styles.sectionTitle, borderBottom: 'none', marginBottom: '8px' }}>
-          <span style={{ ...styles.dot, backgroundColor: '#3b82f6' }} />
-          Skills
-        </h2>
+        <h2 style={styles.sectionTitle}>Skills</h2>
         <div>
           {skills.map((skill) => (
             <div key={skill.id} style={styles.skillPill}>
@@ -173,10 +162,7 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
     ) : null,
     experience: experiences.length > 0 ? (
       <section key="experience" style={{ marginBottom: '24px' }}>
-        <h2 style={styles.sectionTitle}>
-          <span style={{ ...styles.dot, backgroundColor: '#6366f1' }} />
-          Experience
-        </h2>
+        <h2 style={styles.sectionTitle}>Experience</h2>
         {experiences.map((exp) => (
           <div key={exp.id} style={styles.expCard}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px', gap: '16px' }}>
@@ -195,10 +181,7 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
     ) : null,
     education: educations.length > 0 ? (
       <section key="education" style={{ marginBottom: '24px' }}>
-        <h2 style={{ ...styles.sectionTitle, color: '#92400e' }}>
-          <span style={{ ...styles.dot, backgroundColor: '#f59e0b' }} />
-          Education
-        </h2>
+        <h2 style={styles.sectionTitle}>Education</h2>
         {educations.map((edu) => (
           <div key={edu.id} style={styles.eduCard}>
             <div style={{ fontWeight: 'bold', fontSize: '12px' }}>{edu.institution}</div>
@@ -210,10 +193,7 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
     ) : null,
     projects: projects.length > 0 ? (
       <section key="projects" style={{ marginBottom: '24px' }}>
-        <h2 style={{ ...styles.sectionTitle, color: '#065f46' }}>
-          <span style={{ ...styles.dot, backgroundColor: '#059669' }} />
-          Projects
-        </h2>
+        <h2 style={styles.sectionTitle}>Projects</h2>
         {projects.map((project) => (
           <div key={project.id} style={styles.projectCard}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '4px' }}>
@@ -237,11 +217,6 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
 
   const orderedSections = normalizeSectionOrder(cv.sectionOrder).filter((id) => sectionNodes[id] !== null);
 
-  // Layout logic: render personal full-width if it's the first or last, 
-  // otherwise try to group other sections in rows of 2.
-  // Actually, for simplicity and predictable reordering, let's render them in a single column 
-  // or a smart grid that respects the order.
-  
   return (
     <div className={containerClass} style={{ ...styles.container, ...containerStyle }}>
       <header style={styles.header}>
@@ -255,7 +230,7 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
               href={toExternalUrl(personalInfo.linkedinUrl)}
               target="_blank"
               rel="noreferrer"
-              style={{ color: '#dbeafe', textDecoration: 'underline', wordBreak: 'break-all' }}
+              style={{ color: '#94a3b8', textDecoration: 'none', wordBreak: 'break-all' }}
             >
               {toDisplayUrl(personalInfo.linkedinUrl)}
             </a>
@@ -265,15 +240,13 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
               href={toExternalUrl(personalInfo.githubUrl)}
               target="_blank"
               rel="noreferrer"
-              style={{ color: '#dbeafe', textDecoration: 'underline', wordBreak: 'break-all' }}
+              style={{ color: '#94a3b8', textDecoration: 'none', wordBreak: 'break-all' }}
             >
               {toDisplayUrl(personalInfo.githubUrl)}
             </a>
           )}
         </div>
       </header>
-
-      <div style={styles.accentBar} />
 
       <div style={styles.body}>
         {orderedSections.map((id) => (

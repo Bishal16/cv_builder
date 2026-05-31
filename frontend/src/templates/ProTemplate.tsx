@@ -19,10 +19,10 @@ export function ProTemplate({ cv }: ProTemplateProps) {
 
   const SectionHeader = ({ title }: { title: string }) => (
     <div className="mb-2 mt-5">
-      <h2 className="text-[14px] font-bold text-[#990000] tracking-wider uppercase mb-0.5">
+      <h2 className="text-[11px] font-bold text-[#111111] tracking-[0.12em] uppercase mb-1.5">
         {title}
       </h2>
-      <div className="h-[0.5px] bg-[#990000]/30 w-full" />
+      <div className="h-px bg-[#111111] w-full" />
     </div>
   );
 
@@ -32,7 +32,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
         return personalInfo.summary ? (
           <section key="personal" className="mb-5">
             <SectionHeader title="Professional Summary" />
-            <div 
+            <div
               className="text-[13px] leading-[1.5] text-[#222222] break-normal text-justify cv-rich-text"
               dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
             />
@@ -73,7 +73,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
                     <div className="text-[13.5px]">{exp.role}, <span className="font-semibold">{exp.company}</span></div>
                     <div className="font-sans text-[11px] font-medium text-[#444444]">{exp.startDate} – {exp.endDate || 'Present'}</div>
                   </div>
-                  <div 
+                  <div
                     className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
                     dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
                   />
@@ -114,7 +114,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
                     <div className="text-[13.5px]">{project.name}</div>
                     {project.url && <div className="font-mono text-[10.5px] text-blue-700 italic underline decoration-blue-700/30">{project.url}</div>}
                   </div>
-                  <div 
+                  <div
                     className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
                     dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
                   />
@@ -132,22 +132,22 @@ export function ProTemplate({ cv }: ProTemplateProps) {
   const orderedSections = normalizeSectionOrder(cv.sectionOrder);
 
   return (
-    <div className="w-[210mm] min-h-[297mm] bg-white text-[#111111] p-14 font-serif mx-auto overflow-hidden">
+    <div className="w-[210mm] min-h-[297mm] bg-white text-[#111111] p-[45px] font-sans mx-auto overflow-hidden">
       {/* Centered Header */}
       <header className="text-center mb-8">
-        <h1 className="text-[30px] font-bold tracking-tight mb-1 text-black leading-tight">{personalInfo.name || 'Your Name'}</h1>
-        
+        <h1 className="text-[26px] font-bold tracking-tight mb-1 text-black leading-tight">{personalInfo.name || 'Your Name'}</h1>
+
         <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-1 text-[10.5px] text-[#444444] font-sans mt-2">
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
-          {personalInfo.phone && <span className="text-[#990000]">|</span>}
+          {personalInfo.phone && <span className="text-[#999999] mx-0.5">·</span>}
           {personalInfo.email && <span className="hover:underline cursor-pointer">{personalInfo.email}</span>}
-          {personalInfo.linkedinUrl && <span className="text-[#990000]">|</span>}
+          {personalInfo.linkedinUrl && <span className="text-[#999999] mx-0.5">·</span>}
           {personalInfo.linkedinUrl && (
             <span className="hover:underline cursor-pointer">
               linkedin.com/in/{personalInfo.linkedinUrl.replace(/\/$/, '').split('/').pop()}
             </span>
           )}
-          {personalInfo.githubUrl && <span className="text-[#990000]">|</span>}
+          {personalInfo.githubUrl && <span className="text-[#999999] mx-0.5">·</span>}
           {personalInfo.githubUrl && (
             <span className="hover:underline cursor-pointer">
               github.com/{personalInfo.githubUrl.replace(/\/$/, '').split('/').pop()}

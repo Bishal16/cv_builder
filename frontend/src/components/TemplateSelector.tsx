@@ -11,6 +11,7 @@ const templates = [
   { id: 'MODERN' as TemplateId, name: 'Modern', description: 'Clean & creative' },
   { id: 'ATS' as TemplateId, name: 'ATS-Friendly', description: 'Optimized for bots' },
   { id: 'PRO' as TemplateId, name: 'Pro', description: 'Academic & technical' },
+  { id: 'MINIMAL' as TemplateId, name: 'Minimal', description: 'Clean & spare' },
 ];
 
 export function TemplateSelector({ templateId, onChange }: TemplateSelectorProps) { 
@@ -47,6 +48,7 @@ export function TemplateSelector({ templateId, onChange }: TemplateSelectorProps
               {template.id === 'MODERN' && '✨'}
               {template.id === 'ATS' && '🤖'}
               {template.id === 'PRO' && '🎓'}
+              {template.id === 'MINIMAL' && '🪄'}
             </div>
             <h3 className={`font-semibold ${templateId === template.id ? '' : isDark ? 'text-gray-300' : 'text-gray-700'}`}>
               {template.name}

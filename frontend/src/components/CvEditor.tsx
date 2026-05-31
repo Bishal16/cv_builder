@@ -21,8 +21,7 @@ import { ExperienceList } from './ExperienceList';
 import { EducationList } from './EducationList';
 import { SkillList } from './SkillList';
 import { ProjectList } from './ProjectList';
-import { TemplateSelector } from './TemplateSelector';
-import { MultiPagePreview, PAGE_HEIGHT, PAGE_WIDTH } from '../templates/CvPreview';
+import { MultiPagePreview, PAGE_WIDTH } from '../templates/CvPreview';
 import { ConfirmDialog } from './ConfirmDialog';
 
 interface CvEditorProps {
@@ -34,15 +33,7 @@ const defaultFormData: CVFormData = {
   title: 'My CV',
   templateId: 'CLASSIC',
   sectionOrder: [...DEFAULT_SECTION_ORDER],
-  personalInfo: {
-    name: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedinUrl: '',
-    githubUrl: '',
-    summary: '',
-  },
+  personalInfo: { name: '', email: '', phone: '', location: '', linkedinUrl: '', githubUrl: '', summary: '' },
   experiences: [],
   educations: [],
   skills: [],
@@ -50,26 +41,16 @@ const defaultFormData: CVFormData = {
 };
 
 const normalizeSkillLevel = (value: unknown): Skill['level'] => {
-  if (typeof value !== 'string') {
-    return '';
-  }
-
+  if (typeof value !== 'string') return '';
   switch (value.trim().toLowerCase()) {
-    case 'beginner':
-      return 'Beginner';
-    case 'intermediate':
-      return 'Intermediate';
-    case 'advanced':
-      return 'Advanced';
-    case 'expert':
-      return 'Expert';
-    default:
-      return '';
+    case 'beginner': return 'Beginner';
+    case 'intermediate': return 'Intermediate';
+    case 'advanced': return 'Advanced';
+    case 'expert': return 'Expert';
+    default: return '';
   }
 };
 
-// Sort arrays by ID so comparison is order-insensitive (backend returns
-// collections ordered by UUID, which may differ from the user's insertion order)
 type WithId = { id: string };
 const sortById = <T extends WithId>(arr: T[]): T[] =>
   [...arr].sort((a, b) => a.id.localeCompare(b.id));
@@ -98,232 +79,212 @@ const toFormData = (cv: Cv): CVFormData => ({
   },
   experiences: cv.experiences ?? [],
   educations: cv.educations ?? [],
-  skills: (cv.skills ?? []).map((skill) => ({
-    ...skill,
-    level: normalizeSkillLevel(skill.level),
-  })),
+  skills: (cv.skills ?? []).map(skill => ({ ...skill, level: normalizeSkillLevel(skill.level) })),
   projects: cv.projects ?? [],
 });
 
-const SECTION_DEFINITIONS: Record<SectionId, { label: string; icon: string }> = {
-  personal: { label: 'Identity', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
-  experience: { label: 'Experience', icon: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-  education: { label: 'Education', icon: 'M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z' },
-  skills: { label: 'Skills', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-  projects: { label: 'Projects', icon: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z' },
+/* ── Section metadata ─────────────────────────────────────────── */
+
+const SECTIONS: Record<SectionId, { label: string; path: string }> = {
+  personal: {
+    label: 'Personal Info',
+    path: 'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z',
+  },
+  experience: {
+    label: 'Experience',
+    path: 'M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+  },
+  education: {
+    label: 'Education',
+    path: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
+  },
+  skills: {
+    label: 'Skills',
+    path: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
+  },
+  projects: {
+    label: 'Projects',
+    path: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z',
+  },
 };
+
+const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
+  { id: 'CLASSIC', label: 'Classic',  desc: 'Traditional' },
+  { id: 'MODERN',  label: 'Modern',   desc: 'Clean & bold' },
+  { id: 'ATS',     label: 'ATS',      desc: 'Bot-friendly' },
+  { id: 'PRO',     label: 'Pro',      desc: 'Academic' },
+  { id: 'MINIMAL', label: 'Minimal',  desc: 'Clean & spare' },
+];
+
+/* ─────────────────────────────────────────────────────────────── */
 
 export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const { cvs, updateCv, loading } = useCvStore();
   const { resolved: theme, setMode } = useThemeStore();
   const cv = cvs.find(c => c.id === cvId);
-  
-  const [formData, setFormData] = useState<CVFormData>(defaultFormData);
-  const [expandedSection, setExpandedSection] = useState<string>('');
-  const [showPreview, setShowPreview] = useState(true);
-  const [leftWidth, setLeftWidth] = useState(45);
-  const [isResizing, setIsResizing] = useState(false);
-  const [previewZoom, setPreviewZoom] = useState(100);
+
+  const [formData, setFormData]                   = useState<CVFormData>(defaultFormData);
+  const [expandedSection, setExpandedSection]     = useState<string>('personal');
+  const [showPreview, setShowPreview]             = useState(true);
+  const [leftWidth, setLeftWidth]                 = useState(42);
+  const [isResizing, setIsResizing]               = useState(false);
+  const [previewZoom, setPreviewZoom]             = useState(100);
+  const [pageCount, setPageCount]                 = useState<number>(1);
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string>(JSON.stringify(defaultFormData));
   const [showUnsavedLeaveWarning, setShowUnsavedLeaveWarning] = useState(false);
-  const [hydratedCvId, setHydratedCvId] = useState<string | null>(null);
-  const [draggedSection, setDraggedSection] = useState<SectionId | null>(null);
+  const [hydratedCvId, setHydratedCvId]           = useState<string | null>(null);
+  const [draggedSection, setDraggedSection]       = useState<SectionId | null>(null);
+  const [isExporting, setIsExporting]             = useState(false);
 
-  const currentSnapshot = useMemo(() => JSON.stringify(formData), [formData]);
+  const fitZoom = showPreview
+    ? Math.floor(((window.innerWidth * (100 - leftWidth) / 100) - 48) / PAGE_WIDTH * 100)
+    : 75;
+
+  const currentSnapshot  = useMemo(() => JSON.stringify(formData), [formData]);
   const hasUnsavedChanges = currentSnapshot !== lastSavedSnapshot;
+  const isDark = theme === 'dark';
+
+  /* ── Hydration ── */
+  useEffect(() => { setHydratedCvId(null); }, [cvId]);
 
   useEffect(() => {
-    setHydratedCvId(null);
-  }, [cvId]);
-
-  useEffect(() => {
-    if (!cv || hydratedCvId === cv.id) {
-      return;
-    }
-
-    const loadedFormData = toFormData(cv);
-    setFormData(loadedFormData);
-    setLastSavedSnapshot(JSON.stringify(loadedFormData));
+    if (!cv || hydratedCvId === cv.id) return;
+    const loaded = toFormData(cv);
+    setFormData(loaded);
+    setLastSavedSnapshot(JSON.stringify(loaded));
     setHydratedCvId(cv.id);
   }, [cv, hydratedCvId]);
 
+  /* ── Beforeunload guard ── */
   useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!hasUnsavedChanges) {
-        return;
-      }
-
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    const h = (e: BeforeUnloadEvent) => { if (hasUnsavedChanges) { e.preventDefault(); e.returnValue = ''; } };
+    window.addEventListener('beforeunload', h);
+    return () => window.removeEventListener('beforeunload', h);
   }, [hasUnsavedChanges]);
 
+  /* ── Ctrl+S ── */
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        handleSave();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const h = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); handleSave(); } };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
   }, [formData, cvId]);
 
+  /* ── Resizer ── */
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const move = (e: MouseEvent) => {
       if (!isResizing) return;
-      const newWidth = (e.clientX / window.innerWidth) * 100;
-      if (newWidth > 15 && newWidth < 85) {
-        setLeftWidth(newWidth);
-      }
+      const w = (e.clientX / window.innerWidth) * 100;
+      if (w > 20 && w < 80) setLeftWidth(w);
     };
-    const handleMouseUp = () => setIsResizing(false);
-
+    const up = () => setIsResizing(false);
     if (isResizing) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', up);
     }
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
+    return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
   }, [isResizing]);
 
-  const updatePersonalInfo = (personalInfo: PersonalInfo) => {
-    setFormData({ ...formData, personalInfo });
-  };
-
-  const updateExperience = (experiences: Experience[]) => {
-    setFormData({ ...formData, experiences });
-  };
-
-  const updateEducation = (educations: Education[]) => {
-    setFormData({ ...formData, educations });
-  };
-
-  const updateSkills = (skills: Skill[]) => {
-    setFormData({ ...formData, skills });
-  };
-
-  const updateProjects = (projects: Project[]) => {
-    setFormData({ ...formData, projects });
-  };
+  /* ── Updaters ── */
+  const updatePersonalInfo = (personalInfo: PersonalInfo) => setFormData({ ...formData, personalInfo });
+  const updateExperience   = (experiences: Experience[]) => setFormData({ ...formData, experiences });
+  const updateEducation    = (educations: Education[])   => setFormData({ ...formData, educations });
+  const updateSkills       = (skills: Skill[])           => setFormData({ ...formData, skills });
+  const updateProjects     = (projects: Project[])       => setFormData({ ...formData, projects });
 
   const updateTemplate = (templateId: TemplateId) => {
-    if (templateId === formData.templateId) {
-      return;
-    }
-
-    const previousSnapshot = currentSnapshot;
-    const nextFormData: CVFormData = { ...formData, templateId };
-    const nextSnapshot = JSON.stringify(nextFormData);
-    // Only auto-save if the CV data has already been hydrated into the form.
-    // Without this guard, switching templates before data loads would save an empty CV.
-    const shouldAutoSaveTemplate = !hasUnsavedChanges && Boolean(cvId) && hydratedCvId === cvId;
-
-    setFormData(nextFormData);
-
-    if (!shouldAutoSaveTemplate) {
-      return;
-    }
-
-    // Keep the status as "saved" for template-only switches and persist in background.
-    setLastSavedSnapshot(nextSnapshot);
+    if (templateId === formData.templateId) return;
+    const prev = currentSnapshot;
+    const next: CVFormData = { ...formData, templateId };
+    const nextSnap = JSON.stringify(next);
+    const shouldAutoSave = !hasUnsavedChanges && Boolean(cvId) && hydratedCvId === cvId;
+    setFormData(next);
+    if (!shouldAutoSave) return;
+    setLastSavedSnapshot(nextSnap);
     void (async () => {
-      try {
-        await updateCv(cvId, nextFormData);
-      } catch {
-        setLastSavedSnapshot(previousSnapshot);
-        toast.error('Template change was not saved');
-      }
+      try { await updateCv(cvId, next); }
+      catch { setLastSavedSnapshot(prev); toast.error('Template change was not saved'); }
     })();
   };
 
   const handleSave = async () => {
-    if (cvId) {
-      try {
-        const attemptedNormalized = normalizeForSnapshot(formData);
-        const savedCv = await updateCv(cvId, formData);
-        const savedNormalized = normalizeForSnapshot(toFormData(savedCv));
-        if (savedNormalized !== attemptedNormalized) {
-          toast.error('Some fields were not saved. Please restart backend and try again.');
-          return;
-        }
-        // Mark the form as saved against its current state so the
-        // "Unsaved changes" indicator clears correctly.
-        setLastSavedSnapshot(currentSnapshot);
-        toast.success('Saved successfully');
-      } catch {
-        toast.error('Save failed');
-      }
-    }
-  };
-
-  const handleDownloadPdf = async () => {
-    const loadingToast = toast.loading('Generating PDF...');
+    if (!cvId) return;
     try {
-      const attemptedNormalized = normalizeForSnapshot(formData);
-      const savedCv = await updateCv(cvId, formData);
-      const savedNormalized = normalizeForSnapshot(toFormData(savedCv));
-      if (savedNormalized !== attemptedNormalized) {
-        toast.error('Export blocked because latest edits were not saved', { id: loadingToast });
+      const attempted = normalizeForSnapshot(formData);
+      const saved = await updateCv(cvId, formData);
+      if (normalizeForSnapshot(toFormData(saved)) !== attempted) {
+        toast.error('Some fields were not saved. Please try again.');
         return;
       }
       setLastSavedSnapshot(currentSnapshot);
+      toast.success('Saved');
+    } catch { toast.error('Save failed'); }
+  };
 
-      // Fetch the PDF as a blob (carries the JWT), then trigger a browser download.
+  const handleDownloadPdf = async () => {
+    setIsExporting(true);
+    const t = toast.loading('Generating PDF…');
+    try {
+      const attempted = normalizeForSnapshot(formData);
+      const saved = await updateCv(cvId, formData);
+      if (normalizeForSnapshot(toFormData(saved)) !== attempted) {
+        toast.error('Export blocked — latest edits were not saved', { id: t });
+        return;
+      }
+      setLastSavedSnapshot(currentSnapshot);
       const blob = await exportPdf(cvId);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cv.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast.success('PDF downloaded', { id: loadingToast });
-    } catch {
-      toast.error('Export failed', { id: loadingToast });
-    }
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `${formData.title || 'resume'}.pdf`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      toast.success('PDF downloaded', { id: t });
+    } catch { toast.error('Export failed', { id: t }); }
+    finally { setIsExporting(false); }
   };
 
   const handleBackClick = () => {
-    if (hasUnsavedChanges) {
-      setShowUnsavedLeaveWarning(true);
-      return;
+    if (hasUnsavedChanges) { setShowUnsavedLeaveWarning(true); return; }
+    onBack();
+  };
+
+  const toggleSection = (id: string) => setExpandedSection(expandedSection === id ? '' : id);
+
+  const moveSection = (src: SectionId, dst: SectionId) => {
+    if (src === dst) return;
+    const order = [...normalizeSectionOrder(formData.sectionOrder)];
+    const si = order.indexOf(src), di = order.indexOf(dst);
+    if (si < 0 || di < 0) return;
+    order.splice(si, 1); order.splice(di, 0, src);
+    setFormData({ ...formData, sectionOrder: order });
+  };
+
+  /* ── Section helpers ── */
+  const sectionHasData = (id: SectionId): boolean => {
+    switch (id) {
+      case 'personal':   return !!(formData.personalInfo.name || formData.personalInfo.email);
+      case 'experience': return formData.experiences.length > 0;
+      case 'education':  return formData.educations.length > 0;
+      case 'skills':     return formData.skills.length > 0;
+      case 'projects':   return formData.projects.length > 0;
+      default:           return false;
     }
-
-    onBack();
+  };
+  const sectionCount = (id: SectionId): number | null => {
+    switch (id) {
+      case 'experience': return formData.experiences.length;
+      case 'education':  return formData.educations.length;
+      case 'skills':     return formData.skills.length;
+      case 'projects':   return formData.projects.length;
+      default:           return null;
+    }
   };
 
-  const confirmLeaveWithoutSaving = () => {
-    setShowUnsavedLeaveWarning(false);
-    onBack();
-  };
+  const filledSections = (Object.keys(SECTIONS) as SectionId[]).filter(sectionHasData).length;
+  const totalSections  = Object.keys(SECTIONS).length;
+  const strengthPct    = Math.round((filledSections / totalSections) * 100);
 
-  const cancelLeaveWithoutSaving = () => {
-    setShowUnsavedLeaveWarning(false);
-  };
-
-  const toggleSection = (section: string) => {
-    setExpandedSection(expandedSection === section ? '' : section);
-  };
-
-  const zoomOutPreview = () => {
-    setPreviewZoom((prev) => Math.max(50, prev - 10));
-  };
-
-  const zoomInPreview = () => {
-    setPreviewZoom((prev) => Math.min(150, prev + 10));
-  };
-
-  const resetPreviewZoom = () => {
-    setPreviewZoom(100);
-  };
+  const orderedSections = normalizeSectionOrder(formData.sectionOrder).map(id => ({ id, ...SECTIONS[id] }));
 
   const previewCv: Cv = {
     id: cvId,
@@ -339,308 +300,355 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     updatedAt: new Date().toISOString(),
   };
 
-  const sections = normalizeSectionOrder(formData.sectionOrder).map((id) => ({
-    id,
-    ...SECTION_DEFINITIONS[id],
-  }));
-
-  const moveSection = (sourceSection: SectionId, targetSection: SectionId) => {
-    if (sourceSection === targetSection) {
-      return;
-    }
-
-    const order = [...normalizeSectionOrder(formData.sectionOrder)];
-    const sourceIndex = order.indexOf(sourceSection);
-    const targetIndex = order.indexOf(targetSection);
-    if (sourceIndex < 0 || targetIndex < 0) {
-      return;
-    }
-
-    order.splice(sourceIndex, 1);
-    order.splice(targetIndex, 0, sourceSection);
-    setFormData({ ...formData, sectionOrder: order });
-  };
-
-  const isDark = theme === 'dark';
-  const floatingZoomContainerClass =
-    'absolute bottom-6 right-6 z-20 flex items-center gap-1 rounded-2xl border border-border-subtle bg-bg-surface/90 p-1.5 shadow-2xl backdrop-blur supports-[backdrop-filter]:bg-bg-surface/80';
-  const floatingZoomButtonClass =
-    'h-9 w-9 rounded-xl text-sm font-bold text-blue-500 transition-all hover:bg-bg-muted disabled:cursor-not-allowed disabled:opacity-40 active:scale-95';
-  const floatingZoomValueClass =
-    'h-9 min-w-[50px] rounded-xl px-3 text-xs font-semibold font-mono text-white shadow-[0_1px_6px_rgba(37,99,235,0.35)] transition-all hover:brightness-110 active:scale-95';
-
+  /* ─────────────── RENDER ─────────────── */
   return (
-    <div className="flex h-screen overflow-hidden rounded-none">
-      {/* Editor Panel */}
-      <div 
-        style={{ width: showPreview ? `${leftWidth}%` : '100%' }}
-        className="flex flex-col bg-bg-slate-300 border-r border-border-subtle"
-      >
-        {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-border-subtle shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleBackClick}
-              className="p-2 rounded-lg hover:bg-bg-muted transition-colors text-text-dim hover:text-text-base"
-              title="Back to Dashboard"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-            </button>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="input-field !py-2 !px-3 text-sm font-semibold max-w-xs"
-              placeholder="CV Title"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  loading
-                    ? 'bg-blue-500 animate-pulse'
-                    : hasUnsavedChanges
-                      ? 'bg-amber-500'
-                      : 'bg-emerald-500'
-                }`}
-              />
-              <span className="text-xs text-text-dim">
-                {loading ? 'Saving...' : hasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}
-              </span>
-            </div>
-            <button
-              onClick={() => setShowPreview(!showPreview)}
-              className="btn-secondary !py-2 !px-3 text-sm"
-            >
-              {showPreview ? 'Hide Preview' : 'Show Preview'}
-            </button>
-          </div>
+    <div className="flex flex-col h-screen overflow-hidden bg-[#f7f7f6] dark:bg-[#141414]">
+
+      {/* ══ TOP BAR ══════════════════════════════════════════════════════ */}
+      <header className="h-[52px] flex-shrink-0 flex items-center gap-2 px-4 bg-white dark:bg-[#141414] border-b border-gray-100 dark:border-[#252525] z-10">
+
+        {/* ── Left cluster ── */}
+        <button
+          onClick={handleBackClick}
+          className="flex items-center gap-1.5 text-[12px] font-medium text-gray-400 dark:text-[#555] hover:text-[#111] dark:hover:text-white transition-colors shrink-0 pr-1"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Dashboard
+        </button>
+
+        <div className="w-px h-4 bg-gray-200 dark:bg-[#333] shrink-0" />
+
+        {/* Inline-editable title */}
+        <input
+          type="text"
+          value={formData.title}
+          onChange={e => setFormData({ ...formData, title: e.target.value })}
+          className="text-[14px] font-semibold text-[#111] dark:text-white bg-transparent border-none outline-none w-44 truncate placeholder:text-gray-300 dark:placeholder:text-[#444] focus:bg-gray-50 dark:focus:bg-white/[0.05] px-2 py-1 rounded-lg transition-colors"
+          placeholder="Resume title"
+        />
+
+        {/* Auto-save status */}
+        <div className="flex items-center gap-1.5 shrink-0 ml-1">
+          <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${
+            loading             ? 'bg-blue-500 animate-pulse'
+            : hasUnsavedChanges ? 'bg-amber-400'
+            :                     'bg-emerald-500'
+          }`} />
+          <span className="text-[11.5px] text-gray-400 dark:text-[#666] hidden md:block">
+            {loading ? 'Saving…' : hasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}
+          </span>
         </div>
 
-        {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-          <div className="mb-8">
-            <TemplateSelector
-              templateId={formData.templateId}
-              onChange={updateTemplate}
-            />
-          </div>
+        <div className="flex-1" />
 
-          <div className="space-y-3">
-            <p className="px-1 text-xs text-text-dim">Drag sections to reorder how they appear in your CV.</p>
-            {sections.map((section) => (
-              <div
-                key={section.id}
-                className={`card overflow-hidden transition-colors ${draggedSection === section.id ? 'opacity-75' : ''}`}
-                draggable
-                onDragStart={(event) => {
-                  setDraggedSection(section.id);
-                  event.dataTransfer.effectAllowed = 'move';
-                  event.dataTransfer.setData('text/plain', section.id);
-                }}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  event.dataTransfer.dropEffect = 'move';
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  const source = (event.dataTransfer.getData('text/plain') || draggedSection) as SectionId | null;
-                  if (source) {
-                    moveSection(source, section.id);
-                  }
-                  setDraggedSection(null);
-                }}
-                onDragEnd={() => setDraggedSection(null)}
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleSection(section.id)}
-                  className={`w-full flex items-center justify-between p-4 transition-all ${expandedSection === section.id ? '' : ''}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="cursor-grab text-text-dim active:cursor-grabbing"
-                      title="Drag to reorder section"
-                      aria-hidden="true"
-                    >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                        <circle cx="8" cy="6" r="1.5" />
-                        <circle cx="8" cy="12" r="1.5" />
-                        <circle cx="8" cy="18" r="1.5" />
-                        <circle cx="16" cy="6" r="1.5" />
-                        <circle cx="16" cy="12" r="1.5" />
-                        <circle cx="16" cy="18" r="1.5" />
-                      </svg>
-                    </span>
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isDark ? 'bg-primary/20 text-primary' : 'bg-primary/10 text-primary'}`}>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={section.icon} />
-                      </svg>
-                    </div>
-                    <span className="font-semibold text-text-base">{section.label}</span>
-                  </div>
-                  <svg
-                    className={`w-5 h-5 text-text-dim transition-transform ${expandedSection === section.id ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {expandedSection === section.id && (
-                  <div className="p-4 pt-0 border-t border-border-subtle bg-bg-muted">
-                    {section.id === 'personal' && (
-                      <PersonalInfoForm
-                        personalInfo={formData.personalInfo}
-                        onChange={updatePersonalInfo}
-                      />
-                    )}
-                    {section.id === 'experience' && (
-                      <ExperienceList
-                        experiences={formData.experiences}
-                        onChange={updateExperience}
-                      />
-                    )}
-                    {section.id === 'education' && (
-                      <EducationList
-                        education={formData.educations}
-                        onChange={updateEducation}
-                      />
-                    )}
-                    {section.id === 'skills' && (
-                      <SkillList
-                        skills={formData.skills}
-                        onChange={updateSkills}
-                      />
-                    )}
-                    {section.id === 'projects' && (
-                      <ProjectList
-                        projects={formData.projects}
-                        onChange={updateProjects}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* ── Right cluster ── */}
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-border-subtle flex gap-3 shrink-0">
+        {/* Preview toggle */}
+        <button
+          onClick={() => setShowPreview(v => !v)}
+          className="flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1.5 rounded-lg text-gray-500 dark:text-[#777] hover:text-[#111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-all"
+          title={showPreview ? 'Hide preview' : 'Show preview'}
+        >
+          {showPreview ? (
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+            </svg>
+          ) : (
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          )}
+          <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Preview'}</span>
+        </button>
+
+        {/* Theme toggle */}
+        <button
+          onClick={() => setMode(theme === 'light' ? 'dark' : 'light')}
+          className="p-1.5 rounded-lg text-gray-400 dark:text-[#555] hover:text-[#111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-all"
+          title="Toggle theme"
+        >
+          {isDark ? (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" />
+              <path strokeLinecap="round" d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+            </svg>
+          )}
+        </button>
+
+        {/* Save — only visible when dirty */}
+        {hasUnsavedChanges && (
           <button
-            type="button"
             onClick={handleSave}
             disabled={loading}
-            className="btn-primary flex-1"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-lg text-gray-600 dark:text-[#aaa] hover:text-[#111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.05] disabled:opacity-40 transition-all"
           >
-            Save Changes
+            Save
           </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdf}
-            className="btn-primary !bg-emerald-600 hover:!bg-emerald-700"
-          >
-            Export PDF
-          </button>
-        </div>
-      </div>
+        )}
 
-      {/* Resize Handle */}
-      {showPreview && (
+        {/* Export PDF — primary CTA */}
+        <button
+          onClick={handleDownloadPdf}
+          disabled={isExporting}
+          className="flex items-center gap-1.5 text-[12.5px] font-semibold px-4 py-[7px] bg-[#111111] dark:bg-white hover:bg-[#2a2a2a] dark:hover:bg-gray-100 active:scale-[0.98] text-white dark:text-[#111111] rounded-lg transition-all disabled:opacity-50 shrink-0 ml-1"
+        >
+          {isExporting ? (
+            <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+          ) : (
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          )}
+          Export PDF
+        </button>
+      </header>
+
+      {/* ══ BODY ══════════════════════════════════════════════════════════ */}
+      <div className="flex flex-1 overflow-hidden">
+
+        {/* ── LEFT PANEL ─────────────────────────────────────────────────── */}
         <div
-          onMouseDown={() => setIsResizing(true)}
-          className={`w-1 cursor-col-resize transition-all flex items-center justify-center group ${isDark ? 'bg-white/5 hover:bg-white/20' : 'bg-gray-200 hover:bg-gray-300'}`}
+          style={{ width: showPreview ? `${leftWidth}%` : '100%' }}
+          className="flex flex-col bg-[#f7f7f6] dark:bg-[#161616] overflow-hidden flex-shrink-0"
         >
-          <div className={`w-1 h-12 rounded-full ${isDark ? 'bg-white/20 group-hover:bg-white/40' : 'bg-gray-300 group-hover:bg-gray-400'}`} />
-        </div>
-      )}
+          {/* Template selector + strength — single compact header */}
+          <div className="flex-shrink-0 px-4 py-3 border-b border-gray-100 dark:border-[#222] space-y-2.5">
 
-      {/* Preview Panel */}
-      {showPreview && (
-        <div 
-          style={{ width: `${100 - leftWidth}%` }}
-          className={`relative flex flex-col ${isDark ? 'bg-zinc-950' : 'bg-gray-100'}`}
-        >
-          <div className="p-4 flex items-center justify-between border-b border-border-subtle shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-medium text-text-dim">Live Preview</span>
+            {/* Template segmented control */}
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-[10.5px] font-semibold text-gray-400 dark:text-[#555] uppercase tracking-widest shrink-0">
+                Template
+              </span>
+              <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-lg p-0.5">
+                {TEMPLATES.map(t => (
+                  <button
+                    key={t.id}
+                    onClick={() => updateTemplate(t.id)}
+                    className={`px-3 py-1 text-[11.5px] font-medium rounded-md transition-all ${
+                      formData.templateId === t.id
+                        ? 'bg-white dark:bg-[#2a2a2a] text-[#111] dark:text-white shadow-sm'
+                        : 'text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setMode(theme === 'light' ? 'dark' : 'light')}
-                className="p-2 rounded-lg hover:bg-bg-muted transition-all border border-border-subtle text-text-dim hover:text-text-base"
-                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+
+            {/* Resume strength — compact single row */}
+            <div className="flex items-center gap-3">
+              <span className="text-[11px] text-gray-400 dark:text-[#555] shrink-0">Strength</span>
+              <div className="flex-1 h-1 bg-gray-200 dark:bg-[#2a2a2a] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${strengthPct}%`,
+                    background: strengthPct >= 80 ? '#10b981' : strengthPct >= 50 ? '#f59e0b' : '#ef4444',
+                  }}
+                />
+              </div>
+              <span
+                className="text-[11px] font-semibold shrink-0 tabular-nums"
+                style={{ color: strengthPct >= 80 ? '#10b981' : strengthPct >= 50 ? '#f59e0b' : '#ef4444' }}
               >
-                {theme === 'light' ? (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 16.95l.707.707M7.05 7.05l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
-                  </svg>
-                )}
-              </button>
-              <span className="text-xs font-mono text-text-dim">{formData.templateId}</span>
+                {strengthPct}%
+              </span>
             </div>
           </div>
-          <div className={floatingZoomContainerClass}>
-            <button
-              type="button"
-              onClick={zoomOutPreview}
-              disabled={previewZoom <= 50}
-              className={floatingZoomButtonClass}
-              title="Zoom out"
-            >
-              -
-            </button>
-            <button
-              type="button"
-              onClick={resetPreviewZoom}
-              className={floatingZoomValueClass}
-              style={{ backgroundColor: 'var(--primary)' }}
-              title="Reset zoom"
-            >
-              {previewZoom}%
-            </button>
-            <button
-              type="button"
-              onClick={zoomInPreview}
-              disabled={previewZoom >= 150}
-              className={floatingZoomButtonClass}
-              title="Zoom in"
-            >
-              +
-            </button>
-          </div>
-          <div className={`flex-1 overflow-y-auto overflow-x-hidden flex flex-col items-center py-8
-          ${isDark
-      ? 'bg-slate-900 bg-[radial-gradient(#2f2f38_1px,transparent_1px)] [background-size:20px_20px]'
-      : 'bg-gray-200 bg-[radial-gradient(#bdbdbd_1px,transparent_1px)] [background-size:20px_20px]'
-  }`}
->
-            <div
-              className="origin-top-left"
-              style={{
-                transform: `scale(${previewZoom / 100})`,
-                width: `${PAGE_WIDTH}px`,
-                height: `${PAGE_HEIGHT}px`,
-                flexShrink: 0,
-                overflow: 'hidden',
-              }}
-            >
-              <MultiPagePreview cv={previewCv} />
-            </div>
+
+          {/* Section list */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-2.5 space-y-0.5">
+            {orderedSections.map(section => {
+              const expanded = expandedSection === section.id;
+              const hasDat   = sectionHasData(section.id);
+              const cnt      = sectionCount(section.id);
+
+              return (
+                <div
+                  key={section.id}
+                  className={`rounded-lg transition-all duration-150 ${
+                    expanded
+                      ? 'bg-white dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#2a2a2a] shadow-sm shadow-black/[0.04] dark:shadow-none mb-1'
+                      : 'hover:bg-gray-100 dark:hover:bg-white/[0.04]'
+                  } ${draggedSection === section.id ? 'opacity-40 scale-[0.98]' : ''}`}
+                  draggable
+                  onDragStart={e => { setDraggedSection(section.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', section.id); }}
+                  onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                  onDrop={e => { e.preventDefault(); const src = (e.dataTransfer.getData('text/plain') || draggedSection) as SectionId | null; if (src) moveSection(src, section.id); setDraggedSection(null); }}
+                  onDragEnd={() => setDraggedSection(null)}
+                >
+                  {/* Row header */}
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(section.id)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left"
+                  >
+                    {/* Drag grip */}
+                    <span className="text-gray-200 dark:text-[#333] hover:text-gray-400 dark:hover:text-[#555] cursor-grab active:cursor-grabbing flex-shrink-0">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 16 16">
+                        <circle cx="4.5" cy="4" r="1.1" /><circle cx="4.5" cy="8" r="1.1" /><circle cx="4.5" cy="12" r="1.1" />
+                        <circle cx="10.5" cy="4" r="1.1" /><circle cx="10.5" cy="8" r="1.1" /><circle cx="10.5" cy="12" r="1.1" />
+                      </svg>
+                    </span>
+
+                    {/* Section icon */}
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 transition-colors ${
+                      expanded
+                        ? 'bg-[#111] dark:bg-white'
+                        : 'bg-gray-100 dark:bg-[#252525]'
+                    }`}>
+                      <svg
+                        className={`w-3 h-3 transition-colors ${expanded ? 'text-white dark:text-[#111]' : 'text-gray-400 dark:text-[#666]'}`}
+                        fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d={section.path} />
+                      </svg>
+                    </div>
+
+                    {/* Label */}
+                    <span className={`flex-1 text-[13px] font-medium transition-colors ${
+                      expanded ? 'text-[#111] dark:text-white' : 'text-gray-600 dark:text-[#999]'
+                    }`}>
+                      {section.label}
+                    </span>
+
+                    {/* Item count pill */}
+                    {cnt !== null && cnt > 0 && (
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-[#252525] text-gray-400 dark:text-[#666]">
+                        {cnt}
+                      </span>
+                    )}
+
+                    {/* Completion dot */}
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${
+                      hasDat ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-[#333]'
+                    }`} />
+
+                    {/* Chevron */}
+                    <svg
+                      className={`w-3.5 h-3.5 text-gray-300 dark:text-[#444] transition-transform flex-shrink-0 ${expanded ? 'rotate-180' : ''}`}
+                      fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Expanded content */}
+                  {expanded && (
+                    <div className="px-3 pb-4 pt-2 border-t border-gray-100 dark:border-[#232323]">
+                      {section.id === 'personal'   && <PersonalInfoForm personalInfo={formData.personalInfo} onChange={updatePersonalInfo} />}
+                      {section.id === 'experience' && <ExperienceList   experiences={formData.experiences}   onChange={updateExperience} />}
+                      {section.id === 'education'  && <EducationList    education={formData.educations}       onChange={updateEducation} />}
+                      {section.id === 'skills'     && <SkillList        skills={formData.skills}             onChange={updateSkills} />}
+                      {section.id === 'projects'   && <ProjectList      projects={formData.projects}         onChange={updateProjects} />}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
-      )}
+
+        {/* ── RESIZE HANDLE — hairline + wide invisible hit area ─────────── */}
+        {showPreview && (
+          <div
+            onMouseDown={() => setIsResizing(true)}
+            className="w-[1px] flex-shrink-0 cursor-col-resize relative group bg-gray-200 dark:bg-[#252525] hover:bg-blue-400 dark:hover:bg-blue-500 transition-colors duration-150"
+          >
+            {/* Invisible wider hit-area so it's easy to grab */}
+            <div className="absolute inset-y-0 -left-2 -right-2" />
+          </div>
+        )}
+
+        {/* ── RIGHT PANEL: LIVE PREVIEW ──────────────────────────────────── */}
+        {showPreview && (
+          <div
+            style={{ width: `${100 - leftWidth}%` }}
+            className="flex flex-col overflow-hidden flex-shrink-0"
+          >
+            {/* Preview bar — matches top bar style */}
+            <div className="h-[52px] flex-shrink-0 flex items-center justify-between px-4 bg-white dark:bg-[#141414] border-b border-gray-100 dark:border-[#252525]">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                <span className="text-[12px] font-medium text-gray-400 dark:text-[#666]">Live Preview</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Zoom controls */}
+                <div className="flex items-center bg-gray-100 dark:bg-[#1e1e1e] rounded-lg p-0.5">
+                  <button
+                    onClick={() => setPreviewZoom(p => Math.max(40, p - 10))}
+                    disabled={previewZoom <= 40}
+                    className="w-7 h-7 flex items-center justify-center text-[14px] font-bold text-gray-500 dark:text-[#777] hover:text-[#111] dark:hover:text-white disabled:opacity-30 rounded-md hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-all"
+                  >−</button>
+                  <button
+                    onClick={() => setPreviewZoom(100)}
+                    className="px-2 h-7 text-[11px] font-semibold font-mono text-gray-600 dark:text-[#aaa] hover:text-[#111] dark:hover:text-white transition-colors min-w-[40px] text-center"
+                  >{previewZoom}%</button>
+                  <button
+                    onClick={() => setPreviewZoom(p => Math.min(150, p + 10))}
+                    disabled={previewZoom >= 150}
+                    className="w-7 h-7 flex items-center justify-center text-[14px] font-bold text-gray-500 dark:text-[#777] hover:text-[#111] dark:hover:text-white disabled:opacity-30 rounded-md hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-all"
+                  >+</button>
+                  <button
+                    onClick={() => setPreviewZoom(fitZoom)}
+                    title="Fit page to panel"
+                    className="px-2 h-7 text-[10px] font-semibold text-gray-500 dark:text-[#777] hover:text-[#111] dark:hover:text-white rounded-md hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-all border-l border-gray-200 dark:border-[#3a3a3a] ml-0.5 pl-2"
+                  >Fit</button>
+                </div>
+
+                {/* Page count badge */}
+                <span className={`text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded-md ${
+                  pageCount > 1
+                    ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
+                    : 'bg-gray-100 dark:bg-[#1e1e1e] text-gray-500 dark:text-[#666]'
+                }`}>
+                  {pageCount === 1 ? '1 page' : `${pageCount} pages ⚠`}
+                </span>
+
+                {/* Template badge */}
+                <span className="text-[10.5px] font-mono font-semibold px-2 py-0.5 rounded-md bg-gray-100 dark:bg-[#1e1e1e] text-gray-500 dark:text-[#666]">
+                  {formData.templateId}
+                </span>
+              </div>
+            </div>
+
+            {/* Canvas — Figma/Canva warm canvas feel */}
+            <div
+              className={`flex-1 overflow-auto flex items-start justify-center py-10 px-6 ${
+                isDark
+                  ? 'bg-[#1c1c1c] bg-[radial-gradient(#2a2a2a_1px,transparent_1px)] [background-size:22px_22px]'
+                  : 'bg-[#EFEFED] bg-[radial-gradient(#DDDDD8_1px,transparent_1px)] [background-size:22px_22px]'
+              }`}
+            >
+              <div
+                className="flex-shrink-0"
+                style={{
+                  transform:       `scale(${previewZoom / 100})`,
+                  transformOrigin: 'top center',
+                  width:           `${PAGE_WIDTH}px`,
+                }}
+              >
+                {/* Layered paper shadow — close ambient + far cast */}
+                <div className="rounded-sm overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.08),0_16px_48px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_60px_rgba(0,0,0,0.6)]">
+                  <MultiPagePreview cv={previewCv} onPageCountChange={setPageCount} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       <ConfirmDialog
         open={showUnsavedLeaveWarning}
@@ -648,8 +656,8 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         message="You have unsaved changes. If you leave now, those edits will be lost."
         confirmLabel="Leave without saving"
         cancelLabel="Stay"
-        onConfirm={confirmLeaveWithoutSaving}
-        onCancel={cancelLeaveWithoutSaving}
+        onConfirm={() => { setShowUnsavedLeaveWarning(false); onBack(); }}
+        onCancel={() => setShowUnsavedLeaveWarning(false)}
       />
     </div>
   );

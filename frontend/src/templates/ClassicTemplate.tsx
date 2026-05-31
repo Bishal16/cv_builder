@@ -27,7 +27,6 @@ const styles = {
     fontWeight: 'bold' as const,
     marginBottom: '5px',
     color: '#1a202c',
-    letterSpacing: '-0.025em',
   } as React.CSSProperties,
   contact: {
     fontSize: '11px',
@@ -54,8 +53,6 @@ const styles = {
   sectionTitle: {
     fontSize: '13px',
     fontWeight: 'bold' as const,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
     color: '#2d3748',
     borderBottom: '1px solid #cbd5e0',
     paddingBottom: '3px',

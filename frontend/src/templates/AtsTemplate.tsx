@@ -43,8 +43,6 @@ const styles = {
     paddingBottom: '4px',
     marginTop: '18px',
     marginBottom: '8px',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.05em',
   } as React.CSSProperties,
   expItem: {
     marginBottom: '16px',
