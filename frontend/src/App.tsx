@@ -6,6 +6,7 @@ import { CvPrintView } from './components/CvPrintView'
 import { AuthScreen } from './components/AuthScreen'
 import { LandingPage } from './components/LandingPage'
 import { Dashboard } from './components/Dashboard'
+import { OAuthCallback } from './components/OAuthCallback'
 import { useCvStore } from './store/cvStore'
 import { useAuthStore } from './store/authStore'
 
@@ -86,6 +87,7 @@ function App() {
         {/* Public */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/print/:id" element={<PrintPage />} />
 
         {/* Protected */}

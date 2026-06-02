@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { login, register } from '../api';
 import { useAuthStore } from '../store/authStore';
@@ -160,9 +160,25 @@ function Field({ label, rightSlot, ...props }: InputProps) {
 
 /* ── Main component ─────────────────────────────────────────────────────── */
 
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  email_not_found:
+    'No public email found on your account. Please make your email public in your provider settings and try again.',
+  access_denied: 'Authorization was cancelled.',
+  oauth_error: 'Sign-in failed. Please try again.',
+};
+
 export function AuthScreen({ onSuccess }: AuthScreenProps) {
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      toast.error(OAUTH_ERROR_MESSAGES[error] ?? OAUTH_ERROR_MESSAGES.oauth_error);
+      window.history.replaceState({}, '', '/auth');
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);

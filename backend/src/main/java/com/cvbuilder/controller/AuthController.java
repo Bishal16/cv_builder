@@ -3,10 +3,12 @@ package com.cvbuilder.controller;
 import com.cvbuilder.dto.AuthResponse;
 import com.cvbuilder.dto.LoginRequest;
 import com.cvbuilder.dto.RegisterRequest;
+import com.cvbuilder.entity.User;
 import com.cvbuilder.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,5 +26,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse.UserDetailsDto> getMe(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(AuthResponse.UserDetailsDto.builder()
+            .id(user.getId())
+            .email(user.getEmail())
+            .firstName(user.getFirstName())
+            .lastName(user.getLastName())
+            .build());
     }
 }

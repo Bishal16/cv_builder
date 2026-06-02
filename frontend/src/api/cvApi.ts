@@ -93,6 +93,17 @@ export async function register(userData: RegisterData): Promise<AuthResponse> {
   return handleResponse<AuthResponse>(response);
 }
 
+// Auth: fetch current user (used by OAuthCallback before authStore is populated)
+export async function getMe(token: string): Promise<UserDetails> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  return handleResponse<UserDetails>(response);
+}
+
 // CV API
 export async function getAllCvs(): Promise<Cv[]> {
   const response = await fetch(`${API_BASE_URL}/cv`, {
