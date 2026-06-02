@@ -33,7 +33,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
           <section key="personal" className="mb-5">
             <SectionHeader title="Professional Summary" />
             <div
-              className="text-[13px] leading-[1.5] text-[#222222] break-normal text-justify cv-rich-text"
+              className="text-[13px] leading-[1.5] text-[#222222] cv-rich-text"
               dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(personalInfo.summary) }}
             />
           </section>
@@ -74,7 +74,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
                     <div className="font-sans text-[11px] font-medium text-[#444444]">{exp.startDate} – {exp.endDate || 'Present'}</div>
                   </div>
                   <div
-                    className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
+                    className="text-[#222222] leading-[1.5] cv-rich-text"
                     dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(exp.description) }}
                   />
                 </div>
@@ -115,7 +115,7 @@ export function ProTemplate({ cv }: ProTemplateProps) {
                     {project.url && <div className="font-mono text-[10.5px] text-blue-700 italic underline decoration-blue-700/30">{project.url}</div>}
                   </div>
                   <div
-                    className="text-[#222222] leading-[1.5] break-normal text-justify cv-rich-text"
+                    className="text-[#222222] leading-[1.5] cv-rich-text"
                     dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(project.description) }}
                   />
                 </div>

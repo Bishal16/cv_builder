@@ -260,8 +260,22 @@ select.input-field {
 .cv-rich-text {
   white-space: normal;
   overflow-wrap: break-word;
-  word-break: keep-all;
+  word-break: normal;
   hyphens: none;
+}
+
+/* Inline formatting elements must not be break targets.
+   overflow-wrap: break-word on the container can override Word Joiner (U+2060)
+   at tag boundaries in Chromium — setting normal here prevents that. */
+.cv-rich-text strong,
+.cv-rich-text em,
+.cv-rich-text b,
+.cv-rich-text i,
+.cv-rich-text u,
+.cv-rich-text s,
+.cv-rich-text span {
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .cv-rich-text p,
