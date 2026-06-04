@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@keyframes lp-blink { 50% { opacity: 0; } }
+
 /* Use class-based dark mode (not OS media query).
    This makes dark: utilities AND @tailwindcss/forms dark styles
    respond to the .dark class on <html>, not prefers-color-scheme. */
