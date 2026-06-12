@@ -31,105 +31,175 @@ function EyeClosed() {
   );
 }
 
+/* ── Design tokens (mirror LandingPage) ─────────────────────────────────── */
+const LP = {
+  ink:     '#0A0A0A',
+  ink2:    '#1F1F1D',
+  muted:   '#6B6B68',
+  muted2:  '#98988F',
+  line:    '#E7E7E2',
+  line2:   '#EFEFEA',
+  success: '#16A34A',
+  accent:  '#2D5BFF',
+} as const;
+
+const lpFont     = '"Geist", ui-sans-serif, system-ui, -apple-system, sans-serif';
+const lpFontMono = '"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace';
+const lpShadowLift = '0 1px 0 rgba(10,10,10,.04), 0 10px 30px -12px rgba(10,10,10,.18), 0 30px 60px -30px rgba(10,10,10,.12)';
+
 /* ── Left brand panel ───────────────────────────────────────────────────── */
 
 function LeftPanel() {
   return (
-    <div className="hidden lg:flex flex-col bg-[#0f0f0f] px-14 py-10 overflow-hidden relative">
+    <div className="hidden lg:flex flex-col overflow-hidden relative" style={{
+      fontFamily: lpFont,
+      background: '#0A0A0A',
+      color: '#fff',
+      padding: '40px 48px',
+      WebkitFontSmoothing: 'antialiased',
+    }}>
 
-      {/* Logo */}
-      <div className="flex items-center gap-2">
-        <Logo size={24} variant="dark" />
-        <span className="text-white font-black text-sm tracking-tight">CV Builder</span>
+      {/* dot-grid background (matches landing page tech section) */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'linear-gradient(to right, rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.045) 1px, transparent 1px)',
+        backgroundSize: '48px 48px',
+        WebkitMaskImage: 'radial-gradient(ellipse 90% 70% at 20% 20%, black 20%, transparent 70%)',
+        maskImage: 'radial-gradient(ellipse 90% 70% at 20% 20%, black 20%, transparent 70%)',
+      }} />
+
+      {/* Brand */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, letterSpacing: '-0.02em', fontSize: 16 }}>
+        <Logo size={26} variant="dark" />
+        <span>CV Builder</span>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col justify-center py-12">
-        <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-gray-600 mb-5">
-          Professional · ATS-Ready · Instant PDF
-        </p>
-        <h2 className="text-[40px] font-black leading-[1.08] tracking-tight text-white mb-5">
-          Build resumes<br />that get you<br />
-          <span className="text-gray-500 italic">hired.</span>
-        </h2>
-        <p className="text-[14px] text-gray-500 leading-relaxed mb-12 max-w-[280px]">
-          Create ATS-friendly resumes with modern templates.
-          Live preview as you type. Export in seconds.
-        </p>
+      <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 0' }}>
 
-        {/* Mini CV mockup */}
-        <div className="relative w-fit">
-          <div className="bg-white rounded-xl shadow-2xl overflow-hidden w-[230px]">
-            {/* header bar */}
-            <div className="bg-gray-50 border-b border-gray-100 px-3 py-2 flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-red-400" />
-              <div className="w-2 h-2 rounded-full bg-yellow-400" />
-              <div className="w-2 h-2 rounded-full bg-green-400" />
-            </div>
-            {/* CV body */}
-            <div className="p-4">
-              <div className="text-center border-b border-gray-100 pb-3 mb-3">
-                <div className="text-[12px] font-bold text-gray-900">Sam Carter</div>
-                <div className="text-[9px] text-gray-400 mt-0.5">Senior Software Engineer</div>
-              </div>
-              <div className="space-y-2.5">
-                <div>
-                  <div className="text-[7px] font-black uppercase tracking-[0.15em] text-gray-400 mb-1">Experience</div>
-                  <div className="text-[9px] font-semibold text-gray-800">OpenAI · 2022 – Present</div>
-                  <div className="mt-1 space-y-0.5">
-                    <div className="h-[3px] bg-gray-100 rounded w-full" />
-                    <div className="h-[3px] bg-gray-100 rounded w-5/6" />
-                    <div className="h-[3px] bg-gray-100 rounded w-4/5" />
-                  </div>
-                </div>
-                <div>
-                  <div className="text-[7px] font-black uppercase tracking-[0.15em] text-gray-400 mb-1">Skills</div>
-                  <div className="flex flex-wrap gap-1">
-                    {['Python', 'Go', 'K8s', 'AWS'].map(s => (
-                      <span key={s} className="text-[7px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{s}</span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ATS badge */}
-          <div className="absolute -bottom-3 -right-4 bg-emerald-500 text-white rounded-xl px-3 py-2 shadow-xl">
-            <div className="text-[7px] font-semibold opacity-80 uppercase tracking-wide">ATS Score</div>
-            <div className="text-[15px] font-black leading-tight">98/100</div>
-          </div>
-
-          {/* Saved badge */}
-          <div className="absolute -top-2.5 -left-3 bg-white rounded-lg px-2.5 py-1.5 shadow-lg flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="text-[9px] font-semibold text-gray-600">Auto-saved</span>
-          </div>
+        {/* eyebrow pill */}
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 10, width: 'fit-content',
+          padding: '5px 10px 5px 5px',
+          background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)',
+          borderRadius: 999, fontSize: 12, color: 'rgba(255,255,255,.55)', marginBottom: 24,
+        }}>
+          <span style={{ background: 'rgba(45,91,255,.25)', color: '#93b4ff', fontFamily: lpFontMono, fontSize: 11, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.02em' }}>v2.4</span>
+          AI-assisted content suggestions
         </div>
 
-        {/* Trust row */}
-        <div className="flex items-center gap-6 mt-14">
-          {[
-            { icon: '✓', text: 'ATS Friendly' },
-            { icon: '▣', text: '8 Templates' },
-            { icon: '⬡', text: 'PDF Export' },
-          ].map(item => (
-            <div key={item.text} className="flex items-center gap-1.5">
-              <span className="text-gray-700 text-xs">{item.icon}</span>
-              <span className="text-[11px] text-gray-600 font-medium">{item.text}</span>
+        <h2 style={{ margin: 0, fontSize: 'clamp(32px, 3.5vw, 48px)', lineHeight: 1.06, letterSpacing: '-0.03em', fontWeight: 600, color: '#fff' }}>
+          A resume builder<br />
+          recruiters{' '}
+          <em style={{ fontStyle: 'normal', color: 'rgba(255,255,255,.35)' }}>actually</em><br />
+          finish reading.
+        </h2>
+
+        <p style={{ margin: '20px 0 0', fontSize: 15, lineHeight: 1.6, color: 'rgba(255,255,255,.5)', maxWidth: 340 }}>
+          Draft, polish, and export a clean, ATS-ready resume in under ten minutes.
+        </p>
+
+        {/* Resume card visual */}
+        <div style={{ position: 'relative', marginTop: 40, width: 260, flexShrink: 0 }}>
+          {/* back card */}
+          <div style={{
+            position: 'absolute', top: 10, left: 16, width: '90%', borderRadius: 10,
+            background: '#fff', border: `1px solid ${LP.line}`, overflow: 'hidden',
+            transform: 'rotate(4deg)', opacity: 0.5,
+            boxShadow: lpShadowLift,
+          }}>
+            <div style={{ padding: '14px 16px' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '-0.01em', color: LP.ink2 }}>M. Tanaka</div>
+              <div style={{ fontFamily: lpFontMono, fontSize: 7, color: LP.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Engineering Lead</div>
+              <div style={{ marginTop: 10 }}>
+                <div style={{ height: 3, background: LP.line2, borderRadius: 1, marginBottom: 3 }} />
+                <div style={{ height: 3, background: LP.line2, borderRadius: 1, marginBottom: 3, width: '80%' }} />
+              </div>
             </div>
-          ))}
+          </div>
+
+          {/* front card */}
+          <div style={{
+            position: 'relative', borderRadius: 12, background: '#fff',
+            border: `1px solid ${LP.line}`, overflow: 'hidden',
+            transform: 'rotate(-1.5deg)', boxShadow: lpShadowLift, zIndex: 2,
+          }}>
+            <div style={{ padding: '18px 20px' }}>
+              {/* header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: `1px solid ${LP.line2}`, paddingBottom: 10, marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.02em', color: LP.ink }}>Sam Carter</div>
+                  <div style={{ fontFamily: lpFontMono, fontSize: 8, color: LP.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2 }}>Senior Frontend Engineer</div>
+                </div>
+                <div style={{ fontFamily: lpFontMono, fontSize: 7, color: LP.muted2, textAlign: 'right', lineHeight: 1.5 }}>
+                  <div>sam@carter.dev</div>
+                  <div>sf · ca</div>
+                </div>
+              </div>
+              {/* exp */}
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontFamily: lpFontMono, fontSize: 7.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: LP.muted, marginBottom: 6 }}>Experience</div>
+                {[{ co: 'Stripe', date: '2022 — Now', bullets: 2 }, { co: 'Notion', date: '2019 — 2022', bullets: 1 }].map(e => (
+                  <div key={e.co} style={{ marginBottom: 8 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: LP.ink }}>{e.co}</span>
+                      <span style={{ fontFamily: lpFontMono, fontSize: 7, color: LP.muted2 }}>{e.date}</span>
+                    </div>
+                    {Array.from({ length: e.bullets }).map((_, i) => (
+                      <div key={i} style={{ height: 2.5, background: LP.line2, borderRadius: 1, marginTop: 3, width: i === 0 ? '95%' : '75%' }} />
+                    ))}
+                  </div>
+                ))}
+              </div>
+              {/* skills */}
+              <div>
+                <div style={{ fontFamily: lpFontMono, fontSize: 7.5, letterSpacing: '0.1em', textTransform: 'uppercase', color: LP.muted, marginBottom: 6 }}>Skills</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                  {['TypeScript', 'React', 'Spring Boot', 'PostgreSQL'].map(s => (
+                    <span key={s} style={{ fontSize: 7.5, padding: '2px 5px', border: `1px solid ${LP.line}`, borderRadius: 3, color: LP.ink2 }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ATS chip */}
+          <div style={{
+            position: 'absolute', bottom: -14, left: -16, zIndex: 5,
+            background: '#fff', border: `1px solid ${LP.line}`, borderRadius: 10,
+            padding: '8px 12px', boxShadow: '0 8px 24px -12px rgba(10,10,10,.3)',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <div style={{ fontFamily: lpFontMono, fontSize: 15, fontWeight: 600, color: LP.success }}>98</div>
+            <div>
+              <div style={{ fontWeight: 500, color: LP.ink, fontSize: 11 }}>ATS Score</div>
+              <div style={{ fontFamily: lpFontMono, fontSize: 9, color: LP.muted }}>12 of 12 checks</div>
+            </div>
+          </div>
+
+          {/* Auto-saved chip */}
+          <div style={{
+            position: 'absolute', top: -14, right: -16, zIndex: 5,
+            background: '#fff', border: `1px solid ${LP.line}`, borderRadius: 10,
+            padding: '8px 12px', boxShadow: '0 8px 24px -12px rgba(10,10,10,.3)',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: LP.success, boxShadow: '0 0 0 3px rgba(22,163,74,.2)', display: 'inline-block', flexShrink: 0 }} />
+            <div style={{ fontFamily: lpFontMono, fontSize: 10, color: LP.ink2 }}>Auto-saved</div>
+          </div>
         </div>
       </div>
 
-      {/* Bottom testimonial */}
-      <div className="border-t border-white/5 pt-7">
-        <p className="text-[13px] text-gray-600 italic leading-relaxed">
-          "Finally a resume builder that doesn't get in the way."
-        </p>
-        <p className="text-[11px] text-gray-700 mt-2 font-medium">
-          — Software Engineer, hired at Shopify
-        </p>
+      {/* Bottom social proof */}
+      <div style={{ position: 'relative', borderTop: '1px solid rgba(255,255,255,.07)', paddingTop: 24 }}>
+        <div style={{ fontFamily: lpFontMono, fontSize: 11, color: 'rgba(255,255,255,.3)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 14 }}>
+          Hired at
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+          {['Atlassian', 'Shopify', 'Figma', 'Cloudflare'].map(name => (
+            <span key={name} style={{ fontWeight: 600, fontSize: 13, letterSpacing: '-0.01em', color: 'rgba(255,255,255,.25)' }}>{name}</span>
+          ))}
+        </div>
       </div>
     </div>
   );

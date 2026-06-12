@@ -1,536 +1,811 @@
 import { useNavigate } from 'react-router-dom';
 import { Logo } from './Logo';
 
-/* ─── small reusable pieces ─────────────────────────────────────────────── */
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+const C = {
+  bg:        '#FBFBFA',
+  bgElev:    '#FFFFFF',
+  bgSoft:    '#F4F4F1',
+  ink:       '#0A0A0A',
+  ink2:      '#1F1F1D',
+  muted:     '#6B6B68',
+  muted2:    '#98988F',
+  line:      '#E7E7E2',
+  line2:     '#EFEFEA',
+  accent:    '#2D5BFF',
+  accentInk: '#1E3FB8',
+  success:   '#16A34A',
+} as const;
 
-function Label({ children }: { children: string }) {
-  return (
-    <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-gray-400 mb-4">
-      {children}
-    </p>
-  );
-}
+const shadowCard = '0 1px 0 rgba(10,10,10,.04), 0 1px 2px rgba(10,10,10,.04)';
+const shadowLift = '0 1px 0 rgba(10,10,10,.04), 0 10px 30px -12px rgba(10,10,10,.18), 0 30px 60px -30px rgba(10,10,10,.12)';
 
-function DarkButton({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
+const font    = '"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
+const fontMono = '"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace';
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+function BtnPrimary({ onClick, children, lg }: { onClick?: () => void; children: React.ReactNode; lg?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 bg-[#111111] text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-[#333] transition-colors"
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        height: lg ? 46 : 38, padding: lg ? '0 22px' : '0 16px',
+        borderRadius: lg ? 9 : 8, fontSize: lg ? 15 : 14, fontWeight: 500,
+        letterSpacing: '-0.005em', border: '1px solid transparent',
+        background: C.ink, color: '#fff',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.08), 0 1px 0 rgba(0,0,0,.1)',
+        cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: font,
+        transition: 'background .15s ease',
+      }}
+      onMouseOver={e => (e.currentTarget.style.background = '#000')}
+      onMouseOut={e => (e.currentTarget.style.background = C.ink)}
+      onMouseDown={e => (e.currentTarget.style.transform = 'translateY(1px)')}
+      onMouseUp={e => (e.currentTarget.style.transform = '')}
     >
       {children}
     </button>
   );
 }
 
-function OutlineButton({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
+function BtnSecondary({ onClick, children, lg }: { onClick?: () => void; children: React.ReactNode; lg?: boolean }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 border border-[#d1d5db] text-[#111111] text-sm font-semibold px-5 py-2.5 rounded-full hover:border-[#111111] transition-colors bg-white"
+      style={{
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        height: lg ? 46 : 38, padding: lg ? '0 22px' : '0 16px',
+        borderRadius: lg ? 9 : 8, fontSize: lg ? 15 : 14, fontWeight: 500,
+        letterSpacing: '-0.005em', border: `1px solid ${C.line}`,
+        background: C.bgElev, color: C.ink,
+        boxShadow: shadowCard, cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: font,
+        transition: 'border-color .15s ease',
+      }}
+      onMouseOver={e => (e.currentTarget.style.borderColor = '#D4D4CE')}
+      onMouseOut={e => (e.currentTarget.style.borderColor = C.line)}
+      onMouseDown={e => (e.currentTarget.style.transform = 'translateY(1px)')}
+      onMouseUp={e => (e.currentTarget.style.transform = '')}
     >
       {children}
     </button>
   );
 }
 
-/* ─── Hero mockup ────────────────────────────────────────────────────────── */
-
-function HeroMockup() {
+function BtnGhost({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
   return (
-    <div className="relative flex justify-center">
-      {/* browser chrome */}
-      <div className="w-[340px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-        {/* title bar */}
-        <div className="bg-gray-50 border-b border-gray-100 px-4 py-2.5 flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-            <div className="w-2.5 h-2.5 rounded-full bg-green-400" />
-          </div>
-          <div className="flex-1 bg-white rounded text-[10px] text-gray-400 text-center px-2 py-0.5 border border-gray-200">
-            cvbuilder.app/cv/preview
-          </div>
-        </div>
-
-        {/* CV content */}
-        <div className="p-5 font-serif">
-          <div className="text-center border-b border-gray-100 pb-4 mb-4">
-            <div className="text-base font-bold text-gray-900">Sam Carter</div>
-            <div className="text-[11px] text-gray-500 mt-0.5">sam@openai.com · github.com/samcarter</div>
-          </div>
-
-          <SectionBlock title="EXPERIENCE">
-            <div className="flex justify-between items-baseline mb-0.5">
-              <span className="text-[11px] font-bold text-gray-800">OpenAI</span>
-              <span className="text-[9px] text-gray-400">2022 – Present</span>
-            </div>
-            <div className="text-[10px] text-gray-500 italic mb-1">Senior Software Engineer</div>
-            <div className="text-[10px] text-gray-600 leading-relaxed">• Led infrastructure team scaling to 100M+ users</div>
-            <div className="text-[10px] text-gray-600 leading-relaxed">• Reduced latency by 40% via distributed caching</div>
-          </SectionBlock>
-
-          <SectionBlock title="EDUCATION">
-            <div className="flex justify-between items-baseline">
-              <span className="text-[11px] font-bold text-gray-800">MIT</span>
-              <span className="text-[9px] text-gray-400">2022</span>
-            </div>
-            <div className="text-[10px] text-gray-500 italic">B.Sc. Computer Science</div>
-          </SectionBlock>
-
-          <SectionBlock title="SKILLS">
-            <div className="text-[10px] text-gray-600">Python · Go · Kubernetes · AWS · PostgreSQL</div>
-          </SectionBlock>
-        </div>
-      </div>
-
-      {/* ATS badge */}
-      <div className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-lg border border-gray-100 px-3 py-2 flex items-center gap-2">
-        <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <div>
-          <div className="text-[9px] text-gray-400 uppercase tracking-wide">ATS Score</div>
-          <div className="text-sm font-black text-gray-900 leading-none">98 / 100</div>
-        </div>
-      </div>
-
-      {/* saved badge */}
-      <div className="absolute -top-3 -right-3 bg-white rounded-lg shadow-md border border-gray-100 px-3 py-1.5 flex items-center gap-1.5">
-        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-        <span className="text-[10px] font-semibold text-gray-600">Auto-saved</span>
-      </div>
-    </div>
+    <button
+      onClick={onClick}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        height: 38, padding: '0 16px', borderRadius: 8, fontSize: 14,
+        fontWeight: 500, letterSpacing: '-0.005em', border: '1px solid transparent',
+        background: 'transparent', color: C.ink, cursor: 'pointer', fontFamily: font,
+        transition: 'background .15s ease',
+      }}
+      onMouseOver={e => (e.currentTarget.style.background = C.bgSoft)}
+      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
+    >
+      {children}
+    </button>
   );
 }
 
-function SectionBlock({ title, children }: { title: string; children: React.ReactNode }) {
+/* ── Arrow span ─────────────────────────────────────────────────────────── */
+function Arr() {
+  return <span style={{ display: 'inline-block' }}>→</span>;
+}
+
+/* ── Eyebrow label ──────────────────────────────────────────────────────── */
+function Eyebrow({ children, light }: { children: string; light?: boolean }) {
   return (
-    <div className="mb-3">
-      <div className="text-[9px] font-black tracking-[0.2em] text-gray-400 border-b border-gray-100 pb-0.5 mb-1.5">{title}</div>
+    <div style={{
+      fontFamily: fontMono, fontSize: 12, letterSpacing: '0.08em',
+      textTransform: 'uppercase', color: light ? 'rgba(255,255,255,.5)' : C.muted,
+      fontWeight: 500,
+    }}>
       {children}
     </div>
   );
 }
 
-/* ─── Template mini-previews ─────────────────────────────────────────────── */
-
-function TemplateMini({ name, type, dark }: { name: string; type: 'classic' | 'modern' | 'ats' | 'pro'; dark?: boolean }) {
-  const bg = dark ? 'bg-[#111111]' : 'bg-white';
-  const line = dark ? 'bg-white/20' : 'bg-gray-200';
-  const lineDark = dark ? 'bg-white/40' : 'bg-gray-400';
-
+/* ── Resume mini card (used in hero + features) ─────────────────────────── */
+function ResumeCard({ style, name, role, contact, experiences, skills }: {
+  style?: React.CSSProperties;
+  name: string;
+  role: string;
+  contact?: string[];
+  experiences?: { company: string; date: string; title?: string; bullets?: string[] }[];
+  skills?: string[];
+}) {
+  const s: React.CSSProperties = {
+    position: 'absolute', background: '#fff',
+    border: `1px solid ${C.line}`, borderRadius: 12,
+    boxShadow: shadowLift, overflow: 'hidden', ...style,
+  };
+  const pad: React.CSSProperties = { padding: '22px 24px' };
   return (
-    <div className="flex-1 min-w-[140px]">
-      <div className={`${bg} border border-gray-200 rounded-lg p-3 h-44 overflow-hidden shadow-sm`}>
-        {type === 'classic' && (
-          <div className="space-y-1.5">
-            <div className={`${lineDark} h-2 w-3/4 rounded`} />
-            <div className={`${line} h-1.5 w-1/2 rounded`} />
-            <div className="mt-2 space-y-1">
-              <div className={`${line} h-1 w-full rounded`} />
-              <div className={`${line} h-1 w-5/6 rounded`} />
-              <div className={`${line} h-1 w-full rounded`} />
+    <div style={s}>
+      <div style={pad}>
+        {/* header */}
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, borderBottom: `1px solid ${C.line2}`, paddingBottom: 12 }}>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: '-0.02em' }}>{name}</div>
+            <div style={{ fontFamily: fontMono, fontSize: 10, color: C.muted, letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: 2 }}>{role}</div>
+          </div>
+          {contact && (
+            <div style={{ fontFamily: fontMono, fontSize: 9, color: C.muted2, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'right' }}>
+              {contact.map(c => <span key={c}>{c}</span>)}
             </div>
-            <div className="mt-1.5 space-y-1">
-              <div className={`${line} h-1 w-3/4 rounded`} />
-              <div className={`${line} h-1 w-5/6 rounded`} />
+          )}
+        </div>
+
+        {/* experience */}
+        {experiences && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, marginBottom: 8 }}>Experience</div>
+            {experiences.map((exp, i) => (
+              <div key={i} style={{ marginTop: i > 0 ? 10 : 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: C.ink }}>{exp.company}</div>
+                  <div style={{ fontFamily: fontMono, fontSize: 9, color: C.muted2 }}>{exp.date}</div>
+                </div>
+                {exp.title && <div style={{ fontSize: 10, color: C.ink2, marginTop: 1 }}>{exp.title}</div>}
+                {exp.bullets?.map((b, j) => (
+                  <div key={j} style={{ fontSize: 9.5, color: C.muted, lineHeight: 1.45, marginTop: 4, display: 'flex', gap: 6 }}>
+                    <span style={{ flex: '0 0 3px', width: 3, height: 3, borderRadius: '50%', background: C.muted2, marginTop: 5, flexShrink: 0 }} />
+                    {b}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* skills */}
+        {skills && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, marginBottom: 8 }}>Skills</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {skills.map(sk => (
+                <span key={sk} style={{ fontSize: 9, padding: '2px 6px', border: `1px solid ${C.line}`, borderRadius: 4, color: C.ink2 }}>{sk}</span>
+              ))}
             </div>
           </div>
         )}
-        {type === 'modern' && (
-          <div className="flex gap-2">
-            <div className="w-12 bg-gray-800 rounded h-full flex-shrink-0 space-y-2 p-1.5">
-              <div className="w-6 h-6 rounded-full bg-white/30 mx-auto" />
-              <div className="h-1 bg-white/20 rounded" />
-              <div className="h-1 bg-white/20 rounded" />
-              <div className="h-1 bg-white/20 rounded w-2/3" />
-            </div>
-            <div className="flex-1 space-y-1.5">
-              <div className="h-2 bg-gray-800 w-3/4 rounded" />
-              <div className="h-1 bg-gray-200 w-full rounded" />
-              <div className="h-1 bg-gray-200 w-5/6 rounded" />
-              <div className="h-1 bg-gray-200 w-full rounded" />
-            </div>
-          </div>
-        )}
-        {type === 'ats' && (
-          <div className="space-y-1">
-            <div className="h-2 bg-gray-900 w-1/2 rounded" />
-            <div className="h-1 bg-gray-300 w-2/3 rounded" />
-            <div className="mt-1.5 h-px bg-gray-200" />
-            <div className="h-1.5 bg-gray-700 w-1/3 rounded mt-1" />
-            <div className="space-y-0.5 mt-0.5">
-              <div className="h-1 bg-gray-200 w-full rounded" />
-              <div className="h-1 bg-gray-200 w-5/6 rounded" />
-              <div className="h-1 bg-gray-200 w-full rounded" />
-            </div>
-            <div className="h-1.5 bg-gray-700 w-1/4 rounded mt-1" />
-            <div className="h-1 bg-gray-200 w-4/5 rounded" />
-          </div>
-        )}
-        {type === 'pro' && (
-          <div className="space-y-1.5">
-            <div className="text-center">
-              <div className="h-2 bg-gray-900 w-2/3 rounded mx-auto" />
-              <div className="h-1 bg-gray-300 w-1/2 rounded mx-auto mt-0.5" />
-            </div>
-            <div className="h-px bg-red-800/40" />
-            <div className="h-1.5 bg-red-800 w-1/4 rounded" />
-            <div className="space-y-0.5">
-              <div className="h-1 bg-gray-200 w-full rounded" />
-              <div className="h-1 bg-gray-200 w-5/6 rounded" />
-            </div>
-            <div className="h-1.5 bg-red-800 w-1/3 rounded" />
-            <div className="h-1 bg-gray-200 w-3/4 rounded" />
-          </div>
-        )}
-      </div>
-      <div className="mt-2">
-        <div className="text-[11px] font-semibold text-gray-800">{name}</div>
       </div>
     </div>
   );
 }
 
-/* ─── Main component ─────────────────────────────────────────────────────── */
+/* ── Hero visual: stacked resume cards ──────────────────────────────────── */
+function HeroVisual() {
+  return (
+    <div style={{ position: 'relative', aspectRatio: '1 / 1.05', perspective: 1400, width: '100%' }}>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        {/* back-2 */}
+        <ResumeCard
+          style={{ top: '8%', left: '-4%', width: '58%', aspectRatio: '8.5/11', zIndex: 1, transform: 'rotate(-6deg)', opacity: 0.85 }}
+          name="A. Mendes" role="Product Designer"
+          skills={['Figma', 'CSS', 'Design Systems']}
+        />
+        {/* back-1 */}
+        <ResumeCard
+          style={{ top: '1%', left: '33%', width: '64%', aspectRatio: '8.5/11', zIndex: 2, transform: 'rotate(5deg)', opacity: 0.95 }}
+          name="M. Tanaka" role="Engineering Lead"
+          experiences={[{ company: 'Linear', date: '2023 — Present', title: 'Staff Engineer' }]}
+        />
+        {/* front */}
+        <ResumeCard
+          style={{ top: '4%', left: '11%', width: '78%', aspectRatio: '8.5/11', zIndex: 3, transform: 'rotate(-1.2deg)' }}
+          name="Sam Carter" role="Senior Frontend Engineer"
+          contact={['sam@carter.dev', '+1 (415) 555 0117', 'sf · california']}
+          experiences={[
+            { company: 'Stripe', date: '2022 — Present', title: 'Senior Frontend Engineer', bullets: ['Led migration of Checkout to React 18, reducing TTI by 41%.', 'Owned design-system contributions across 14 product teams.'] },
+            { company: 'Notion', date: '2019 — 2022', title: 'Frontend Engineer', bullets: ['Built the new database block, used by 6M+ daily users.'] },
+          ]}
+          skills={['TypeScript', 'React', 'Next.js', 'PostgreSQL', 'Spring Boot', 'Design Systems']}
+        />
+        {/* ATS chip */}
+        <div style={{
+          position: 'absolute', bottom: '8%', left: '-2%', zIndex: 5,
+          background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 10,
+          padding: '10px 12px', boxShadow: '0 8px 24px -12px rgba(10,10,10,.18)',
+          display: 'flex', alignItems: 'center', gap: 10, fontSize: 12,
+        }}>
+          <div style={{ fontFamily: fontMono, fontSize: 16, fontWeight: 600, color: C.success }}>98</div>
+          <div>
+            <div style={{ fontWeight: 500, color: C.ink }}>ATS Score</div>
+            <div style={{ fontFamily: fontMono, fontSize: 10, color: C.muted }}>Passes 12 of 12 checks</div>
+          </div>
+        </div>
+        {/* Sync chip */}
+        <div style={{
+          position: 'absolute', top: '6%', right: '-2%', zIndex: 5,
+          background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 10,
+          padding: '10px 12px', boxShadow: '0 8px 24px -12px rgba(10,10,10,.18)',
+          display: 'flex', alignItems: 'center', gap: 10, fontSize: 12,
+        }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.success, boxShadow: '0 0 0 3px rgba(22,163,74,.18)', display: 'inline-block' }} />
+          <div style={{ fontFamily: fontMono, fontSize: 11, color: C.ink2 }}>Auto-saved · just now</div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
+/* ── Mini resume thumb (template gallery) ───────────────────────────────── */
+function MiniLine({ w = 'l' }: { w?: 's' | 'm' | 'l' }) {
+  const widths = { s: '60%', m: '80%', l: '95%' };
+  return <div style={{ height: 3, background: '#E5E5E0', borderRadius: 1, marginBottom: 3, width: widths[w] }} />;
+}
+
+function MiniSecH({ children }: { children: string }) {
+  return (
+    <div style={{ fontFamily: fontMono, fontSize: 6, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted, borderBottom: `0.5px solid ${C.line}`, paddingBottom: 2, marginBottom: 4 }}>
+      {children}
+    </div>
+  );
+}
+
+function TplClassic() {
+  return (
+    <div style={{ padding: 16, height: '100%', fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: font }}>
+      <div style={{ textAlign: 'center', borderBottom: `0.5px solid ${C.line}`, paddingBottom: 6 }}>
+        <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>SAM CARTER</div>
+        <div style={{ fontFamily: fontMono, fontSize: 6, color: C.muted, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>sam@carter.dev · sf, ca</div>
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <MiniSecH>Experience</MiniSecH>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 600, fontSize: 7 }}>Stripe</span>
+          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
+        </div>
+        <MiniLine /><MiniLine w="m" />
+        <div style={{ height: 6 }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 600, fontSize: 7 }}>Notion</span>
+          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
+        </div>
+        <MiniLine />
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <MiniSecH>Education</MiniSecH>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 600, fontSize: 7 }}>UC Berkeley</span>
+          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2015 — 2019</span>
+        </div>
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <MiniSecH>Skills</MiniSecH>
+        <MiniLine w="m" />
+      </div>
+    </div>
+  );
+}
+
+function TplSidebar() {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '32% 1fr', height: '100%' }}>
+      <div style={{ background: '#0A0A0A', color: '#fff', padding: '14px 10px', fontSize: 6 }}>
+        <div style={{ fontWeight: 700, fontSize: 9, letterSpacing: '-0.02em', color: '#fff' }}>Sam<br />Carter</div>
+        <div style={{ fontSize: 5, color: '#888', marginTop: 3 }}>Frontend Engineer</div>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 6, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#888', borderBottom: '0.5px solid #2a2a2a', paddingBottom: 2, marginBottom: 4 }}>Contact</div>
+          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '60%' }} />
+          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '80%' }} />
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 6, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#888', borderBottom: '0.5px solid #2a2a2a', paddingBottom: 2, marginBottom: 4 }}>Skills</div>
+          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '95%' }} />
+          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '80%' }} />
+          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '60%' }} />
+        </div>
+      </div>
+      <div style={{ padding: '14px 12px' }}>
+        <div style={{ marginTop: 0 }}>
+          <MiniSecH>Experience</MiniSecH>
+          <div style={{ fontWeight: 600, fontSize: 7 }}>Stripe</div>
+          <MiniLine /><MiniLine w="m" />
+          <div style={{ height: 4 }} />
+          <div style={{ fontWeight: 600, fontSize: 7 }}>Notion</div>
+          <MiniLine />
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <MiniSecH>Education</MiniSecH>
+          <MiniLine w="m" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TplModern() {
+  return (
+    <div style={{ padding: 16, height: '100%', fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: font }}>
+      <div style={{ fontWeight: 700, fontSize: 13, letterSpacing: '-0.03em' }}>Sam Carter.</div>
+      <div style={{ height: 3, width: 32, background: C.accent, margin: '6px 0 8px' }} />
+      <div style={{ fontFamily: fontMono, fontSize: 6, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Frontend Engineer · San Francisco</div>
+      <div style={{ marginTop: 10 }}>
+        <MiniSecH>Experience</MiniSecH>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 600, fontSize: 7 }}>Stripe</span>
+          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
+        </div>
+        <MiniLine /><MiniLine w="m" />
+        <div style={{ height: 6 }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 600, fontSize: 7 }}>Notion</span>
+          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
+        </div>
+        <MiniLine /><MiniLine w="s" />
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <MiniSecH>Skills</MiniSecH>
+        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+          {['React', 'TypeScript', 'Spring'].map(s => (
+            <span key={s} style={{ fontSize: 5, padding: '1px 4px', border: `0.5px solid ${C.line}`, borderRadius: 2 }}>{s}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TplSerif() {
+  return (
+    <div style={{ padding: 16, height: '100%', fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: '"Times New Roman", Georgia, serif' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>Sam Carter</div>
+        <div style={{ fontSize: 6, color: C.muted, fontStyle: 'italic' }}>Frontend Engineer</div>
+        <div style={{ fontSize: 5.5, color: C.muted, marginTop: 2 }}>sam@carter.dev — +1 415 555 0117</div>
+      </div>
+      <div style={{ height: 0.5, background: C.ink, margin: '8px 0' }} />
+      <div>
+        <MiniSecH>Experience</MiniSecH>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 600, fontSize: 7, fontStyle: 'italic' }}>Stripe — San Francisco</span>
+          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
+        </div>
+        <MiniLine /><MiniLine w="m" />
+        <div style={{ height: 6 }} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontWeight: 600, fontSize: 7, fontStyle: 'italic' }}>Notion</span>
+          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
+        </div>
+        <MiniLine />
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <MiniSecH>Education</MiniSecH>
+        <MiniLine w="m" />
+      </div>
+    </div>
+  );
+}
+
+/* ── Feature icon wrapper ────────────────────────────────────────────────── */
+function FeatureIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      width: 32, height: 32, borderRadius: 8, background: C.bgSoft,
+      border: `1px solid ${C.line}`, display: 'grid', placeItems: 'center', color: C.ink,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+/* ── Main component ─────────────────────────────────────────────────────── */
 export function LandingPage() {
   const navigate = useNavigate();
   const goAuth = () => navigate('/auth');
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+  const root: React.CSSProperties = {
+    fontFamily: font,
+    background: C.bg,
+    color: C.ink,
+    minHeight: '100vh',
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
+    fontSize: 16,
+    lineHeight: 1.5,
+    letterSpacing: '-0.005em',
+  };
 
   return (
-    <div className="min-h-screen bg-white text-[#111111] font-sans">
+    <div style={root}>
 
       {/* ── NAV ── */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Logo size={24} variant="light" />
-            <span className="font-black text-sm tracking-tight">CV Builder</span>
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        backdropFilter: 'saturate(150%) blur(12px)',
+        WebkitBackdropFilter: 'saturate(150%) blur(12px)',
+        background: 'color-mix(in oklab, #FBFBFA 78%, transparent)',
+        borderBottom: `1px solid ${C.line2}`,
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
+          {/* brand */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, letterSpacing: '-0.02em', fontSize: 16, cursor: 'pointer' }} onClick={goAuth}>
+            <Logo size={26} variant="light" />
+            <span>CV Builder</span>
           </div>
-
-          <div className="hidden md:flex items-center gap-7 text-[13px] font-medium text-gray-500">
-            <a href="#features" className="hover:text-[#111] transition-colors">Features</a>
-            <a href="#templates" className="hover:text-[#111] transition-colors">Templates</a>
-            <a href="#how-it-works" className="hover:text-[#111] transition-colors">How it works</a>
-            <a href="#built-with" className="hover:text-[#111] transition-colors">Built with</a>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button onClick={goAuth} className="text-[13px] font-medium text-gray-500 hover:text-[#111] transition-colors">
-              Sign in
-            </button>
-            <DarkButton onClick={goAuth}>Build CV →</DarkButton>
+          {/* links */}
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 28, fontSize: 14, color: C.ink2 }}>
+            {[['Features','features'],['Templates','templates'],['How it works','how'],['Built with','stack']].map(([label, id]) => (
+              <button key={id} onClick={() => scrollTo(id)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, fontSize: 14, color: C.ink2, padding: 0, transition: 'color .15s' }}
+                onMouseOver={e => (e.currentTarget.style.color = C.ink)}
+                onMouseOut={e => (e.currentTarget.style.color = C.ink2)}
+              >{label}</button>
+            ))}
+          </nav>
+          {/* actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BtnGhost onClick={goAuth}>Sign in</BtnGhost>
+            <BtnPrimary onClick={goAuth}>Build Resume <Arr /></BtnPrimary>
           </div>
         </div>
-      </nav>
+      </div>
 
       {/* ── HERO ── */}
-      <section className="max-w-6xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-[11px] font-semibold text-gray-500 mb-8">
-            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-            AI-powered content suggestions
+      <section style={{ position: 'relative', padding: '80px 0 40px', overflow: 'hidden' }}>
+        {/* grid bg */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          backgroundImage: 'linear-gradient(to right, rgba(10,10,10,.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(10,10,10,.035) 1px, transparent 1px)',
+          backgroundSize: '56px 56px',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 70%)',
+          maskImage: 'radial-gradient(ellipse 80% 60% at 50% 30%, black 30%, transparent 70%)',
+        }} />
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: 'minmax(0,1.05fr) minmax(0,1fr)', gap: 64, alignItems: 'center' }}>
+          <div>
+            {/* eyebrow pill */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 10,
+              padding: '5px 10px 5px 5px', background: C.bgElev,
+              border: `1px solid ${C.line}`, borderRadius: 999,
+              fontSize: 12, color: C.muted, marginBottom: 24,
+            }}>
+              <span style={{ background: '#EAF0FF', color: C.accentInk, fontFamily: fontMono, fontSize: 11, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.02em' }}>v2.4</span>
+              Now with AI-assisted content suggestions
+            </div>
+
+            <h1 style={{ margin: 0, fontSize: 'clamp(40px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.035em', fontWeight: 600, color: C.ink }}>
+              A resume builder<br />
+              recruiters <em style={{ fontStyle: 'normal', color: C.muted }}>actually</em><br />
+              finish reading.
+            </h1>
+
+            <p style={{ margin: '24px 0 0', fontSize: 18, lineHeight: 1.55, color: C.muted, maxWidth: 520 }}>
+              Draft, polish, and export a clean, ATS-ready resume in under ten minutes. Live preview as you type. No watermarks, no template lock-in.
+            </p>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 32, flexWrap: 'wrap' }}>
+              <BtnPrimary onClick={goAuth} lg>Build Resume <Arr /></BtnPrimary>
+              <BtnSecondary onClick={() => scrollTo('templates')} lg>View Templates</BtnSecondary>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 28, fontSize: 13, color: C.muted }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.success, boxShadow: '0 0 0 4px rgba(22,163,74,.12)', display: 'inline-block' }} />
+              <span>Free forever · No card required</span>
+              <span style={{ width: 1, height: 14, background: C.line, display: 'inline-block' }} />
+              <span>Exports to PDF &amp; DOCX</span>
+            </div>
           </div>
 
-          <h1 className="text-[52px] font-black leading-[1.05] tracking-tight mb-6">
-            A CV builder recruiters{' '}
-            <span className="italic font-black text-gray-400">actually</span>{' '}
-            finish reading.
-          </h1>
-
-          <p className="text-[17px] text-gray-500 leading-relaxed mb-8 max-w-md">
-            Draft, polish, and export a clean, ATS-ready CV in under ten minutes.
-            Live preview as you type. No watermarks, no template lock-in.
-          </p>
-
-          <div className="flex items-center gap-3 mb-5">
-            <DarkButton onClick={goAuth}>Build Your CV →</DarkButton>
-            <OutlineButton onClick={() => document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' })}>
-              View Templates
-            </OutlineButton>
-          </div>
-
-          <p className="text-[12px] text-gray-400">
-            Free to start · No card required · Exports to PDF
-          </p>
-        </div>
-
-        <div className="flex justify-center">
-          <HeroMockup />
+          <HeroVisual />
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF ── */}
-      <section className="border-y border-gray-100 py-10">
-        <div className="max-w-6xl mx-auto px-6">
-          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-gray-300 text-center mb-7">
-            CVs built here have landed roles at
-          </p>
-          <div className="flex flex-wrap justify-center items-center gap-10">
+      {/* ── LOGOS ── */}
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+        <div style={{ padding: '56px 0 40px', textAlign: 'center' }}>
+          <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 28 }}>
+            Resumes built here have landed roles at
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 36, alignItems: 'center', opacity: 0.55 }}>
             {['Atlassian', 'Shopify', 'Datadog', 'Figma', 'Cloudflare'].map(name => (
-              <span key={name} className="text-[15px] font-semibold text-gray-300 tracking-tight">{name}</span>
+              <div key={name} style={{ textAlign: 'center', fontWeight: 600, letterSpacing: '-0.02em', color: C.ink2, fontSize: 16 }}>{name}</div>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="features" className="max-w-6xl mx-auto px-6 py-24">
-        <div className="grid md:grid-cols-2 gap-4 mb-16">
-          <div>
-            <Label>Features</Label>
-            <h2 className="text-[38px] font-black leading-tight tracking-tight">
-              Everything you need.<br />Nothing you don't.
-            </h2>
-          </div>
-          <div className="flex items-end">
-            <p className="text-[15px] text-gray-500 leading-relaxed">
-              A focused set of tools built around the actual problem: getting a
-              polished CV out the door without fighting the editor.
+      <section id="features" style={{ padding: '96px 0', borderTop: `1px solid ${C.line2}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          {/* section head */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'end', marginBottom: 56 }}>
+            <div>
+              <Eyebrow>Features</Eyebrow>
+              <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.03em', fontWeight: 600, lineHeight: 1.08, margin: '12px 0 0', maxWidth: '18ch' }}>
+                Everything you need. Nothing you don't.
+              </h2>
+            </div>
+            <p style={{ color: C.muted, fontSize: 17, lineHeight: 1.55, maxWidth: '44ch' }}>
+              A focused set of tools, built around the actual problem: getting a polished resume out the door without fighting the editor.
             </p>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            {
-              icon: '◧',
-              title: 'Live preview, always in view',
-              desc: 'Edit on the left, see the typeset PDF on the right. No "render" buttons, no surprises at export time.',
-            },
-            {
-              icon: '✓',
-              title: 'ATS-friendly by default',
-              desc: 'Every template is parsed against the same systems recruiters use, so your file makes it past the filter.',
-            },
-            {
-              icon: '⌨',
-              title: 'Keyboard-first editing',
-              desc: 'Reorder sections, duplicate roles, format bullets — all with shortcuts. Quick action palette included.',
-            },
-            {
-              icon: '⬡',
-              title: 'Pixel-true PDF export',
-              desc: 'Font-embedded, vector PDF output. What you see on-screen is exactly what lands in the recruiter\'s inbox.',
-            },
-            {
-              icon: '▣',
-              title: 'Four curated templates',
-              desc: 'Switch layouts without retyping content. Each template is hand-tuned — not just a coat of paint over the same grid.',
-            },
-            {
-              icon: '⊕',
-              title: 'Tailored versions',
-              desc: 'Keep one master profile. Spin up role-specific variants in seconds and track which one you sent where.',
-            },
-          ].map(f => (
-            <div key={f.title} className="border border-gray-100 rounded-2xl p-6 hover:border-gray-200 transition-colors">
-              <div className="text-xl mb-4 text-gray-400">{f.icon}</div>
-              <h3 className="text-[15px] font-bold text-gray-900 mb-2">{f.title}</h3>
-              <p className="text-[13px] text-gray-500 leading-relaxed">{f.desc}</p>
+          {/* features grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', border: `1px solid ${C.line}`, borderRadius: 14, background: C.bgElev, overflow: 'hidden' }}>
+            {/* large feature: live preview */}
+            <div style={{ gridColumn: 'span 2', padding: 0, overflow: 'hidden', minHeight: 360, position: 'relative', background: 'linear-gradient(180deg, #FFFFFF 0%, #F9F9F6 100%)', borderRight: `1px solid ${C.line}`, borderBottom: `1px solid ${C.line}` }}>
+              <div style={{ padding: 32, display: 'flex', flexDirection: 'column', gap: 14, maxWidth: '50%' }}>
+                <FeatureIcon>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </FeatureIcon>
+                <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>Live preview, always in view</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55 }}>Edit on the left, see the typeset PDF on the right. No "render" buttons, no surprises at export time.</div>
+              </div>
+              {/* floating mini resume */}
+              <div style={{ position: 'absolute', right: -40, bottom: -40, width: '56%', aspectRatio: '1/1', borderRadius: 16, background: '#fff', border: `1px solid ${C.line}`, boxShadow: '0 30px 60px -30px rgba(10,10,10,.18)', overflow: 'hidden', transform: 'rotate(-3deg)' }}>
+                <div style={{ padding: 16, fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: font }}>
+                  <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>Sam Carter</div>
+                  <div style={{ fontFamily: fontMono, fontSize: 6, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Frontend Engineer</div>
+                  <div style={{ marginTop: 10 }}>
+                    <MiniSecH>Experience</MiniSecH>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontWeight: 600, fontSize: 7 }}>Stripe</span>
+                      <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
+                    </div>
+                    <div style={{ height: 4 }} />
+                    <MiniLine /><MiniLine w="m" />
+                    <div style={{ height: 8 }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontWeight: 600, fontSize: 7 }}>Notion</span>
+                      <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
+                    </div>
+                    <div style={{ height: 4 }} />
+                    <MiniLine /><MiniLine w="s" />
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    <MiniSecH>Skills</MiniSecH>
+                    <MiniLine w="m" /><MiniLine />
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
+
+            {/* small features */}
+            {[
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7 9 18l-5-5"/></svg>, title: 'ATS-friendly by default', desc: 'Every template is parsed and validated against the same systems recruiters use, so your file makes it past the filter.', col: 1, row: 1 },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>, title: 'Keyboard-first editing', desc: 'Reorder sections, duplicate roles, format bullets — all with shortcuts. Slash-commands open a quick action palette.', col: 1, row: 2 },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>, title: 'Pixel-true PDF export', desc: 'Font-embedded, vector PDF output. What you see on screen is exactly what lands in the recruiter\'s inbox.', col: 2, row: 1 },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, title: 'Twelve curated templates', desc: 'Switch layouts without redoing your content. Type, spacing, and rhythm tuned individually — not just recolored.', col: 2, row: 2 },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>, title: 'Tailored versions', desc: 'Keep one master profile. Spin up role-specific variants in seconds and track which one you sent where.', col: 3, row: 2 },
+            ].map((f, i) => (
+              <div key={f.title} style={{
+                padding: 32, borderRight: i === 0 || i === 2 ? `1px solid ${C.line}` : 'none',
+                borderBottom: i < 2 ? `1px solid ${C.line}` : 'none',
+                background: C.bgElev, display: 'flex', flexDirection: 'column', gap: 14, minHeight: 220,
+              }}>
+                <FeatureIcon>{f.icon}</FeatureIcon>
+                <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>{f.title}</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55 }}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ── TEMPLATES ── */}
-      <section id="templates" className="max-w-6xl mx-auto px-6 py-24 border-t border-gray-100">
-        <div className="grid md:grid-cols-2 gap-4 mb-12">
-          <div>
-            <Label>Templates</Label>
-            <h2 className="text-[38px] font-black leading-tight tracking-tight">
-              Four layouts.<br />One source of truth.
-            </h2>
-          </div>
-          <div className="flex items-end">
-            <p className="text-[15px] text-gray-500 leading-relaxed">
-              Change templates without rewriting a word. Each layout is
-              hand-tuned — not just a coat of paint over the same grid.
+      <section id="templates" style={{ padding: '96px 0', borderTop: `1px solid ${C.line2}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'end', marginBottom: 56 }}>
+            <div>
+              <Eyebrow>Templates</Eyebrow>
+              <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.03em', fontWeight: 600, lineHeight: 1.08, margin: '12px 0 0', maxWidth: '18ch' }}>
+                Twelve layouts. One source of truth.
+              </h2>
+            </div>
+            <p style={{ color: C.muted, fontSize: 17, lineHeight: 1.55, maxWidth: '44ch' }}>
+              Change templates without rewriting a word. Each layout is hand-tuned — not just a coat of paint over the same grid.
             </p>
           </div>
-        </div>
 
-        <div className="flex gap-4 mb-10 overflow-x-auto pb-2">
-          {['All', 'Minimal', 'Technical', 'Executive'].map((tab, i) => (
-            <button
-              key={tab}
-              className={`text-[12px] font-semibold px-4 py-1.5 rounded-full border transition-colors whitespace-nowrap ${
-                i === 0
-                  ? 'bg-[#111111] text-white border-[#111111]'
-                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+          {/* tabs */}
+          <div style={{ display: 'inline-flex', background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 999, padding: 4, gap: 2, marginBottom: 32 }}>
+            {['All', 'Minimal', 'Technical', 'Executive', 'Creative'].map((tab, i) => (
+              <button key={tab} style={{
+                border: 0, padding: '6px 14px', borderRadius: 999, fontSize: 13, fontFamily: font,
+                background: i === 0 ? C.ink : 'transparent',
+                color: i === 0 ? '#fff' : C.muted, cursor: 'pointer',
+              }}>{tab}</button>
+            ))}
+          </div>
 
-        <div className="flex gap-6 overflow-x-auto pb-4">
-          <TemplateMini name="Classic" type="classic" />
-          <TemplateMini name="Modern" type="modern" dark />
-          <TemplateMini name="ATS" type="ats" />
-          <TemplateMini name="Pro" type="pro" />
-        </div>
+          {/* template cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
+            {[
+              { component: <TplClassic />, name: 'Classic', tag: 'Minimal' },
+              { component: <TplSidebar />, name: 'Aperture', tag: 'Technical' },
+              { component: <TplModern />, name: 'Vector', tag: 'Modern' },
+              { component: <TplSerif />, name: 'Bodoni', tag: 'Executive' },
+            ].map(tpl => (
+              <article key={tpl.name}
+                style={{ background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'transform .15s ease, box-shadow .15s ease, border-color .15s ease' }}
+                onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = shadowLift; (e.currentTarget as HTMLElement).style.borderColor = '#D4D4CE'; }}
+                onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = C.line; }}
+                onClick={goAuth}
+              >
+                <div style={{ aspectRatio: '8.5/11', background: '#fff', borderBottom: `1px solid ${C.line2}`, position: 'relative', overflow: 'hidden' }}>
+                  {tpl.component}
+                </div>
+                <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em' }}>{tpl.name}</div>
+                  <div style={{ fontFamily: fontMono, fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{tpl.tag}</div>
+                </div>
+              </article>
+            ))}
+          </div>
 
-        <div className="mt-8 text-center">
-          <button
-            onClick={goAuth}
-            className="text-[13px] font-semibold text-gray-500 hover:text-[#111] transition-colors inline-flex items-center gap-1"
-          >
-            Browse all templates →
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
+            <BtnSecondary onClick={goAuth}>Browse all 12 templates <Arr /></BtnSecondary>
+          </div>
         </div>
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="max-w-6xl mx-auto px-6 py-24 border-t border-gray-100">
-        <div className="grid md:grid-cols-2 gap-4 mb-16">
-          <div>
-            <Label>How it works</Label>
-            <h2 className="text-[38px] font-black leading-tight tracking-tight">
-              From blank page to PDF<br />in ten minutes.
-            </h2>
-          </div>
-          <div className="flex items-end">
-            <p className="text-[15px] text-gray-500 leading-relaxed">
-              Three steps. No onboarding wizard, no forced sign-up before
-              you can see what you're building.
+      <section id="how" style={{ padding: '96px 0', borderTop: `1px solid ${C.line2}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'end', marginBottom: 56 }}>
+            <div>
+              <Eyebrow>How it works</Eyebrow>
+              <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.03em', fontWeight: 600, lineHeight: 1.08, margin: '12px 0 0', maxWidth: '18ch' }}>
+                From blank page to PDF in ten minutes.
+              </h2>
+            </div>
+            <p style={{ color: C.muted, fontSize: 17, lineHeight: 1.55, maxWidth: '44ch' }}>
+              Three steps. No onboarding wizard, no forced sign-up before you can see what you're building.
             </p>
           </div>
-        </div>
 
-        <div className="grid md:grid-cols-3 gap-5">
-          {[
-            {
-              num: '#1 / DRAFT',
-              color: 'text-blue-500',
-              title: 'Pick a layout, start typing.',
-              desc: 'Start from a base profile or paste an old resume — we\'ll parse it into structured fields automatically.',
-            },
-            {
-              num: '#2 / REFINE',
-              color: 'text-amber-500',
-              title: 'Polish with smart suggestions.',
-              desc: 'Stronger verbs, missing metrics, gaps to close — the editor flags them inline. Take the suggestion or skip it.',
-            },
-            {
-              num: '#3 / EXPORT',
-              color: 'text-gray-400',
-              title: 'Send a file recruiters can parse.',
-              desc: 'Download as PDF, share a private link, or push directly to your applications.',
-            },
-          ].map(step => (
-            <div key={step.num} className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-              <div className={`text-[11px] font-black tracking-widest uppercase mb-4 ${step.color}`}>{step.num}</div>
-              <h3 className="text-[16px] font-bold text-gray-900 mb-2 leading-snug">{step.title}</h3>
-              <p className="text-[13px] text-gray-500 leading-relaxed">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── TECH STACK ── */}
-      <section id="built-with" className="max-w-6xl mx-auto px-6 py-10">
-        <div className="bg-[#111111] rounded-3xl p-12 text-white">
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            <div>
-              <Label>Built with</Label>
-              <h2 className="text-[34px] font-black leading-tight tracking-tight text-white mb-4">
-                Boring, reliable tools.<br />That's the whole point.
-              </h2>
-              <p className="text-[14px] text-gray-400 leading-relaxed mb-6">
-                CV Builder is built on a stack chosen for one reason: it stays up.
-                Direct typing on the frontend, a hardened JVM backend, and a
-                database you've actually heard of.
-              </p>
-              <div className="flex items-center gap-2 text-[12px] text-gray-500">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
-                99.9% uptime · Last 30 days
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, border: `1px solid ${C.line}`, borderRadius: 14, background: C.bgElev, padding: 8 }}>
+            {/* step 1 */}
+            <div style={{ background: C.bgSoft, borderRadius: 10, padding: 28, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.04em' }}>01 / Draft</div>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Pick a layout, start typing.</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Start from a blank profile or paste an old resume — we'll parse it into structured fields automatically.</div>
+              </div>
+              <div style={{ marginTop: 'auto', height: 64, borderRadius: 8, background: '#fff', border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, fontFamily: fontMono, fontSize: 11, color: C.muted }}>
+                <span style={{ color: C.accent }}>›</span>
+                Senior Frontend Engineer
+                <span style={{ display: 'inline-block', width: 7, height: 14, background: C.accent, marginLeft: 2, animation: 'lp-blink 1s steps(2) infinite' }} />
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { name: 'React', label: 'UI Library' },
-                { name: 'TypeScript', label: 'Type Safety' },
-                { name: 'Spring Boot', label: 'API Server' },
-                { name: 'PostgreSQL', label: 'Data Store' },
-              ].map(tech => (
-                <div key={tech.name} className="border border-white/10 rounded-xl p-4">
-                  <div className="text-[15px] font-bold text-white mb-0.5">{tech.name}</div>
-                  <div className="text-[11px] text-gray-500 uppercase tracking-wide font-semibold">{tech.label}</div>
-                </div>
-              ))}
+            {/* step 2 */}
+            <div style={{ background: C.bgSoft, borderRadius: 10, padding: 28, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.04em' }}>02 / Refine</div>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Polish with smart suggestions.</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Stronger verbs, missing metrics, gaps in dates — the editor flags them inline. Take the suggestion or skip it.</div>
+              </div>
+              <div style={{ marginTop: 'auto', height: 64, borderRadius: 8, background: '#fff', border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, fontFamily: fontMono, fontSize: 11, color: C.muted }}>
+                <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: 3, fontSize: 10 }}>→ add metric</span>
+                <span>Led migration of Checkout…</span>
+              </div>
+            </div>
+            {/* step 3 */}
+            <div style={{ background: C.bgSoft, borderRadius: 10, padding: 28, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.04em' }}>03 / Export</div>
+              <div>
+                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Send a file recruiters can parse.</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Download as PDF or DOCX, share a private link, or push directly to LinkedIn Easy Apply.</div>
+              </div>
+              <div style={{ marginTop: 'auto', height: 64, borderRadius: 8, background: '#fff', border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, fontFamily: fontMono, fontSize: 11, color: C.muted }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: `1px solid ${C.line}`, padding: '3px 8px', borderRadius: 4 }}>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
+                  resume_sam_carter.pdf
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── BOTTOM CTA ── */}
-      <section className="max-w-6xl mx-auto px-6 py-28 text-center">
-        <h2 className="text-[52px] font-black leading-tight tracking-tight mb-4">
-          Your next CV,<br />in about ten minutes.
-        </h2>
-        <p className="text-[16px] text-gray-400 mb-10">
-          Free to start. No watermarks. Cancel anytime — but you probably won't need to.
-        </p>
-        <div className="flex items-center justify-center gap-3">
-          <DarkButton onClick={goAuth}>Build Your CV →</DarkButton>
-          <OutlineButton onClick={() => document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' })}>
-            View Templates
-          </OutlineButton>
+      {/* ── TECH ── */}
+      <section id="stack" style={{ padding: '96px 0', borderTop: `1px solid ${C.line2}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div style={{ background: '#0A0A0A', color: '#fff', borderRadius: 20, padding: '72px 56px', position: 'relative', overflow: 'hidden' }}>
+            {/* grid bg */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              backgroundImage: 'linear-gradient(to right, rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.04) 1px, transparent 1px)',
+              backgroundSize: '48px 48px',
+              WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 30% 30%, black 30%, transparent 75%)',
+              maskImage: 'radial-gradient(ellipse 70% 60% at 30% 30%, black 30%, transparent 75%)',
+              pointerEvents: 'none',
+            }} />
+            <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 56, alignItems: 'center' }}>
+              <div>
+                <Eyebrow light>Engineering</Eyebrow>
+                <h2 style={{ fontSize: 'clamp(28px, 3.5vw, 38px)', letterSpacing: '-0.025em', fontWeight: 600, lineHeight: 1.1, margin: '12px 0 16px', color: '#fff' }}>
+                  Boring, reliable tools.<br />That's the whole point.
+                </h2>
+                <p style={{ color: 'rgba(255,255,255,.6)', fontSize: 16, lineHeight: 1.55, maxWidth: '44ch' }}>
+                  CV Builder is built on a stack chosen for one reason: it stays up. Strict typing on the frontend, a hardened JVM backend, and a database you've actually heard of.
+                </p>
+                <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14, fontSize: 13, color: 'rgba(255,255,255,.55)' }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 0 3px rgba(74,222,128,.18)', display: 'inline-block' }} />
+                  <span style={{ fontFamily: fontMono }}>99.98% uptime · last 90 days</span>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {[
+                  { name: 'React', role: 'UI Layer' },
+                  { name: 'TypeScript', role: 'Type Safety' },
+                  { name: 'Spring Boot', role: 'API · Java' },
+                  { name: 'PostgreSQL', role: 'Data Store' },
+                ].map(t => (
+                  <div key={t.name} style={{ background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.08)', borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ fontFamily: fontMono, fontSize: 14, color: '#fff', letterSpacing: '-0.005em' }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,.5)', fontFamily: fontMono, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t.role}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section style={{ textAlign: 'center', padding: '120px 0', borderTop: `1px solid ${C.line2}` }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <h2 style={{ fontSize: 'clamp(36px, 5vw, 56px)', letterSpacing: '-0.03em', fontWeight: 600, lineHeight: 1.05, margin: '0 0 18px' }}>
+            Your next resume,<br />in about ten minutes.
+          </h2>
+          <p style={{ fontSize: 17, color: C.muted, margin: '0 0 32px' }}>
+            Free to start. No watermarks. Cancel anytime — but you probably won't need to.
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <BtnPrimary onClick={goAuth} lg>Build Resume <Arr /></BtnPrimary>
+            <BtnSecondary onClick={() => scrollTo('templates')} lg>View Templates</BtnSecondary>
+          </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-5 gap-10">
-          <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-3">
-              <Logo size={24} variant="light" />
-              <span className="font-black text-sm tracking-tight">CV Builder</span>
+      <footer style={{ borderTop: `1px solid ${C.line2}`, padding: '64px 0 40px', background: C.bg }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontWeight: 600, letterSpacing: '-0.02em', fontSize: 16, cursor: 'pointer' }} onClick={goAuth}>
+                <Logo size={26} variant="light" />
+                <span>CV Builder</span>
+              </div>
+              <p style={{ color: C.muted, fontSize: 13, lineHeight: 1.55, margin: '14px 0 0', maxWidth: '32ch' }}>
+                A modern resume builder for engineers, designers, and the recruiters who read their work.
+              </p>
             </div>
-            <p className="text-[13px] text-gray-400 leading-relaxed max-w-[220px]">
-              A resume builder for engineers and designers who read their tools.
-            </p>
+            {[
+              { heading: 'Product', links: ['Builder', 'Templates', 'Examples', 'Pricing', 'Changelog'] },
+              { heading: 'Resources', links: ['Resume Guide', 'ATS Tips', 'Cover Letters', 'Career Blog'] },
+              { heading: 'Company', links: ['About', 'Privacy', 'Terms', 'Contact'] },
+            ].map(col => (
+              <div key={col.heading}>
+                <h4 style={{ fontSize: 12, fontFamily: fontMono, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted, margin: '0 0 14px', fontWeight: 500 }}>{col.heading}</h4>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {col.links.map(link => (
+                    <li key={link}>
+                      <button onClick={goAuth} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, fontSize: 14, color: C.ink2, padding: 0, transition: 'color .15s' }}
+                        onMouseOver={e => (e.currentTarget.style.color = C.ink)}
+                        onMouseOut={e => (e.currentTarget.style.color = C.ink2)}
+                      >{link}</button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
-          {[
-            {
-              heading: 'Product',
-              links: ['Builder', 'Templates', 'Examples', 'Pricing', 'Changelog'],
-            },
-            {
-              heading: 'Resources',
-              links: ['Resume Guide', 'ATS Tips', 'Cover Letters', 'Career Blog'],
-            },
-            {
-              heading: 'Company',
-              links: ['About', 'Privacy', 'Terms', 'Contact'],
-            },
-          ].map(col => (
-            <div key={col.heading}>
-              <div className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">{col.heading}</div>
-              <ul className="space-y-2.5">
-                {col.links.map(link => (
-                  <li key={link}>
-                    <button onClick={goAuth} className="text-[13px] text-gray-500 hover:text-[#111] transition-colors">
-                      {link}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 24, borderTop: `1px solid ${C.line2}`, color: C.muted, fontSize: 13, gap: 16, flexWrap: 'wrap' }}>
+            <div>© 2026 CV Builder. All rights reserved.</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.success, boxShadow: '0 0 0 3px rgba(22,163,74,.15)', display: 'inline-block' }} />
+              <span style={{ fontFamily: fontMono }}>All systems operational</span>
             </div>
-          ))}
-        </div>
-
-        <div className="border-t border-gray-100">
-          <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-            <p className="text-[12px] text-gray-400">© 2025 CV Builder. All rights reserved.</p>
-            <p className="text-[12px] text-gray-400">Built with ♥ using Spring Boot & React</p>
           </div>
         </div>
       </footer>
