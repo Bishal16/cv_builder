@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { Logo } from './Logo';
 
 /* ─── small reusable pieces ─────────────────────────────────────────────── */
 
@@ -206,9 +207,7 @@ export function LandingPage() {
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#111111] rounded flex items-center justify-center">
-              <span className="text-white text-[10px] font-black italic">B.</span>
-            </div>
+            <Logo size={24} variant="light" />
             <span className="font-black text-sm tracking-tight">CV Builder</span>
           </div>
 
@@ -491,9 +490,7 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-5 gap-10">
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 bg-[#111111] rounded flex items-center justify-center">
-                <span className="text-white text-[10px] font-black italic">B.</span>
-              </div>
+              <Logo size={24} variant="light" />
               <span className="font-black text-sm tracking-tight">CV Builder</span>
             </div>
             <p className="text-[13px] text-gray-400 leading-relaxed max-w-[220px]">

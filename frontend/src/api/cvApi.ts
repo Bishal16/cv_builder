@@ -104,6 +104,35 @@ export async function getMe(token: string): Promise<UserDetails> {
   return handleResponse<UserDetails>(response);
 }
 
+// Auth: update profile (first/last name)
+export async function updateProfile(data: { firstName: string; lastName: string }): Promise<UserDetails> {
+  const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    method: 'PUT',
+    headers: await getHeaders(),
+    body: JSON.stringify(data),
+  });
+  return handleResponse<UserDetails>(response);
+}
+
+// Auth: change password (local accounts only)
+export async function changePassword(data: { currentPassword: string; newPassword: string }): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/password`, {
+    method: 'POST',
+    headers: await getHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Password change failed');
+    try {
+      const errorJson = JSON.parse(errorText);
+      throw new ApiError(response.status, errorJson.message || errorJson.error || 'Password change failed');
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw new ApiError(response.status, errorText);
+    }
+  }
+}
+
 // CV API
 export async function getAllCvs(): Promise<Cv[]> {
   const response = await fetch(`${API_BASE_URL}/cv`, {

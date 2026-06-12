@@ -1,8 +1,10 @@
 package com.cvbuilder.service;
 
 import com.cvbuilder.dto.AuthResponse;
+import com.cvbuilder.dto.ChangePasswordRequest;
 import com.cvbuilder.dto.LoginRequest;
 import com.cvbuilder.dto.RegisterRequest;
+import com.cvbuilder.dto.UpdateProfileRequest;
 import com.cvbuilder.entity.User;
 import com.cvbuilder.exception.InvalidCredentialsException;
 import com.cvbuilder.exception.UserAlreadyExistsException;
@@ -51,6 +53,32 @@ public class AuthService {
         String token = jwtService.generateToken(user.getId(), user.getEmail());
 
         return mapToAuthResponse(user, token);
+    }
+
+    @Transactional
+    public AuthResponse.UserDetailsDto updateProfile(User user, UpdateProfileRequest request) {
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        User saved = userRepository.save(user);
+        return AuthResponse.UserDetailsDto.builder()
+                .id(saved.getId())
+                .email(saved.getEmail())
+                .firstName(saved.getFirstName())
+                .lastName(saved.getLastName())
+                .build();
+    }
+
+    @Transactional
+    public void changePassword(User user, ChangePasswordRequest request) {
+        if (user.getPassword() == null) {
+            throw new IllegalArgumentException(
+                    "Password change is not available for social-login accounts");
+        }
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException("Current password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 
     private AuthResponse mapToAuthResponse(User user, String token) {

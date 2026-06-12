@@ -13,6 +13,7 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   setAuth: (user: UserDetails, token: string) => void;
+  updateUser: (user: UserDetails) => void;
   logout: () => void;
 }
 
@@ -23,6 +24,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
+      updateUser: (user) => set({ user }),
       logout: () => {
         set({ user: null, token: null, isAuthenticated: false });
         // Clear potential cached data from other stores

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { login, register } from '../api';
 import { useAuthStore } from '../store/authStore';
+import { Logo } from './Logo';
 
 interface AuthScreenProps {
   onSuccess: () => void;
@@ -38,9 +39,7 @@ function LeftPanel() {
 
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <div className="w-6 h-6 bg-white rounded flex items-center justify-center flex-shrink-0">
-          <span className="text-[#0f0f0f] text-[10px] font-black italic">B.</span>
-        </div>
+        <Logo size={24} variant="dark" />
         <span className="text-white font-black text-sm tracking-tight">CV Builder</span>
       </div>
 
@@ -112,7 +111,7 @@ function LeftPanel() {
         <div className="flex items-center gap-6 mt-14">
           {[
             { icon: '✓', text: 'ATS Friendly' },
-            { icon: '▣', text: '4 Templates' },
+            { icon: '▣', text: '8 Templates' },
             { icon: '⬡', text: 'PDF Export' },
           ].map(item => (
             <div key={item.text} className="flex items-center gap-1.5">
@@ -229,9 +228,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
             onClick={() => navigate('/')}
             className="lg:hidden flex items-center gap-2"
           >
-            <div className="w-6 h-6 bg-[#111111] rounded flex items-center justify-center">
-              <span className="text-white text-[10px] font-black italic">B.</span>
-            </div>
+            <Logo size={24} variant="light" />
             <span className="font-black text-sm text-[#111111]">CV Builder</span>
           </button>
           <div className="hidden lg:block" />

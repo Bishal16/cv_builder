@@ -6,6 +6,8 @@ export {
   deleteCv,
   login,
   register,
+  updateProfile,
+  changePassword,
 } from './cvApi';
 
 export type {

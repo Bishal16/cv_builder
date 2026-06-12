@@ -5,20 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ab78d57a-d731-4f62-8a0e-005265ffcd64" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/config/SecurityConfig.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application-dev.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application-dev.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/exception/GlobalExceptionHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/model/TemplateId.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/model/TemplateId.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/service/AuthService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/public/favicon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/public/favicon.svg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/api/cvApi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/cvApi.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/AuthScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AuthScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/vite.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/LandingPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/LandingPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/TemplateSelector.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/store/authStore.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/store/authStore.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/AtsTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/AtsTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/ClassicTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/ClassicTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/CvPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/CvPreview.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/ModernTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/ModernTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/types/cv.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/cv.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,8 +89,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.31033.145" />
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.153" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.153" />
       </set>
     </attachedChunks>
   </component>
@@ -100,6 +106,7 @@
       <workItem from="1779814623914" duration="14737000" />
       <workItem from="1780324075506" duration="5079000" />
       <workItem from="1780396249983" duration="2685000" />
+      <workItem from="1781275029628" duration="4677000" />
     </task>
     <servers />
   </component>

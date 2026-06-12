@@ -12,28 +12,28 @@ const styles = {
   container: {
     width: '794px',
     backgroundColor: '#ffffff',
-    color: '#333333',
-    fontFamily: 'Helvetica, Arial, sans-serif',
+    color: '#2d3748',
+    fontFamily: '"Inter", Helvetica, Arial, sans-serif',
     fontSize: '12px',
-    lineHeight: '1.4',
-    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+    lineHeight: '1.5',
   } as React.CSSProperties,
   header: {
-    padding: '37px 45px 30px 45px',
-    borderBottom: '2px solid #333333',
+    padding: '40px 45px 28px 45px',
+    borderBottom: '2px solid #1a202c',
   } as React.CSSProperties,
   name: {
-    fontSize: '26px',
-    fontWeight: 'bold' as const,
-    marginBottom: '5px',
+    fontSize: '27px',
+    fontWeight: '700',
+    marginBottom: '7px',
     color: '#1a202c',
+    letterSpacing: '-0.01em',
   } as React.CSSProperties,
   contact: {
     fontSize: '11px',
     color: '#4a5568',
     display: 'flex' as const,
     flexWrap: 'wrap' as const,
-    gap: '16px',
+    gap: '14px',
   } as React.CSSProperties,
   content: {
     display: 'flex' as const,
@@ -51,18 +51,20 @@ const styles = {
     padding: '30px',
   } as React.CSSProperties,
   sectionTitle: {
-    fontSize: '13px',
-    fontWeight: 'bold' as const,
-    color: '#2d3748',
+    fontSize: '11px',
+    fontWeight: '700',
+    color: '#1a202c',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.08em',
     borderBottom: '1px solid #cbd5e0',
-    paddingBottom: '3px',
-    marginBottom: '10px',
-    marginTop: '20px',
+    paddingBottom: '5px',
+    marginBottom: '12px',
+    marginTop: '22px',
   } as React.CSSProperties,
   body: {
     fontSize: '12px',
-    lineHeight: '1.4',
-    color: '#333333',
+    lineHeight: '1.5',
+    color: '#2d3748',
   } as React.CSSProperties,
   muted: {
     color: '#4a5568',
@@ -92,8 +94,8 @@ const styles = {
   } as React.CSSProperties,
   richText: {
     fontSize: '12px',
-    lineHeight: '1.4',
-    color: '#333333',
+    lineHeight: '1.5',
+    color: '#2d3748',
   } as React.CSSProperties,
 };
 
@@ -153,7 +155,9 @@ export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }
 
       <div style={styles.content}>
         <aside style={styles.sidebar}>
-          {orderedSidebarSections.map((sectionId, index) => (
+          {orderedSidebarSections
+            .filter((sectionId) => (sectionId === 'skills' ? skills.length > 0 : educations.length > 0))
+            .map((sectionId, index) => (
             <section key={sectionId} style={{ marginTop: index === 0 ? 0 : '24px' }}>
               {sectionId === 'skills' ? (
                 <>
@@ -171,10 +175,10 @@ export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }
                 <>
                   <h2 style={{ ...styles.sectionTitle, marginTop: 0 }}>Education</h2>
                   {educations.map((edu) => (
-                    <div key={edu.id} style={{ marginBottom: '16px' }}>
-                      <div style={{ fontWeight: '500' }}>{edu.institution}</div>
-                      <div style={{ fontSize: '11px', color: '#4a5568' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
-                      <div style={{ fontSize: '10px', color: '#718096' }}>{edu.graduationYear}</div>
+                    <div key={edu.id} style={{ marginBottom: '14px' }}>
+                      <div style={{ fontWeight: '600', fontSize: '12px', color: '#1a202c' }}>{edu.institution}</div>
+                      <div style={{ fontSize: '11px', color: '#4a5568', marginTop: '1px' }}>{edu.degree} {edu.field && `in ${edu.field}`}</div>
+                      <div style={{ fontSize: '10px', color: '#718096', marginTop: '2px' }}>{edu.graduationYear}</div>
                     </div>
                   ))}
                 </>
@@ -201,6 +205,7 @@ export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }
             }
 
             if (sectionId === 'experience') {
+              if (experiences.length === 0) return null;
               return (
                 <section key="experience">
                   <h2 style={styles.sectionTitle}>Experience</h2>

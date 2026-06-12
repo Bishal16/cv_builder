@@ -1,8 +1,10 @@
 package com.cvbuilder.controller;
 
 import com.cvbuilder.dto.AuthResponse;
+import com.cvbuilder.dto.ChangePasswordRequest;
 import com.cvbuilder.dto.LoginRequest;
 import com.cvbuilder.dto.RegisterRequest;
+import com.cvbuilder.dto.UpdateProfileRequest;
 import com.cvbuilder.entity.User;
 import com.cvbuilder.service.AuthService;
 import jakarta.validation.Valid;
@@ -36,5 +38,20 @@ public class AuthController {
             .firstName(user.getFirstName())
             .lastName(user.getLastName())
             .build());
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<AuthResponse.UserDetailsDto> updateProfile(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(authService.updateProfile(user, request));
+    }
+
+    @PostMapping("/password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(user, request);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -13,12 +13,11 @@ const styles = {
     width: '794px',
     backgroundColor: '#ffffff',
     color: '#000000',
-    fontFamily: 'Helvetica, Arial, sans-serif',
+    fontFamily: 'Arial, Helvetica, sans-serif',
     fontSize: '12px',
-    lineHeight: '1.4',
+    lineHeight: '1.5',
     padding: '45px',
     boxSizing: 'border-box' as const,
-    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
   } as React.CSSProperties,
   header: {
     textAlign: 'center' as const,
@@ -122,7 +121,7 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
         />
       </section>
     ) : null,
-    experience: (
+    experience: experiences.length > 0 ? (
       <section key="experience">
         <h2 style={styles.sectionTitle}>Work Experience</h2>
         {experiences.map((exp) => (
@@ -140,8 +139,8 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
           </div>
         ))}
       </section>
-    ),
-    education: (
+    ) : null,
+    education: educations.length > 0 ? (
       <section key="education">
         <h2 style={styles.sectionTitle}>Education</h2>
         {educations.map((edu) => (
@@ -154,15 +153,15 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
           </div>
         ))}
       </section>
-    ),
-    skills: (
+    ) : null,
+    skills: skills.length > 0 ? (
       <section key="skills">
         <h2 style={styles.sectionTitle}>Skills</h2>
         <p style={styles.skillsText}>
           {skills.map((s) => s.name).join(', ')}
         </p>
       </section>
-    ),
+    ) : null,
     projects: projects.length > 0 ? (
       <section key="projects">
         <h2 style={styles.sectionTitle}>Projects</h2>

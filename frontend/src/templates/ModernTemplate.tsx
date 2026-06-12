@@ -15,8 +15,7 @@ const styles = {
     color: '#1e293b',
     fontFamily: 'Helvetica, Arial, sans-serif',
     fontSize: '12px',
-    lineHeight: '1.4',
-    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)',
+    lineHeight: '1.5',
   } as React.CSSProperties,
   header: {
     backgroundColor: '#0f172a',

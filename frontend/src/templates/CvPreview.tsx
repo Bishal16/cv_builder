@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Cv } from '../types/cv';
-import { ClassicTemplate, ModernTemplate, AtsTemplate, ProTemplate, MinimalTemplate } from './index';
+import { ClassicTemplate, ModernTemplate, AtsTemplate, ProTemplate, MinimalTemplate, ExecutiveTemplate, TechTemplate, GraduateTemplate } from './index';
 
 export const PAGE_WIDTH = 794;
 export const PAGE_HEIGHT = 1123;
@@ -21,6 +21,12 @@ export function CvPreview({ cv, containerClass = '', containerStyle = {} }: CvPr
       return <ProTemplate cv={cv} />;
     case 'MINIMAL':
       return <MinimalTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'EXECUTIVE':
+      return <ExecutiveTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'TECH':
+      return <TechTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'GRADUATE':
+      return <GraduateTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
     case 'CLASSIC':
     default:
       return <ClassicTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;

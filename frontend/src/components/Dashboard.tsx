@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useCvStore } from '../store/cvStore';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore, type ThemeMode } from '../store/themeStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { exportPdf } from '../api/cvApi';
 import type { Cv, TemplateId } from '../types/cv';
+import { TemplatesView } from './dashboard/TemplatesView';
+import { SettingsView } from './dashboard/SettingsView';
+import { Logo } from './Logo';
 
 /* ─────────────────────────── helpers ─────────────────────────── */
 
@@ -34,11 +38,14 @@ function timeAgo(dateStr: string): string {
 }
 
 const TEMPLATE_META: Record<TemplateId, { label: string; accent: string; bg: string }> = {
-  CLASSIC: { label: 'Classic',  accent: '#1e3a5f', bg: '#e8eef5' },
-  MODERN:  { label: 'Modern',   accent: '#111111', bg: '#f0f0f0' },
-  ATS:     { label: 'ATS',      accent: '#374151', bg: '#f3f4f6' },
-  PRO:     { label: 'Pro',      accent: '#7f1d1d', bg: '#fdf2f2' },
-  MINIMAL: { label: 'Minimal',  accent: '#0a0a0a', bg: '#fafafa' },
+  CLASSIC:   { label: 'Classic',   accent: '#1e3a5f', bg: '#e8eef5' },
+  MODERN:    { label: 'Modern',    accent: '#111111', bg: '#f0f0f0' },
+  ATS:       { label: 'ATS',       accent: '#374151', bg: '#f3f4f6' },
+  PRO:       { label: 'Pro',       accent: '#7f1d1d', bg: '#fdf2f2' },
+  MINIMAL:   { label: 'Minimal',   accent: '#0a0a0a', bg: '#fafafa' },
+  EXECUTIVE: { label: 'Executive', accent: '#8a6d3b', bg: '#faf6ee' },
+  TECH:      { label: 'Tech',      accent: '#2563eb', bg: '#eff6ff' },
+  GRADUATE:  { label: 'Graduate',  accent: '#0f766e', bg: '#f0fdfa' },
 };
 
 /* ─────────────────────── TemplateThumbnail ─────────────────────── */
@@ -73,20 +80,11 @@ function TemplateThumbnail({ templateId }: { templateId: TemplateId }) {
 /* ─────────────────────────── Sidebar ─────────────────────────── */
 
 const NAV_ITEMS = [
-  { id: 'dashboard',  label: 'Dashboard',   icon: GridIcon },
   { id: 'resumes',    label: 'My Resumes',  icon: DocIcon },
   { id: 'templates',  label: 'Templates',   icon: LayersIcon },
   { id: 'settings',   label: 'Settings',    icon: SettingsIcon },
 ] as const;
 
-function GridIcon({ active }: { active: boolean }) {
-  return (
-    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} viewBox="0 0 24 24">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" />
-    </svg>
-  );
-}
 function DocIcon({ active }: { active: boolean }) {
   return (
     <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} viewBox="0 0 24 24">
@@ -115,9 +113,11 @@ interface SidebarProps {
   onNav: (id: string) => void;
   open: boolean;
   onClose: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-function Sidebar({ activeNav, onNav, open, onClose }: SidebarProps) {
+function Sidebar({ activeNav, onNav, open, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   return (
     <>
       {/* Overlay for mobile */}
@@ -129,17 +129,18 @@ function Sidebar({ activeNav, onNav, open, onClose }: SidebarProps) {
       )}
 
       <aside className={`
-        fixed top-0 left-0 h-full w-[220px] bg-white dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-[#3a3a3a] z-30
-        flex flex-col transition-transform duration-200
+        fixed top-0 left-0 h-full bg-white dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-[#3a3a3a] z-30
+        flex flex-col transition-[transform,width] duration-200
+        ${collapsed ? 'lg:w-[68px] w-[220px]' : 'w-[220px]'}
         ${open ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:z-auto
       `}>
         {/* Logo */}
-        <div className="px-5 py-5 flex items-center gap-2.5 border-b border-gray-100 dark:border-[#333333]">
-          <div className="w-7 h-7 bg-[#111111] dark:bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-white dark:text-[#111111] text-[11px] font-black italic">B.</span>
-          </div>
-          <span className="font-black text-[15px] text-[#111111] dark:text-white tracking-tight">CV Builder</span>
+        <div className={`py-5 flex items-center gap-2.5 border-b border-gray-100 dark:border-[#333333] ${collapsed ? 'lg:justify-center lg:px-0 px-5' : 'px-5'}`}>
+          <Logo size={28} />
+          <span className={`font-black text-[15px] text-[#111111] dark:text-white tracking-tight whitespace-nowrap ${collapsed ? 'lg:hidden' : ''}`}>
+            CV Builder
+          </span>
         </div>
 
         {/* Nav items */}
@@ -151,26 +152,39 @@ function Sidebar({ activeNav, onNav, open, onClose }: SidebarProps) {
               <button
                 key={item.id}
                 onClick={() => { onNav(item.id); onClose(); }}
+                title={collapsed ? item.label : undefined}
                 className={`
-                  w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-all
+                  w-full flex items-center gap-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-all
+                  ${collapsed ? 'lg:justify-center lg:px-0 px-3' : 'px-3'}
                   ${active
                     ? 'bg-[#111111] dark:bg-white text-white dark:text-[#111111]'
                     : 'text-gray-500 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2c2c2c]'}
                 `}
               >
                 <Icon active={active} />
-                {item.label}
+                <span className={`whitespace-nowrap ${collapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        {/* Bottom hint */}
-        <div className="px-5 py-4 border-t border-gray-200 dark:border-[#3a3a3a]">
-          <p className="text-[11px] text-gray-400 dark:text-[#6a6a6a] leading-relaxed">
-            CV Builder v1.0<br />
-            <span className="text-gray-300 dark:text-[#555555]">Build. Export. Get hired.</span>
-          </p>
+        {/* Bottom: collapse toggle + hint */}
+        <div className={`py-4 border-t border-gray-200 dark:border-[#3a3a3a] ${collapsed ? 'lg:px-2 px-5' : 'px-5'}`}>
+          <div className={`flex items-center ${collapsed ? 'lg:justify-center justify-between' : 'justify-between'}`}>
+            <p className={`text-[11px] text-gray-400 dark:text-[#6a6a6a] leading-relaxed ${collapsed ? 'lg:hidden' : ''}`}>
+              CV Builder v1.0
+            </p>
+            {/* Collapse toggle — desktop only */}
+            <button
+              onClick={onToggleCollapse}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className="hidden lg:flex p-1.5 rounded-lg text-gray-400 dark:text-[#6a6a6a] hover:text-[#111111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2c2c2c] transition-colors"
+            >
+              <svg className={`w-4 h-4 transition-transform duration-200 ${collapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7M19 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </aside>
     </>
@@ -243,9 +257,10 @@ interface TopNavProps {
   onMenuToggle: () => void;
   searchQuery: string;
   onSearchChange: (v: string) => void;
+  showSearch: boolean;
 }
 
-function TopNav({ onMenuToggle, searchQuery, onSearchChange }: TopNavProps) {
+function TopNav({ onMenuToggle, searchQuery, onSearchChange, showSearch }: TopNavProps) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -278,23 +293,23 @@ function TopNav({ onMenuToggle, searchQuery, onSearchChange }: TopNavProps) {
         </svg>
       </button>
 
-      {/* Search */}
-      <div className="flex-1 max-w-xs">
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Search resumes…"
-            value={searchQuery}
-            onChange={e => onSearchChange(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-[13px] bg-gray-100 dark:bg-[#222222] dark:text-white border border-gray-200 dark:border-[#3a3a3a] rounded-lg outline-none transition focus:border-gray-300 dark:focus:border-white/20 focus:bg-white dark:focus:bg-white/[0.08] placeholder:text-gray-400"
-          />
-        </div>
+      {/* Centered search — only where it's useful (My Resumes) */}
+      <div className="flex-1 flex justify-center">
+        {showSearch && (
+          <div className="relative w-full max-w-[420px]">
+            <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search resumes…"
+              value={searchQuery}
+              onChange={e => onSearchChange(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 text-[13px] bg-gray-100 dark:bg-[#222222] dark:text-white border border-gray-200 dark:border-[#3a3a3a] rounded-xl outline-none transition focus:border-gray-300 dark:focus:border-white/20 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-sm placeholder:text-gray-400"
+            />
+          </div>
+        )}
       </div>
-
-      <div className="flex-1" />
 
       {/* Theme toggle */}
       <ThemeToggle />
@@ -513,11 +528,24 @@ type FilterType = 'all' | 'draft' | 'complete';
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { cvs, loadCvs, createCv, deleteCv } = useCvStore();
+  const { cvs, loadCvs, createCv, deleteCv, loading, loaded } = useCvStore();
   const { user } = useAuthStore();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState('resumes');
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('dashboard-sidebar-collapsed') === '1');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewParam = searchParams.get('view');
+  const activeNav = viewParam === 'templates' || viewParam === 'settings' ? viewParam : 'resumes';
+  const setActiveNav = (id: string) => {
+    setSearchParams(id === 'resumes' ? {} : { view: id });
+  };
+  const toggleCollapse = () => {
+    setCollapsed(c => {
+      localStorage.setItem('dashboard-sidebar-collapsed', c ? '0' : '1');
+      return !c;
+    });
+  };
+  const { defaultTemplateId } = useSettingsStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [templateFilter, setTemplateFilter] = useState<TemplateId | 'all'>('all');
@@ -544,7 +572,7 @@ export function Dashboard() {
   const handleCreate = async () => {
     const newCv = await createCv({
       title: 'Untitled Resume',
-      templateId: 'CLASSIC',
+      templateId: defaultTemplateId,
       sectionOrder: ['personal', 'experience', 'education', 'skills', 'projects'],
       personalInfo: { name: '', email: '', phone: '', location: '', linkedinUrl: '', githubUrl: '', summary: '' },
       experiences: [], educations: [], skills: [], projects: [],
@@ -603,6 +631,8 @@ export function Dashboard() {
         onNav={setActiveNav}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapse}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -610,9 +640,16 @@ export function Dashboard() {
           onMenuToggle={() => setSidebarOpen(v => !v)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          showSearch={activeNav === 'resumes'}
         />
 
         <main className="flex-1 overflow-y-auto px-6 py-8 lg:px-10">
+          {activeNav === 'templates' ? (
+            <TemplatesView />
+          ) : activeNav === 'settings' ? (
+            <SettingsView />
+          ) : (
+            <>
 
           {/* ── Welcome ── */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
@@ -673,21 +710,16 @@ export function Dashboard() {
               </div>
 
               {/* Template filter */}
-              <div className="flex items-center gap-1 bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#3a3a3a] rounded-xl p-1">
-                {(['all', 'CLASSIC', 'MODERN', 'ATS', 'PRO', 'MINIMAL'] as const).map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setTemplateFilter(t)}
-                    className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition-all ${
-                      templateFilter === t
-                        ? 'bg-[#111111] dark:bg-white text-white dark:text-[#111111]'
-                        : 'text-gray-400 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white'
-                    }`}
-                  >
-                    {t === 'all' ? 'All' : TEMPLATE_META[t].label}
-                  </button>
+              <select
+                value={templateFilter}
+                onChange={(e) => setTemplateFilter(e.target.value as TemplateId | 'all')}
+                className="h-[38px] px-3 pr-8 rounded-xl text-[12px] font-semibold bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#bbb] outline-none cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[right_10px_center] bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2394a3b8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22M6%208l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] hover:border-gray-300 dark:hover:border-[#525252] transition-colors"
+              >
+                <option value="all">All templates</option>
+                {(Object.keys(TEMPLATE_META) as TemplateId[]).map(t => (
+                  <option key={t} value={t}>{TEMPLATE_META[t].label}</option>
                 ))}
-              </div>
+              </select>
 
               <div className="flex-1" />
 
@@ -722,7 +754,24 @@ export function Dashboard() {
           )}
 
           {/* ── Resume Grid / List ── */}
-          {total === 0 ? (
+          {loading && !loaded ? (
+            /* Skeleton grid while first load is in flight */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-gray-200 dark:border-[#383838] bg-white dark:bg-[#232323] overflow-hidden animate-pulse"
+                >
+                  <div className="h-36 bg-gray-100 dark:bg-[#2a2a2a]" />
+                  <div className="p-4 space-y-2.5">
+                    <div className="h-3.5 w-3/5 rounded bg-gray-100 dark:bg-[#2a2a2a]" />
+                    <div className="h-2.5 w-2/5 rounded bg-gray-100 dark:bg-[#2a2a2a]" />
+                    <div className="h-1.5 w-full rounded bg-gray-100 dark:bg-[#2a2a2a]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : total === 0 ? (
             <EmptyState onCreate={handleCreate} />
           ) : visible.length === 0 ? (
             <div className="text-center py-16">
@@ -829,6 +878,8 @@ export function Dashboard() {
                 </div>
               )}
             </div>
+          )}
+            </>
           )}
         </main>
       </div>

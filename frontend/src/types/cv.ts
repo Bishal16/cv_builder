@@ -1,4 +1,4 @@
-export type TemplateId = 'CLASSIC' | 'MODERN' | 'ATS' | 'PRO' | 'MINIMAL';
+export type TemplateId = 'CLASSIC' | 'MODERN' | 'ATS' | 'PRO' | 'MINIMAL' | 'EXECUTIVE' | 'TECH' | 'GRADUATE';
 export type SectionId = 'personal' | 'experience' | 'education' | 'skills' | 'projects';
 
 export const DEFAULT_SECTION_ORDER: SectionId[] = ['personal', 'experience', 'education', 'skills', 'projects'];

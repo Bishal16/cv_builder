@@ -5,5 +5,8 @@ public enum TemplateId {
     MODERN,
     ATS,
     PRO,
-    MINIMAL
+    MINIMAL,
+    EXECUTIVE,
+    TECH,
+    GRADUATE
 }

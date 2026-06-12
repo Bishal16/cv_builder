@@ -109,11 +109,14 @@ const SECTIONS: Record<SectionId, { label: string; path: string }> = {
 };
 
 const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
-  { id: 'CLASSIC', label: 'Classic',  desc: 'Traditional' },
-  { id: 'MODERN',  label: 'Modern',   desc: 'Clean & bold' },
-  { id: 'ATS',     label: 'ATS',      desc: 'Bot-friendly' },
-  { id: 'PRO',     label: 'Pro',      desc: 'Academic' },
-  { id: 'MINIMAL', label: 'Minimal',  desc: 'Clean & spare' },
+  { id: 'CLASSIC',   label: 'Classic',   desc: 'Traditional' },
+  { id: 'MODERN',    label: 'Modern',    desc: 'Clean & bold' },
+  { id: 'ATS',       label: 'ATS',       desc: 'Bot-friendly' },
+  { id: 'PRO',       label: 'Pro',       desc: 'Academic' },
+  { id: 'MINIMAL',   label: 'Minimal',   desc: 'Clean & spare' },
+  { id: 'EXECUTIVE', label: 'Executive', desc: 'Corporate' },
+  { id: 'TECH',      label: 'Tech',      desc: 'Engineer' },
+  { id: 'GRADUATE',  label: 'Graduate',  desc: 'Entry level' },
 ];
 
 /* ─────────────────────────────────────────────────────────────── */
@@ -161,13 +164,6 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     window.addEventListener('beforeunload', h);
     return () => window.removeEventListener('beforeunload', h);
   }, [hasUnsavedChanges]);
-
-  /* ── Ctrl+S ── */
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); handleSave(); } };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [formData, cvId]);
 
   /* ── Resizer ── */
   useEffect(() => {
@@ -219,6 +215,14 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
       toast.success('Saved');
     } catch { toast.error('Save failed'); }
   };
+
+  /* ── Ctrl+S ── */
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); handleSave(); } };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, cvId]);
 
   const handleDownloadPdf = async () => {
     setIsExporting(true);
@@ -425,16 +429,17 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           <div className="flex-shrink-0 px-4 py-3 border-b border-gray-100 dark:border-[#222] space-y-2.5">
 
             {/* Template segmented control */}
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <span className="text-[10.5px] font-semibold text-gray-400 dark:text-[#555] uppercase tracking-widest shrink-0">
                 Template
               </span>
-              <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-lg p-0.5">
+              <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-lg p-0.5 overflow-x-auto min-w-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {TEMPLATES.map(t => (
                   <button
                     key={t.id}
                     onClick={() => updateTemplate(t.id)}
-                    className={`px-3 py-1 text-[11.5px] font-medium rounded-md transition-all ${
+                    title={t.desc}
+                    className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all whitespace-nowrap shrink-0 ${
                       formData.templateId === t.id
                         ? 'bg-white dark:bg-[#2a2a2a] text-[#111] dark:text-white shadow-sm'
                         : 'text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]'

@@ -3,4 +3,7 @@ export { ModernTemplate } from './ModernTemplate';
 export { AtsTemplate } from './AtsTemplate';
 export { ProTemplate } from './ProTemplate';
 export { MinimalTemplate } from './MinimalTemplate';
+export { ExecutiveTemplate } from './ExecutiveTemplate';
+export { TechTemplate } from './TechTemplate';
+export { GraduateTemplate } from './GraduateTemplate';
 export { CvPreview } from './CvPreview';
