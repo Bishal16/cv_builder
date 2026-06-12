@@ -10,6 +10,7 @@ import type { Cv, TemplateId } from '../types/cv';
 import { TemplatesView } from './dashboard/TemplatesView';
 import { SettingsView } from './dashboard/SettingsView';
 import { Logo } from './Logo';
+import { CvPreview, PAGE_WIDTH, PAGE_HEIGHT } from '../templates/CvPreview';
 
 /* ─────────────────────────── helpers ─────────────────────────── */
 
@@ -48,30 +49,31 @@ const TEMPLATE_META: Record<TemplateId, { label: string; accent: string; bg: str
   GRADUATE:  { label: 'Graduate',  accent: '#0f766e', bg: '#f0fdfa' },
 };
 
-/* ─────────────────────── TemplateThumbnail ─────────────────────── */
+/* ─────────────────────── LiveCvThumbnail ─────────────────────── */
+/* Renders the user's ACTUAL resume, scaled down, instead of a placeholder. */
 
-function TemplateThumbnail({ templateId }: { templateId: TemplateId }) {
-  const { accent, bg } = TEMPLATE_META[templateId];
+function ScaledCv({ cv, scale }: { cv: Cv; scale: number }) {
   return (
-    <div
-      className="w-full h-full rounded-lg overflow-hidden flex flex-col"
-      style={{ background: bg }}
-    >
-      {/* header bar */}
-      <div className="px-2 py-1.5 flex flex-col gap-0.5" style={{ borderBottom: `1px solid ${accent}22` }}>
-        <div className="h-[4px] rounded" style={{ background: accent, width: '55%' }} />
-        <div className="h-[2.5px] rounded bg-gray-300 w-4/5" />
-        <div className="h-[2.5px] rounded bg-gray-300 w-3/5" />
+    <div style={{ width: PAGE_WIDTH * scale, height: PAGE_HEIGHT * scale, overflow: 'hidden', flexShrink: 0 }}>
+      <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: PAGE_WIDTH, height: PAGE_HEIGHT, backgroundColor: '#ffffff' }}>
+        <CvPreview cv={cv} />
       </div>
-      {/* body lines */}
-      <div className="flex-1 px-2 py-1.5 space-y-1">
-        <div className="h-[2px] rounded" style={{ background: accent, opacity: 0.4, width: '30%' }} />
-        <div className="h-[2px] bg-gray-300 rounded w-full" />
-        <div className="h-[2px] bg-gray-300 rounded w-[85%]" />
-        <div className="h-[2px] bg-gray-300 rounded w-[70%]" />
-        <div className="mt-1.5 h-[2px] rounded" style={{ background: accent, opacity: 0.4, width: '30%' }} />
-        <div className="h-[2px] bg-gray-300 rounded w-[90%]" />
-        <div className="h-[2px] bg-gray-300 rounded w-[75%]" />
+    </div>
+  );
+}
+
+function LiveCvThumbnail({ cv, scale = 0.21, windowClass = 'h-[150px]' }: { cv: Cv; scale?: number; windowClass?: string }) {
+  // pan distance: sheet height + top gap − visible window height
+  const sheetH = PAGE_HEIGHT * scale;
+  const winH = parseInt(windowClass.match(/\d+/)?.[0] ?? '150', 10);
+  const panY = Math.max(0, sheetH + 12 - winH);
+  return (
+    <div className={`relative w-full ${windowClass} rounded-lg overflow-hidden bg-[#EFEFED] dark:bg-[#1c1c1c] border border-gray-100 dark:border-[#2e2e2e] flex justify-center pt-3`}>
+      <div
+        className="shadow-[0_1px_6px_rgba(0,0,0,0.14)] transition-transform ease-in-out duration-[2200ms] group-hover:[transform:translateY(var(--pan))]"
+        style={{ '--pan': `-${panY}px` } as React.CSSProperties}
+      >
+        <ScaledCv cv={cv} scale={scale} />
       </div>
     </div>
   );
@@ -433,9 +435,9 @@ function ResumeCard({ cv, onEdit, onDuplicate, onExport, onDelete }: ResumeCardP
       onClick={onEdit}
       className="group relative bg-white dark:bg-[#232323] rounded-2xl border border-gray-200 dark:border-[#383838] p-5 cursor-pointer shadow-sm shadow-black/[0.05] dark:shadow-none hover:border-gray-300 dark:hover:border-[#525252] hover:shadow-md hover:shadow-black/[0.08] transition-all duration-200"
     >
-      {/* Template thumbnail */}
-      <div className="w-full h-[110px] mb-4 rounded-lg overflow-hidden border border-gray-100">
-        <TemplateThumbnail templateId={cv.templateId} />
+      {/* Live preview of the actual resume */}
+      <div className="mb-4">
+        <LiveCvThumbnail cv={cv} />
       </div>
 
       {/* Title row */}
@@ -821,9 +823,9 @@ export function Dashboard() {
                     onClick={() => navigate(`/cv/${cv.id}`)}
                     className="group flex items-center gap-4 bg-white dark:bg-[#232323] rounded-xl border border-gray-200 dark:border-[#383838] px-5 py-3.5 cursor-pointer shadow-sm shadow-black/[0.04] dark:shadow-none hover:border-gray-300 dark:hover:border-[#525252] hover:shadow-md hover:shadow-black/[0.06] transition-all"
                   >
-                    {/* Mini thumbnail */}
-                    <div className="w-10 h-12 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                      <TemplateThumbnail templateId={cv.templateId} />
+                    {/* Mini live thumbnail */}
+                    <div className="w-10 h-[54px] rounded-md overflow-hidden border border-gray-200 dark:border-[#3a3a3a] flex-shrink-0 bg-white">
+                      <ScaledCv cv={cv} scale={0.0504} />
                     </div>
 
                     {/* Title + badges */}

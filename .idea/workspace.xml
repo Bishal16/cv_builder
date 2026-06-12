@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ab78d57a-d731-4f62-8a0e-005265ffcd64" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/GEMINI.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/mapper/CvMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/mapper/CvMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
