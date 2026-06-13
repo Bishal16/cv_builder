@@ -8,5 +8,10 @@ public enum TemplateId {
     MINIMAL,
     EXECUTIVE,
     TECH,
-    GRADUATE
+    GRADUATE,
+    SIDEBAR,
+    COMPACT,
+    TIMELINE,
+    AURORA,
+    POLISHED
 }

@@ -155,6 +155,11 @@ const TEMPLATE_OPTIONS: { id: TemplateId; label: string }[] = [
   { id: 'EXECUTIVE', label: 'Executive — Corporate' },
   { id: 'TECH', label: 'Tech — Engineer' },
   { id: 'GRADUATE', label: 'Graduate — Entry level' },
+  { id: 'SIDEBAR', label: 'Sidebar — Colored rail' },
+  { id: 'COMPACT', label: 'Compact — One-page' },
+  { id: 'TIMELINE', label: 'Timeline — Dated rail' },
+  { id: 'AURORA', label: 'Aurora — Photo header' },
+  { id: 'POLISHED', label: 'Polished — Photo sidebar' },
 ];
 
 /* ────────────────────────── main view ─────────────────────────── */

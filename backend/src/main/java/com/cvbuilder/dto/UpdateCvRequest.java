@@ -19,4 +19,7 @@ public class UpdateCvRequest {
     private List<EducationDto> educations;
     private List<SkillDto> skills;
     private List<ProjectDto> projects;
+    private String accentColor;
+    private String fontFamily;
+    private String density;
 }

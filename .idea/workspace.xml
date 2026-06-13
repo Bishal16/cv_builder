@@ -5,11 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ab78d57a-d731-4f62-8a0e-005265ffcd64" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/GEMINI.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/CreateCvRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/CreateCvRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/CvDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/CvDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/PersonalInfoDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/PersonalInfoDto.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/UpdateCvRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/dto/UpdateCvRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/entity/Cv.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/entity/Cv.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/entity/PersonalInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/entity/PersonalInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/mapper/CvMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/mapper/CvMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/model/TemplateId.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/model/TemplateId.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dashboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/PersonalInfoForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/PersonalInfoForm.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/dashboard/SettingsView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/dashboard/SettingsView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/dashboard/TemplatesView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/dashboard/TemplatesView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/CvPreview.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/CvPreview.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/ExecutiveTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/ExecutiveTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/GraduateTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/GraduateTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/ModernTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/ModernTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/TechTemplate.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/TechTemplate.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/templates/sampleCv.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/templates/sampleCv.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/types/cv.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/cv.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

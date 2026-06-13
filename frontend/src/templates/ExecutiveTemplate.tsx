@@ -1,6 +1,7 @@
 import type { Cv, SectionId } from '../types/cv';
 import { normalizeSectionOrder } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
+import { resolveCustomization } from './customization';
 
 interface ExecutiveTemplateProps {
   cv: Cv;
@@ -8,9 +9,7 @@ interface ExecutiveTemplateProps {
   containerStyle?: React.CSSProperties;
 }
 
-const ACCENT = '#8a6d3b'; // muted bronze
-
-const styles = {
+const makeStyles = (ACCENT: string) => ({
   container: {
     width: '794px',
     backgroundColor: '#ffffff',
@@ -86,13 +85,16 @@ const styles = {
   itemSpacing: {
     marginBottom: '18px',
   } as React.CSSProperties,
-};
+});
 
 const toExternalUrl = (v: string) => (/^https?:\/\//i.test(v) ? v : `https://${v}`);
 const toDisplayUrl = (v: string) => v.replace(/^https?:\/\//i, '');
 
 export function ExecutiveTemplate({ cv, containerClass = '', containerStyle = {} }: ExecutiveTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
+  const c = resolveCustomization(cv);
+  const ACCENT = c.accent;
+  const styles = makeStyles(ACCENT);
 
   const contactParts: string[] = [
     personalInfo.phone,

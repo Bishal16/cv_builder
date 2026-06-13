@@ -9,7 +9,7 @@ import { useSettingsStore } from '../../store/settingsStore';
 
 /* ── Template metadata ──────────────────────────────────────────── */
 
-type Category = 'simple' | 'professional' | 'modern' | 'entry';
+type Category = 'simple' | 'professional' | 'modern' | 'entry' | 'creative' | 'photo';
 
 interface TemplateInfo {
   id: TemplateId;
@@ -31,6 +31,11 @@ const TEMPLATE_INFO: TemplateInfo[] = [
   { id: 'EXECUTIVE', name: 'Executive', category: 'professional', isNew: true,   badge: 'Corporate',     badgeColor: 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',         description: 'Centered serif name, bronze accents. For leadership and client-facing roles.' },
   { id: 'TECH',      name: 'Tech',      category: 'modern', isNew: true,         badge: 'Engineer',      badgeColor: 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300',                 description: 'Two-column with monospace accents and a grouped tech-stack rail.' },
   { id: 'GRADUATE',  name: 'Graduate',  category: 'entry', isNew: true,          badge: 'Entry level',   badgeColor: 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',             description: 'Friendly teal accents, education-forward. Ideal for students and first jobs.' },
+  { id: 'SIDEBAR',   name: 'Sidebar',   category: 'creative', isNew: true,       badge: 'Colored rail',  badgeColor: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',     description: 'Bold full-height coloured sidebar for contact and skills. Confident and structured.' },
+  { id: 'COMPACT',   name: 'Compact',   category: 'simple', isNew: true,         badge: 'One-page',      badgeColor: 'bg-slate-100 text-slate-700 dark:bg-slate-700/40 dark:text-slate-300',        description: 'Tight, information-dense single page. Fits a long career without spilling over.' },
+  { id: 'TIMELINE',  name: 'Timeline',  category: 'creative', isNew: true,       badge: 'Dated rail',    badgeColor: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',             description: 'A connected timeline down your experience. Tells a clear career story.' },
+  { id: 'AURORA',    name: 'Aurora',    category: 'photo', isNew: true,          badge: 'Photo header',  badgeColor: 'bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',     description: 'Gradient header band with your photo. Warm and personable, great for client-facing roles.' },
+  { id: 'POLISHED',  name: 'Polished',  category: 'photo', isNew: true,          badge: 'Photo sidebar', badgeColor: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',             description: 'Refined serif layout with a photo sidebar. Elegant and executive.' },
 ];
 
 const CATEGORIES: { id: Category | 'all'; label: string }[] = [
@@ -38,6 +43,8 @@ const CATEGORIES: { id: Category | 'all'; label: string }[] = [
   { id: 'simple', label: 'Simple & ATS' },
   { id: 'professional', label: 'Professional' },
   { id: 'modern', label: 'Modern' },
+  { id: 'creative', label: 'Creative' },
+  { id: 'photo', label: 'With photo' },
   { id: 'entry', label: 'Entry level' },
 ];
 

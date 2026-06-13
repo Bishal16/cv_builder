@@ -38,4 +38,8 @@ public class CreateCvRequest {
 
     @Valid
     private List<ProjectDto> projects;
+
+    private String accentColor;
+    private String fontFamily;
+    private String density;
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Cv } from '../types/cv';
-import { ClassicTemplate, ModernTemplate, AtsTemplate, ProTemplate, MinimalTemplate, ExecutiveTemplate, TechTemplate, GraduateTemplate } from './index';
+import { ClassicTemplate, ModernTemplate, AtsTemplate, ProTemplate, MinimalTemplate, ExecutiveTemplate, TechTemplate, GraduateTemplate, SidebarTemplate, CompactTemplate, TimelineTemplate, AuroraTemplate, PolishedTemplate } from './index';
+import { resolveCustomization } from './customization';
 
 export const PAGE_WIDTH = 794;
 export const PAGE_HEIGHT = 1123;
@@ -11,7 +12,17 @@ interface CvPreviewProps {
   containerStyle?: React.CSSProperties;
 }
 
-export function CvPreview({ cv, containerClass = '', containerStyle = {} }: CvPreviewProps) {
+export function CvPreview({ cv, containerClass = '', containerStyle: incomingStyle = {} }: CvPreviewProps) {
+  // Inject resolved font + line-height at the container level so the font/density
+  // controls affect every template. Per-template defaults (TEMPLATE_DEFAULTS) are
+  // tuned to each template's native look, so the default render is unchanged.
+  const c = resolveCustomization(cv);
+  const containerStyle: React.CSSProperties = {
+    fontFamily: c.fontStack,
+    lineHeight: String(c.lineHeight),
+    ...incomingStyle,
+  };
+
   switch (cv.templateId) {
     case 'MODERN':
       return <ModernTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
@@ -27,6 +38,16 @@ export function CvPreview({ cv, containerClass = '', containerStyle = {} }: CvPr
       return <TechTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
     case 'GRADUATE':
       return <GraduateTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'SIDEBAR':
+      return <SidebarTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'COMPACT':
+      return <CompactTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'TIMELINE':
+      return <TimelineTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'AURORA':
+      return <AuroraTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
+    case 'POLISHED':
+      return <PolishedTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;
     case 'CLASSIC':
     default:
       return <ClassicTemplate cv={cv} containerClass={containerClass} containerStyle={containerStyle} />;

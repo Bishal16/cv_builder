@@ -1,5 +1,12 @@
-export type TemplateId = 'CLASSIC' | 'MODERN' | 'ATS' | 'PRO' | 'MINIMAL' | 'EXECUTIVE' | 'TECH' | 'GRADUATE';
+export type TemplateId =
+  | 'CLASSIC' | 'MODERN' | 'ATS' | 'PRO' | 'MINIMAL'
+  | 'EXECUTIVE' | 'TECH' | 'GRADUATE'
+  | 'SIDEBAR' | 'COMPACT' | 'TIMELINE' | 'AURORA' | 'POLISHED';
 export type SectionId = 'personal' | 'experience' | 'education' | 'skills' | 'projects';
+
+/** Customization (Phase 3) — optional per-CV overrides of a template's defaults. */
+export type FontFamilyChoice = 'sans' | 'serif';
+export type DensityChoice = 'compact' | 'normal' | 'relaxed';
 
 export const DEFAULT_SECTION_ORDER: SectionId[] = ['personal', 'experience', 'education', 'skills', 'projects'];
 
@@ -38,6 +45,8 @@ export interface PersonalInfo {
   linkedinUrl: string;
   githubUrl: string;
   summary: string;
+  /** Base64 data-URL of a profile photo (used by photo templates). */
+  photoUrl?: string;
 }
 
 export interface Experience {
@@ -71,7 +80,14 @@ export interface Project {
   url: string;
 }
 
-export interface Cv {
+/** Per-CV customization overrides (Phase 3). All optional. */
+export interface Customization {
+  accentColor?: string;
+  fontFamily?: FontFamilyChoice;
+  density?: DensityChoice;
+}
+
+export interface Cv extends Customization {
   id: string;
   title: string;
   templateId: TemplateId;
@@ -85,7 +101,7 @@ export interface Cv {
   updatedAt: string;
 }
 
-export interface CreateCvRequest {
+export interface CreateCvRequest extends Customization {
   title: string;
   templateId: TemplateId;
   sectionOrder: SectionId[];
@@ -96,7 +112,7 @@ export interface CreateCvRequest {
   projects: Project[];
 }
 
-export interface UpdateCvRequest {
+export interface UpdateCvRequest extends Customization {
   title?: string;
   templateId?: TemplateId;
   sectionOrder?: SectionId[];
@@ -110,7 +126,7 @@ export interface UpdateCvRequest {
 export type CreateCvData = CreateCvRequest;
 export type UpdateCvData = UpdateCvRequest;
 
-export interface CVFormData {
+export interface CVFormData extends Customization {
   title: string;
   templateId: TemplateId;
   sectionOrder: SectionId[];

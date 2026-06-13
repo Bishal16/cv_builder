@@ -69,6 +69,11 @@ const TEMPLATE_META: Record<TemplateId, { label: string; accent: string; bg: str
   EXECUTIVE: { label: 'Executive', accent: '#8a6d3b', bg: '#faf6ee' },
   TECH:      { label: 'Tech',      accent: '#2563eb', bg: '#eff6ff' },
   GRADUATE:  { label: 'Graduate',  accent: '#0f766e', bg: '#f0fdfa' },
+  SIDEBAR:   { label: 'Sidebar',   accent: '#1e3a5f', bg: '#eef2f7' },
+  COMPACT:   { label: 'Compact',   accent: '#0f172a', bg: '#f1f5f9' },
+  TIMELINE:  { label: 'Timeline',  accent: '#0891b2', bg: '#ecfeff' },
+  AURORA:    { label: 'Aurora',    accent: '#7c3aed', bg: '#f5f3ff' },
+  POLISHED:  { label: 'Polished',  accent: '#0e7490', bg: '#ecfeff' },
 };
 
 /* ─────────────────────── LiveCvThumbnail ─────────────────────── */

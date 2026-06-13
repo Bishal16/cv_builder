@@ -1,6 +1,7 @@
 import type { Cv, Skill } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
 import { getOrderedContentSections } from './sectionOrder';
+import { resolveCustomization } from './customization';
 
 interface TechTemplateProps {
   cv: Cv;
@@ -8,10 +9,9 @@ interface TechTemplateProps {
   containerStyle?: React.CSSProperties;
 }
 
-const ACCENT = '#2563eb';
 const MONO = '"SF Mono", "JetBrains Mono", Menlo, Consolas, monospace';
 
-const styles = {
+const makeStyles = (ACCENT: string) => ({
   container: {
     width: '794px',
     backgroundColor: '#ffffff',
@@ -105,13 +105,16 @@ const styles = {
     marginRight: '5px',
     marginBottom: '5px',
   } as React.CSSProperties,
-};
+});
 
 const toExternalUrl = (v: string) => (/^https?:\/\//i.test(v) ? v : `https://${v}`);
 const toDisplayUrl = (v: string) => v.replace(/^https?:\/\//i, '');
 
 export function TechTemplate({ cv, containerClass = '', containerStyle = {} }: TechTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
+  const c = resolveCustomization(cv);
+  const ACCENT = c.accent;
+  const styles = makeStyles(ACCENT);
   const orderedContentSections = getOrderedContentSections(cv);
 
   const groupedSkills = skills.reduce((acc, skill) => {

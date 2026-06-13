@@ -28,6 +28,16 @@ public class Cv {
     @Embedded
     private PersonalInfo personalInfo;
 
+    // Customization (Phase 3) — optional per-CV overrides of the template defaults.
+    @Column(name = "accent_color", length = 32)
+    private String accentColor;
+
+    @Column(name = "font_family", length = 16)
+    private String fontFamily;
+
+    @Column(name = "density", length = 16)
+    private String density;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
     private User user;

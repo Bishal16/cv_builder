@@ -1,6 +1,18 @@
 import type { Cv, TemplateId } from '../types/cv';
 import { DEFAULT_SECTION_ORDER } from '../types/cv';
 
+// Neutral sample avatar (inline SVG data-URL) so photo templates preview with an image.
+const SAMPLE_PHOTO =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="#cbd5e1"/><stop offset="1" stop-color="#94a3b8"/></linearGradient></defs>' +
+    '<rect width="160" height="160" fill="url(#g)"/>' +
+    '<circle cx="80" cy="62" r="30" fill="#f8fafc"/>' +
+    '<path d="M26 150c0-30 24-46 54-46s54 16 54 46z" fill="#f8fafc"/></svg>',
+  );
+
 /**
  * Realistic placeholder CV used for template previews
  * (Templates gallery, preview modals). Never persisted.
@@ -20,6 +32,7 @@ export function makeSampleCv(templateId: TemplateId): Cv {
       githubUrl: 'github.com/javery',
       summary:
         '<p>Product-minded software engineer with 7+ years building high-scale distributed systems and consumer-facing applications. Led teams of 4–8 engineers; shipped features used by millions.</p>',
+      photoUrl: SAMPLE_PHOTO,
     },
     experiences: [
       {

@@ -1,6 +1,7 @@
 import type { Cv, SectionId } from '../types/cv';
 import { normalizeSectionOrder } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
+import { resolveCustomization } from './customization';
 
 interface ModernTemplateProps {
   cv: Cv;
@@ -8,7 +9,7 @@ interface ModernTemplateProps {
   containerStyle?: React.CSSProperties;
 }
 
-const styles = {
+const makeStyles = (ACCENT: string) => ({
   container: {
     width: '794px',
     backgroundColor: '#ffffff',
@@ -18,7 +19,7 @@ const styles = {
     lineHeight: '1.5',
   } as React.CSSProperties,
   header: {
-    backgroundColor: '#0f172a',
+    backgroundColor: ACCENT,
     padding: '37px 45px',
   } as React.CSSProperties,
   name: {
@@ -55,10 +56,10 @@ const styles = {
   sectionTitle: {
     fontSize: '12px',
     fontWeight: 'bold' as const,
-    color: '#0f172a',
+    color: ACCENT,
     textTransform: 'uppercase' as const,
     letterSpacing: '0.08em',
-    borderBottom: '1.5px solid #0f172a',
+    borderBottom: `1.5px solid ${ACCENT}`,
     paddingBottom: '4px',
     marginBottom: '12px',
     display: 'flex' as const,
@@ -123,7 +124,7 @@ const styles = {
     marginRight: '6px',
     marginBottom: '6px',
   } as React.CSSProperties,
-};
+});
 
 const toExternalUrl = (value: string): string =>
   /^https?:\/\//i.test(value) ? value : `https://${value}`;
@@ -132,6 +133,7 @@ const toDisplayUrl = (value: string): string =>
 
 export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }: ModernTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
+  const styles = makeStyles(resolveCustomization(cv).accent);
 
   const sectionNodes: Record<SectionId, React.ReactNode> = {
     personal: personalInfo.summary ? (

@@ -20,9 +20,12 @@ public class CvMapper {
         dto.setTitle(cv.getTitle());
         dto.setTemplateId(cv.getTemplateId());
         dto.setSectionOrder(normalizeSectionOrder(cv.getSectionOrder()));
+        dto.setAccentColor(cv.getAccentColor());
+        dto.setFontFamily(cv.getFontFamily());
+        dto.setDensity(cv.getDensity());
         dto.setCreatedAt(cv.getCreatedAt());
         dto.setUpdatedAt(cv.getUpdatedAt());
-        
+
         if (cv.getPersonalInfo() != null) {
             PersonalInfoDto personalInfo = new PersonalInfoDto();
             personalInfo.setName(cv.getPersonalInfo().getName());
@@ -32,6 +35,7 @@ public class CvMapper {
             personalInfo.setLinkedinUrl(cv.getPersonalInfo().getLinkedinUrl());
             personalInfo.setGithubUrl(cv.getPersonalInfo().getGithubUrl());
             personalInfo.setSummary(cv.getPersonalInfo().getSummary());
+            personalInfo.setPhotoUrl(cv.getPersonalInfo().getPhotoUrl());
             dto.setPersonalInfo(personalInfo);
         }
         
@@ -73,7 +77,10 @@ public class CvMapper {
         cv.setTitle(request.getTitle());
         cv.setTemplateId(request.getTemplateId());
         cv.setSectionOrder(normalizeSectionOrder(request.getSectionOrder()));
-        
+        cv.setAccentColor(request.getAccentColor());
+        cv.setFontFamily(request.getFontFamily());
+        cv.setDensity(request.getDensity());
+
         if (request.getPersonalInfo() != null) {
             PersonalInfo personalInfo = new PersonalInfo();
             personalInfo.setName(request.getPersonalInfo().getName());
@@ -83,9 +90,10 @@ public class CvMapper {
             personalInfo.setLinkedinUrl(request.getPersonalInfo().getLinkedinUrl());
             personalInfo.setGithubUrl(request.getPersonalInfo().getGithubUrl());
             personalInfo.setSummary(request.getPersonalInfo().getSummary());
+            personalInfo.setPhotoUrl(request.getPersonalInfo().getPhotoUrl());
             cv.setPersonalInfo(personalInfo);
         }
-        
+
         // NOTE: incoming child IDs are intentionally dropped on CREATE.
         // The new Cv is persisted (not merged); children with preset IDs would
         // be treated as detached entities by Hibernate and fail the cascade.
@@ -129,6 +137,16 @@ public class CvMapper {
         if (request.getSectionOrder() != null) {
             cv.setSectionOrder(normalizeSectionOrder(request.getSectionOrder()));
         }
+        // Customization: only overwrite when the field is present in the request.
+        if (request.getAccentColor() != null) {
+            cv.setAccentColor(request.getAccentColor().isBlank() ? null : request.getAccentColor());
+        }
+        if (request.getFontFamily() != null) {
+            cv.setFontFamily(request.getFontFamily().isBlank() ? null : request.getFontFamily());
+        }
+        if (request.getDensity() != null) {
+            cv.setDensity(request.getDensity().isBlank() ? null : request.getDensity());
+        }
         if (request.getPersonalInfo() != null) {
             PersonalInfo personalInfo = new PersonalInfo();
             personalInfo.setName(request.getPersonalInfo().getName());
@@ -138,6 +156,7 @@ public class CvMapper {
             personalInfo.setLinkedinUrl(request.getPersonalInfo().getLinkedinUrl());
             personalInfo.setGithubUrl(request.getPersonalInfo().getGithubUrl());
             personalInfo.setSummary(request.getPersonalInfo().getSummary());
+            personalInfo.setPhotoUrl(request.getPersonalInfo().getPhotoUrl());
             cv.setPersonalInfo(personalInfo);
         }
         if (request.getExperiences() != null) {

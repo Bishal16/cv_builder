@@ -16,5 +16,10 @@ public class PersonalInfo {
     private String location;
     private String linkedinUrl;
     private String githubUrl;
+
+    @jakarta.persistence.Column(columnDefinition = "TEXT")
     private String summary;
+
+    @jakarta.persistence.Column(name = "photo_url", columnDefinition = "TEXT")
+    private String photoUrl;
 }

@@ -1,6 +1,7 @@
 import type { Cv, SectionId } from '../types/cv';
 import { normalizeSectionOrder } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
+import { resolveCustomization } from './customization';
 
 interface GraduateTemplateProps {
   cv: Cv;
@@ -8,9 +9,7 @@ interface GraduateTemplateProps {
   containerStyle?: React.CSSProperties;
 }
 
-const ACCENT = '#0f766e'; // deep teal
-
-const styles = {
+const makeStyles = (ACCENT: string, TINT: string, TINT_STRONG: string) => ({
   container: {
     width: '794px',
     backgroundColor: '#ffffff',
@@ -83,21 +82,24 @@ const styles = {
     display: 'inline-block',
     fontSize: '10.5px',
     fontWeight: '500',
-    color: '#134e4a',
-    backgroundColor: '#f0fdfa',
-    border: '1px solid #99f6e4',
+    color: ACCENT,
+    backgroundColor: TINT,
+    border: `1px solid ${TINT_STRONG}`,
     borderRadius: '999px',
     padding: '3px 11px',
     marginRight: '6px',
     marginBottom: '6px',
   } as React.CSSProperties,
-};
+});
 
 const toExternalUrl = (v: string) => (/^https?:\/\//i.test(v) ? v : `https://${v}`);
 const toDisplayUrl = (v: string) => v.replace(/^https?:\/\//i, '');
 
 export function GraduateTemplate({ cv, containerClass = '', containerStyle = {} }: GraduateTemplateProps) {
   const { personalInfo, experiences, educations, skills, projects } = cv;
+  const c = resolveCustomization(cv);
+  const ACCENT = c.accent;
+  const styles = makeStyles(ACCENT, c.accentTint, c.accentTintStrong);
 
   const contactItems: Array<{ label: string; href?: string }> = [
     personalInfo.email ? { label: personalInfo.email } : null,

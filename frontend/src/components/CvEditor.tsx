@@ -22,6 +22,7 @@ import { EducationList } from './EducationList';
 import { SkillList } from './SkillList';
 import { ProjectList } from './ProjectList';
 import { MultiPagePreview, PAGE_WIDTH } from '../templates/CvPreview';
+import { ACCENT_SWATCHES, TEMPLATE_DEFAULTS, type FontChoice, type Density } from '../templates/customization';
 import { ConfirmDialog } from './ConfirmDialog';
 
 interface CvEditorProps {
@@ -33,7 +34,7 @@ const defaultFormData: CVFormData = {
   title: 'My CV',
   templateId: 'CLASSIC',
   sectionOrder: [...DEFAULT_SECTION_ORDER],
-  personalInfo: { name: '', email: '', phone: '', location: '', linkedinUrl: '', githubUrl: '', summary: '' },
+  personalInfo: { name: '', email: '', phone: '', location: '', linkedinUrl: '', githubUrl: '', summary: '', photoUrl: '' },
   experiences: [],
   educations: [],
   skills: [],
@@ -76,11 +77,15 @@ const toFormData = (cv: Cv): CVFormData => ({
     linkedinUrl: cv.personalInfo?.linkedinUrl ?? '',
     githubUrl: cv.personalInfo?.githubUrl ?? '',
     summary: cv.personalInfo?.summary ?? '',
+    photoUrl: cv.personalInfo?.photoUrl ?? '',
   },
   experiences: cv.experiences ?? [],
   educations: cv.educations ?? [],
   skills: (cv.skills ?? []).map(skill => ({ ...skill, level: normalizeSkillLevel(skill.level) })),
   projects: cv.projects ?? [],
+  accentColor: cv.accentColor,
+  fontFamily: cv.fontFamily,
+  density: cv.density,
 });
 
 /* ── Section metadata ─────────────────────────────────────────── */
@@ -117,6 +122,11 @@ const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
   { id: 'EXECUTIVE', label: 'Executive', desc: 'Corporate' },
   { id: 'TECH',      label: 'Tech',      desc: 'Engineer' },
   { id: 'GRADUATE',  label: 'Graduate',  desc: 'Entry level' },
+  { id: 'SIDEBAR',   label: 'Sidebar',   desc: 'Colored rail' },
+  { id: 'COMPACT',   label: 'Compact',   desc: 'Dense one-page' },
+  { id: 'TIMELINE',  label: 'Timeline',  desc: 'Dated rail' },
+  { id: 'AURORA',    label: 'Aurora',    desc: 'Photo header' },
+  { id: 'POLISHED',  label: 'Polished',  desc: 'Photo sidebar' },
 ];
 
 /* ─────────────────────────────────────────────────────────────── */
@@ -186,6 +196,11 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const updateEducation    = (educations: Education[])   => setFormData({ ...formData, educations });
   const updateSkills       = (skills: Skill[])           => setFormData({ ...formData, skills });
   const updateProjects     = (projects: Project[])       => setFormData({ ...formData, projects });
+
+  /* ── Customization (Phase 3) ── */
+  const setAccent  = (accentColor?: string)     => setFormData({ ...formData, accentColor });
+  const setFont    = (fontFamily?: FontChoice)  => setFormData({ ...formData, fontFamily });
+  const setDensity = (density?: Density)        => setFormData({ ...formData, density });
 
   const updateTemplate = (templateId: TemplateId) => {
     if (templateId === formData.templateId) return;
@@ -300,6 +315,9 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     educations: formData.educations,
     skills: formData.skills,
     projects: formData.projects,
+    accentColor: formData.accentColor,
+    fontFamily: formData.fontFamily,
+    density: formData.density,
     createdAt: cv?.createdAt || new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -450,6 +468,86 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                 ))}
               </div>
             </div>
+
+            {/* Customize row — accent / font / density */}
+            {(() => {
+              const def = TEMPLATE_DEFAULTS[formData.templateId] ?? TEMPLATE_DEFAULTS.CLASSIC;
+              const activeAccent  = formData.accentColor ?? def.accent;
+              const activeFont    = formData.fontFamily  ?? def.font;
+              const activeDensity = formData.density     ?? def.density;
+              const densities: { id: Density; label: string }[] = [
+                { id: 'compact', label: 'Compact' },
+                { id: 'normal',  label: 'Normal' },
+                { id: 'relaxed', label: 'Relaxed' },
+              ];
+              return (
+                <div className="flex items-center gap-3 min-w-0 flex-wrap">
+                  <span className="text-[10.5px] font-semibold text-gray-400 dark:text-[#555] uppercase tracking-widest shrink-0">
+                    Style
+                  </span>
+
+                  {/* Accent swatches */}
+                  <div className="flex items-center gap-1">
+                    {ACCENT_SWATCHES.map(sw => {
+                      const selected = activeAccent.toLowerCase() === sw.value.toLowerCase();
+                      return (
+                        <button
+                          key={sw.value}
+                          onClick={() => setAccent(sw.value)}
+                          title={sw.name}
+                          className={`w-4 h-4 rounded-full transition-transform hover:scale-110 ${selected ? 'ring-2 ring-offset-1 ring-offset-[#f7f7f6] dark:ring-offset-[#161616]' : ''}`}
+                          style={{ backgroundColor: sw.value, boxShadow: selected ? `0 0 0 2px ${sw.value}` : 'inset 0 0 0 1px rgba(0,0,0,0.1)' }}
+                        />
+                      );
+                    })}
+                    {formData.accentColor && (
+                      <button
+                        onClick={() => setAccent(undefined)}
+                        title="Reset to template default"
+                        className="ml-0.5 text-[10px] text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]"
+                      >
+                        reset
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Font toggle */}
+                  <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-md p-0.5">
+                    {(['sans', 'serif'] as FontChoice[]).map(f => (
+                      <button
+                        key={f}
+                        onClick={() => setFont(f)}
+                        className={`px-2 py-0.5 text-[11px] rounded transition-all ${
+                          activeFont === f
+                            ? 'bg-white dark:bg-[#2a2a2a] text-[#111] dark:text-white shadow-sm'
+                            : 'text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]'
+                        }`}
+                        style={{ fontFamily: f === 'serif' ? 'Georgia, serif' : 'Inter, sans-serif' }}
+                      >
+                        {f === 'serif' ? 'Serif' : 'Sans'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Density toggle */}
+                  <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-md p-0.5">
+                    {densities.map(d => (
+                      <button
+                        key={d.id}
+                        onClick={() => setDensity(d.id)}
+                        className={`px-2 py-0.5 text-[11px] rounded transition-all ${
+                          activeDensity === d.id
+                            ? 'bg-white dark:bg-[#2a2a2a] text-[#111] dark:text-white shadow-sm'
+                            : 'text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]'
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Resume strength — compact single row */}
             <div className="flex items-center gap-3">
