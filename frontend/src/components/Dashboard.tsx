@@ -14,16 +14,38 @@ import { CvPreview, PAGE_WIDTH, PAGE_HEIGHT } from '../templates/CvPreview';
 
 /* ─────────────────────────── helpers ─────────────────────────── */
 
+interface CompletionItem {
+  label: string;
+  weight: number;
+  done: (cv: Cv) => boolean;
+}
+
+const COMPLETION_ITEMS: CompletionItem[] = [
+  { label: 'Add your name',       weight: 20, done: c => !!c.personalInfo.name },
+  { label: 'Add an email',        weight: 10, done: c => !!c.personalInfo.email },
+  { label: 'Add a phone number',  weight: 5,  done: c => !!c.personalInfo.phone },
+  { label: 'Write a summary',     weight: 15, done: c => !!c.personalInfo.summary },
+  { label: 'Add work experience', weight: 25, done: c => c.experiences.length > 0 },
+  { label: 'Add education',       weight: 15, done: c => c.educations.length > 0 },
+  { label: 'List your skills',    weight: 10, done: c => c.skills.length > 0 },
+];
+
 function getCompletion(cv: Cv): number {
-  let s = 0;
-  if (cv.personalInfo.name) s += 20;
-  if (cv.personalInfo.email) s += 10;
-  if (cv.personalInfo.phone) s += 5;
-  if (cv.personalInfo.summary) s += 15;
-  if (cv.experiences.length > 0) s += 25;
-  if (cv.educations.length > 0) s += 15;
-  if (cv.skills.length > 0) s += 10;
-  return Math.min(s, 100);
+  return Math.min(
+    100,
+    COMPLETION_ITEMS.reduce((s, item) => (item.done(cv) ? s + item.weight : s), 0),
+  );
+}
+
+function getMissingItems(cv: Cv): CompletionItem[] {
+  return COMPLETION_ITEMS.filter(item => !item.done(cv));
+}
+
+function getGreeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
 }
 
 function timeAgo(dateStr: string): string {
@@ -140,7 +162,7 @@ function Sidebar({ activeNav, onNav, open, onClose, collapsed, onToggleCollapse 
         {/* Logo */}
         <div className={`py-5 flex items-center gap-2.5 border-b border-gray-100 dark:border-[#333333] ${collapsed ? 'lg:justify-center lg:px-0 px-5' : 'px-5'}`}>
           <Logo size={28} />
-          <span className={`font-black text-[15px] text-[#111111] dark:text-white tracking-tight whitespace-nowrap ${collapsed ? 'lg:hidden' : ''}`}>
+          <span className={`font-black text-[15px] tracking-tight whitespace-nowrap ${collapsed ? 'lg:hidden' : ''}`} style={{ color: '#F97316' }}>
             CV Builder
           </span>
         </div>
@@ -159,7 +181,7 @@ function Sidebar({ activeNav, onNav, open, onClose, collapsed, onToggleCollapse 
                   w-full flex items-center gap-3 py-2.5 rounded-lg text-[13.5px] font-medium transition-all
                   ${collapsed ? 'lg:justify-center lg:px-0 px-3' : 'px-3'}
                   ${active
-                    ? 'bg-[#111111] dark:bg-white text-white dark:text-[#111111]'
+                    ? 'bg-[#FFF3E8] dark:bg-[#F97316]/20 text-[#C2510A] dark:text-[#F97316]'
                     : 'text-gray-500 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2c2c2c]'}
                 `}
               >
@@ -307,7 +329,7 @@ function TopNav({ onMenuToggle, searchQuery, onSearchChange, showSearch }: TopNa
               placeholder="Search resumes…"
               value={searchQuery}
               onChange={e => onSearchChange(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-[13px] bg-gray-100 dark:bg-[#222222] dark:text-white border border-gray-200 dark:border-[#3a3a3a] rounded-xl outline-none transition focus:border-gray-300 dark:focus:border-white/20 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-sm placeholder:text-gray-400"
+              className="w-full pl-9 pr-3 py-2 text-[13px] bg-gray-100 dark:bg-[#222222] dark:text-white border border-gray-200 dark:border-[#3a3a3a] rounded-xl outline-none transition focus:border-[#F97316]/50 dark:focus:border-[#F97316]/40 focus:bg-white dark:focus:bg-white/[0.08] focus:shadow-[0_0_0_3px_rgba(249,115,22,0.12)] placeholder:text-gray-400"
             />
           </div>
         )}
@@ -322,8 +344,8 @@ function TopNav({ onMenuToggle, searchQuery, onSearchChange, showSearch }: TopNa
           onClick={() => setDropdownOpen(v => !v)}
           className="flex items-center gap-2.5 py-1.5 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2c2c2c] transition-colors"
         >
-          <div className="w-7 h-7 bg-[#111111] dark:bg-white rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white dark:text-[#111111] text-[10px] font-bold">{initials}</span>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #F97316, #EA580C)' }}>
+            <span className="text-white text-[10px] font-bold">{initials}</span>
           </div>
           <span className="hidden sm:block text-[13px] font-semibold text-[#111111] dark:text-white">{displayName}</span>
           <svg className="w-3.5 h-3.5 text-gray-400 hidden sm:block" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -433,11 +455,43 @@ function ResumeCard({ cv, onEdit, onDuplicate, onExport, onDelete }: ResumeCardP
   return (
     <div
       onClick={onEdit}
-      className="group relative bg-white dark:bg-[#232323] rounded-2xl border border-gray-200 dark:border-[#383838] p-5 cursor-pointer shadow-sm shadow-black/[0.05] dark:shadow-none hover:border-gray-300 dark:hover:border-[#525252] hover:shadow-md hover:shadow-black/[0.08] transition-all duration-200"
+      className="group relative bg-white dark:bg-[#232323] rounded-2xl border border-gray-300 dark:border-[#444444] p-5 cursor-pointer shadow-sm shadow-black/[0.05] dark:shadow-none hover:border-[#F97316]/60 dark:hover:border-[#F97316]/40 hover:shadow-xl hover:shadow-black/[0.10] dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300"
     >
-      {/* Live preview of the actual resume */}
-      <div className="mb-4">
+      {/* Live preview of the actual resume + hover quick-actions */}
+      <div className="relative mb-4 rounded-lg overflow-hidden">
         <LiveCvThumbnail cv={cv} />
+        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/65 via-black/35 to-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white shadow-lg transition-colors"
+            style={{ background: '#F97316' }}
+            onMouseOver={e => (e.currentTarget.style.background = '#EA580C')}
+            onMouseOut={e => (e.currentTarget.style.background = '#F97316')}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onExport(); }}
+            title="Download PDF"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/95 text-[#111111] shadow-lg hover:bg-white transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+            title="Duplicate"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/95 text-[#111111] shadow-lg hover:bg-white transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Title row */}
@@ -500,6 +554,129 @@ function ResumeCard({ cv, onEdit, onDuplicate, onExport, onDelete }: ResumeCardP
   );
 }
 
+/* ────────────────────── MetricChip ────────────────────── */
+
+function MetricChip({ color, value, label }: { color: string; value: number; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-gray-500 dark:text-[#8d8d8d]">
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+      <span className="font-bold text-[#111111] dark:text-white">{value}</span>
+      {label}
+    </span>
+  );
+}
+
+/* ──────────────────── ContinueCard ──────────────────── */
+/* "Pick up where you left off" — featured most-recent resume with a live
+   preview and an actionable completion checklist. */
+
+function ContinueCard({ cv, onEdit, onExport, exporting }: {
+  cv: Cv;
+  onEdit: () => void;
+  onExport: () => void;
+  exporting: boolean;
+}) {
+  const completion = getCompletion(cv);
+  const missing = getMissingItems(cv);
+  const meta = TEMPLATE_META[cv.templateId];
+  const isDone = completion >= 100;
+
+  return (
+    <div className="mb-8">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-400 dark:text-[#6a6a6a] mb-2.5">
+        Pick up where you left off
+      </p>
+      <div className="group rounded-2xl border border-gray-300 dark:border-[#444444] bg-white dark:bg-[#232323] overflow-hidden shadow-sm shadow-black/[0.06] dark:shadow-none hover:border-[#F97316]/50 dark:hover:border-[#F97316]/40 hover:shadow-lg hover:shadow-black/[0.08] dark:hover:shadow-none transition-all duration-300">
+        <div className="flex flex-col md:flex-row">
+          {/* Live preview */}
+          <div
+            className="relative bg-[#EFEFED] dark:bg-[#1c1c1c] bg-[radial-gradient(#DDDDD8_1px,transparent_1px)] dark:bg-[radial-gradient(#2a2a2a_1px,transparent_1px)] [background-size:18px_18px] flex justify-center items-start pt-7 px-8 md:w-[300px] h-[260px] overflow-hidden flex-shrink-0 cursor-pointer"
+            onClick={onEdit}
+          >
+            <div className="shadow-[0_2px_8px_rgba(0,0,0,0.1),0_12px_32px_rgba(0,0,0,0.12)] transition-transform duration-500 group-hover:-translate-y-1.5">
+              <ScaledCv cv={cv} scale={0.3} />
+            </div>
+          </div>
+
+          {/* Meta + checklist */}
+          <div className="flex-1 p-6 md:p-7 flex flex-col justify-center min-w-0">
+            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+              <h2 className="text-[19px] font-bold text-[#111111] dark:text-white tracking-tight truncate">
+                {cv.title || 'Untitled Resume'}
+              </h2>
+              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap" style={{ color: meta.accent, background: meta.bg }}>
+                {meta.label}
+              </span>
+            </div>
+
+            {/* completion bar */}
+            <div className="flex items-center gap-3 mb-4 max-w-[420px]">
+              <div className="flex-1 h-1.5 bg-gray-200 dark:bg-[#303030] rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${completion}%`, background: isDone ? '#10b981' : '#F97316' }} />
+              </div>
+              <span className="text-[12px] font-bold text-[#111111] dark:text-white w-9 text-right">{completion}%</span>
+            </div>
+
+            {/* checklist or done state */}
+            {isDone ? (
+              <p className="text-[13px] text-gray-500 dark:text-[#8d8d8d] mb-5 flex items-center gap-2">
+                <svg className="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2.4} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 6 9 17l-5-5" />
+                </svg>
+                Looks great — this resume is ready to export.
+              </p>
+            ) : (
+              <div className="mb-5">
+                <p className="text-[12px] text-gray-500 dark:text-[#8d8d8d] mb-2">Finish your resume:</p>
+                <div className="flex flex-col gap-1.5 max-w-[440px]">
+                  {missing.slice(0, 3).map(item => (
+                    <button
+                      key={item.label}
+                      onClick={onEdit}
+                      className="group/item flex items-center justify-between gap-3 text-left px-3 py-2 rounded-lg border border-gray-200 dark:border-[#3a3a3a] hover:border-[#F97316]/50 hover:bg-[#FFF7ED] dark:hover:bg-[#F97316]/[0.08] transition-colors"
+                    >
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        <span className="w-4 h-4 rounded-full border-[1.5px] border-gray-300 dark:border-[#555] flex-shrink-0 group-hover/item:border-[#F97316]" />
+                        <span className="text-[13px] text-[#111111] dark:text-white truncate">{item.label}</span>
+                      </span>
+                      <span className="text-[11px] font-bold text-[#F97316] flex-shrink-0">+{item.weight}%</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <button
+                onClick={onEdit}
+                className="flex items-center gap-2 px-5 py-2 rounded-lg text-[13px] font-semibold text-white transition-all active:scale-[0.98]"
+                style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.12), 0 1px 0 rgba(0,0,0,.1), 0 4px 12px -4px rgba(249,115,22,.4)' }}
+                onMouseOver={e => (e.currentTarget.style.background = '#C2510A')}
+                onMouseOut={e => (e.currentTarget.style.background = 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)')}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Resume editing
+              </button>
+              <button
+                onClick={onExport}
+                disabled={exporting}
+                className="flex items-center gap-2 px-5 py-2 rounded-lg text-[13px] font-semibold border border-gray-300 dark:border-[#3a3a3a] text-[#111111] dark:text-white hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:bg-[#2c2c2c] transition-colors disabled:opacity-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                {exporting ? 'Exporting…' : 'Download PDF'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ────────────────────── EmptyState ────────────────────── */
 
 function EmptyState({ onCreate }: { onCreate: () => void }) {
@@ -516,7 +693,10 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
       </p>
       <button
         onClick={onCreate}
-        className="bg-[#111111] hover:bg-[#2a2a2a] active:bg-black text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl transition-colors"
+        className="text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl transition-all active:scale-[0.98]"
+        style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.12), 0 1px 0 rgba(0,0,0,.1), 0 4px 14px -4px rgba(249,115,22,.45)' }}
+        onMouseOver={e => (e.currentTarget.style.background = '#C2510A')}
+        onMouseOut={e => (e.currentTarget.style.background = 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)')}
       >
         + Create Resume
       </button>
@@ -527,6 +707,14 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
 /* ─────────────────────── Main Dashboard ─────────────────────── */
 
 type FilterType = 'all' | 'draft' | 'complete';
+type SortKey = 'recent' | 'created' | 'name' | 'completion';
+
+const SORT_LABELS: Record<SortKey, string> = {
+  recent: 'Last edited',
+  created: 'Date created',
+  name: 'Name (A–Z)',
+  completion: 'Completion',
+};
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -552,6 +740,7 @@ export function Dashboard() {
   const [filter, setFilter] = useState<FilterType>('all');
   const [templateFilter, setTemplateFilter] = useState<TemplateId | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<SortKey>('recent');
   const [exportingId, setExportingId] = useState<string | null>(null);
 
   useEffect(() => { loadCvs(); }, [loadCvs]);
@@ -560,15 +749,34 @@ export function Dashboard() {
   const total = cvs.length;
   const complete = cvs.filter(cv => getCompletion(cv) >= 70).length;
   const draft = total - complete;
+  const avgCompletion = total
+    ? Math.round(cvs.reduce((s, cv) => s + getCompletion(cv), 0) / total)
+    : 0;
 
-  /* ── Filtered list ── */
-  const visible = cvs.filter(cv => {
-    if (searchQuery && !cv.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (filter === 'draft' && getCompletion(cv) >= 70) return false;
-    if (filter === 'complete' && getCompletion(cv) < 70) return false;
-    if (templateFilter !== 'all' && cv.templateId !== templateFilter) return false;
-    return true;
-  });
+  /* ── Most recently edited — powers the "continue" featured card ── */
+  const mostRecent = total
+    ? [...cvs].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0]
+    : null;
+  const isFiltering = !!searchQuery || filter !== 'all' || templateFilter !== 'all';
+
+  /* ── Filtered + sorted list ── */
+  const visible = cvs
+    .filter(cv => {
+      if (searchQuery && !cv.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (filter === 'draft' && getCompletion(cv) >= 70) return false;
+      if (filter === 'complete' && getCompletion(cv) < 70) return false;
+      if (templateFilter !== 'all' && cv.templateId !== templateFilter) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'created': return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'name':    return (a.title || '').localeCompare(b.title || '');
+        case 'completion': return getCompletion(b) - getCompletion(a);
+        case 'recent':
+        default:        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+    });
 
   /* ── Actions ── */
   const handleCreate = async () => {
@@ -627,7 +835,7 @@ export function Dashboard() {
 
   /* ── Render ── */
   return (
-    <div className="h-screen flex overflow-hidden bg-[#e4e4e4] dark:bg-[#161616]">
+    <div className="h-screen flex overflow-hidden bg-[#EDEBE7] dark:bg-[#161616]">
       <Sidebar
         activeNav={activeNav}
         onNav={setActiveNav}
@@ -645,7 +853,7 @@ export function Dashboard() {
           showSearch={activeNav === 'resumes'}
         />
 
-        <main className="flex-1 overflow-y-auto px-6 py-8 lg:px-10">
+        <main className="flex-1 overflow-y-auto px-6 py-8 lg:px-10 dashboard-warm-bg">
           {activeNav === 'templates' ? (
             <TemplatesView />
           ) : activeNav === 'settings' ? (
@@ -653,19 +861,41 @@ export function Dashboard() {
           ) : (
             <>
 
-          {/* ── Welcome ── */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-            <div>
+          {/* ── Hero band ── */}
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-7">
+            <div className="min-w-0">
               <h1 className="text-[26px] font-black text-[#111111] dark:text-white tracking-tight leading-tight">
-                Welcome back, {firstName} 👋
+                {getGreeting()}, {firstName}
               </h1>
-              <p className="text-[14px] text-gray-400 dark:text-[#8d8d8d] mt-1">
-                Continue building professional resumes.
+              <p className="text-[14px] text-gray-500 dark:text-[#8d8d8d] mt-1">
+                {total === 0
+                  ? "Let's build your first resume."
+                  : draft > 0
+                    ? `${draft} draft${draft > 1 ? 's' : ''} need${draft > 1 ? '' : 's'} attention.`
+                    : 'All caught up — nice work.'}
               </p>
+
+              {/* Inline metric strip */}
+              {total > 0 && (
+                <div className="flex items-center gap-3 mt-4 text-[13px] font-medium flex-wrap">
+                  <MetricChip color="#F97316" value={total} label={total === 1 ? 'resume' : 'resumes'} />
+                  <span className="w-px h-3.5 bg-gray-300 dark:bg-[#3a3a3a]" />
+                  <MetricChip color="#10b981" value={complete} label="ready" />
+                  <span className="w-px h-3.5 bg-gray-300 dark:bg-[#3a3a3a]" />
+                  <MetricChip color="#f59e0b" value={draft} label="draft" />
+                  <span className="w-px h-3.5 bg-gray-300 dark:bg-[#3a3a3a]" />
+                  <span className="text-gray-500 dark:text-[#8d8d8d]">
+                    <span className="font-bold text-[#111111] dark:text-white">{avgCompletion}%</span> avg complete
+                  </span>
+                </div>
+              )}
             </div>
             <button
               onClick={handleCreate}
-              className="flex-shrink-0 flex items-center gap-2 bg-[#111111] hover:bg-[#2a2a2a] active:bg-black text-white text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="flex-shrink-0 flex items-center gap-2 text-white text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-all active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.12), 0 1px 0 rgba(0,0,0,.1), 0 4px 14px -4px rgba(249,115,22,.45)' }}
+              onMouseOver={e => (e.currentTarget.style.background = '#C2510A')}
+              onMouseOut={e => (e.currentTarget.style.background = 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -674,21 +904,14 @@ export function Dashboard() {
             </button>
           </div>
 
-          {/* ── Stats ── */}
-          {total > 0 && (
-            <div className="grid grid-cols-3 gap-4 mb-8">
-              {[
-                { label: 'Total', value: total, color: '#111111', darkColor: '#ffffff' },
-                { label: 'Complete', value: complete, color: '#10b981', darkColor: '#10b981' },
-                { label: 'Draft', value: draft, color: '#f59e0b', darkColor: '#f59e0b' },
-              ].map(stat => (
-                <div key={stat.label} className="bg-white dark:bg-[#232323] rounded-2xl border border-gray-200 dark:border-[#383838] px-5 py-4 shadow-sm shadow-black/[0.05] dark:shadow-none">
-                  <p className="text-[12px] text-gray-400 dark:text-[#8d8d8d] font-medium mb-1">{stat.label}</p>
-                  <p className="text-[28px] font-black leading-none dark:hidden" style={{ color: stat.color }}>{stat.value}</p>
-                  <p className="text-[28px] font-black leading-none hidden dark:block" style={{ color: stat.darkColor }}>{stat.value}</p>
-                </div>
-              ))}
-            </div>
+          {/* ── Continue where you left off ── */}
+          {mostRecent && !isFiltering && (
+            <ContinueCard
+              cv={mostRecent}
+              onEdit={() => navigate(`/cv/${mostRecent.id}`)}
+              onExport={() => handleExport(mostRecent)}
+              exporting={exportingId === mostRecent.id}
+            />
           )}
 
           {/* ── Filters ── */}
@@ -702,7 +925,7 @@ export function Dashboard() {
                     onClick={() => setFilter(f)}
                     className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold capitalize transition-all ${
                       filter === f
-                        ? 'bg-[#111111] dark:bg-white text-white dark:text-[#111111]'
+                        ? 'bg-[#F97316] text-white'
                         : 'text-gray-400 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white'
                     }`}
                   >
@@ -723,13 +946,25 @@ export function Dashboard() {
                 ))}
               </select>
 
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortKey)}
+                title="Sort resumes"
+                className="h-[38px] px-3 pr-8 rounded-xl text-[12px] font-semibold bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#bbb] outline-none cursor-pointer appearance-none bg-no-repeat bg-[length:14px] bg-[right_10px_center] bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2394a3b8%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22M6%208l4%204%204-4%22%2F%3E%3C%2Fsvg%3E')] hover:border-gray-300 dark:hover:border-[#525252] transition-colors"
+              >
+                {(Object.keys(SORT_LABELS) as SortKey[]).map(k => (
+                  <option key={k} value={k}>{SORT_LABELS[k]}</option>
+                ))}
+              </select>
+
               <div className="flex-1" />
 
               {/* Grid / List toggle */}
               <div className="flex items-center gap-1 bg-gray-100 dark:bg-[#1e1e1e] border border-gray-200 dark:border-[#3a3a3a] rounded-xl p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-[#111111] dark:bg-white text-white dark:text-[#111111]' : 'text-gray-400 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white'}`}
+                  className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-[#F97316] text-white' : 'text-gray-400 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white'}`}
                 >
                   <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
                     <rect x="1" y="1" width="6" height="6" rx="1" /><rect x="9" y="1" width="6" height="6" rx="1" />
@@ -738,7 +973,7 @@ export function Dashboard() {
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-[#111111] dark:bg-white text-white dark:text-[#111111]' : 'text-gray-400 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white'}`}
+                  className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-[#F97316] text-white' : 'text-gray-400 dark:text-[#8d8d8d] hover:text-[#111111] dark:hover:text-white'}`}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -780,7 +1015,7 @@ export function Dashboard() {
               <p className="text-[14px] text-gray-400 dark:text-[#8d8d8d]">No resumes match your filters.</p>
               <button
                 onClick={() => { setFilter('all'); setTemplateFilter('all'); setSearchQuery(''); }}
-                className="mt-3 text-[13px] font-semibold text-[#111111] dark:text-white underline underline-offset-2"
+                className="mt-3 text-[13px] font-semibold underline underline-offset-2" style={{ color: '#F97316' } as React.CSSProperties}
               >
                 Clear filters
               </button>

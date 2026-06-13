@@ -102,7 +102,11 @@ function PreviewModal({ info, onClose, onUse, creating }: {
             <button
               onClick={() => onUse(info.id)}
               disabled={creating}
-              className="px-4 py-1.5 rounded-lg text-[12.5px] font-semibold bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
+              className="px-4 py-1.5 rounded-lg text-[12.5px] font-semibold text-white transition-all disabled:opacity-50 whitespace-nowrap active:scale-[0.98]"
+              style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)', boxShadow: '0 4px 12px -4px rgba(249,115,22,.4)' }}
+              onMouseOver={e => (e.currentTarget.style.background = '#C2510A')}
+              onMouseOut={e => (e.currentTarget.style.background = 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)')}
+
             >
               {creating ? 'Creating…' : 'Use this template'}
             </button>
@@ -195,8 +199,8 @@ export function TemplatesView() {
               onClick={() => setCategory(c.id)}
               className={`px-3.5 py-1.5 rounded-full text-[12px] font-semibold transition-all border ${
                 category === c.id
-                  ? 'bg-[#111111] dark:bg-white text-white dark:text-[#111111] border-transparent'
-                  : 'bg-white dark:bg-[#232323] text-gray-500 dark:text-[#8d8d8d] border-gray-200 dark:border-[#3a3a3a] hover:border-gray-300 dark:hover:border-[#525252] hover:text-[#111111] dark:hover:text-white'
+                  ? 'bg-[#F97316] text-white border-transparent shadow-sm'
+                  : 'bg-white dark:bg-[#232323] text-gray-500 dark:text-[#8d8d8d] border-gray-300 dark:border-[#3a3a3a] hover:border-[#F97316]/50 dark:hover:border-[#F97316]/40 hover:text-[#C2510A] dark:hover:text-white'
               }`}
             >
               {c.label}
@@ -207,7 +211,7 @@ export function TemplatesView() {
 
       {/* ── Featured (your default) — only on "All" ── */}
       {category === 'all' && (
-        <div className="mb-8 rounded-2xl border border-gray-200 dark:border-[#383838] bg-white dark:bg-[#232323] overflow-hidden">
+        <div className="mb-8 rounded-2xl border border-gray-300 dark:border-[#444444] bg-white dark:bg-[#232323] overflow-hidden shadow-sm shadow-black/[0.06] dark:shadow-none">
           <div className="flex flex-col md:flex-row">
             {/* Big preview */}
             <div
@@ -221,7 +225,7 @@ export function TemplatesView() {
             {/* Meta */}
             <div className="flex-1 p-7 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-400">Your default</span>
+                <span className="text-[10.5px] font-bold uppercase tracking-[0.14em]" style={{ color: '#F97316' }}>Your default</span>
                 {featured.popular && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">Popular</span>}
                 {featured.isNew && <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">New</span>}
               </div>
@@ -236,13 +240,16 @@ export function TemplatesView() {
                 <button
                   onClick={() => handleUse(featured.id)}
                   disabled={creatingId !== null}
-                  className="px-5 py-2 rounded-lg text-[13px] font-semibold bg-[#111111] dark:bg-white text-white dark:text-[#111111] hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="px-5 py-2 rounded-lg text-[13px] font-semibold text-white transition-all disabled:opacity-50 active:scale-[0.98]"
+                  style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.12), 0 1px 0 rgba(0,0,0,.1), 0 4px 12px -4px rgba(249,115,22,.4)' }}
+                  onMouseOver={e => (e.currentTarget.style.background = '#C2510A')}
+                  onMouseOut={e => (e.currentTarget.style.background = 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)')}
                 >
                   {creatingId === featured.id ? 'Creating…' : 'Use template'}
                 </button>
                 <button
                   onClick={() => setPreviewing(featured)}
-                  className="px-5 py-2 rounded-lg text-[13px] font-semibold border border-gray-200 dark:border-[#3a3a3a] text-[#111111] dark:text-white hover:bg-gray-50 dark:hover:bg-[#2c2c2c] transition-colors"
+                  className="px-5 py-2 rounded-lg text-[13px] font-semibold border border-gray-300 dark:border-[#3a3a3a] text-[#111111] dark:text-white hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:bg-[#2c2c2c] transition-colors"
                 >
                   Preview
                 </button>
@@ -268,7 +275,7 @@ export function TemplatesView() {
           return (
             <div
               key={info.id}
-              className="group rounded-2xl border border-gray-200 dark:border-[#383838] bg-white dark:bg-[#232323] overflow-hidden hover:border-gray-300 dark:hover:border-[#525252] hover:shadow-lg hover:shadow-black/[0.07] dark:shadow-none hover:-translate-y-0.5 transition-all duration-300"
+              className="group rounded-2xl border border-gray-300 dark:border-[#444444] bg-white dark:bg-[#232323] overflow-hidden shadow-sm shadow-black/[0.05] dark:shadow-none hover:border-[#F97316]/60 dark:hover:border-[#F97316]/40 hover:shadow-xl hover:shadow-black/[0.10] dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300"
             >
               {/* Preview window — pans down on hover */}
               <div className="relative bg-[#EFEFED] dark:bg-[#1c1c1c] flex justify-center pt-6 px-6 h-[248px] overflow-hidden cursor-pointer" onClick={() => setPreviewing(info)}>
@@ -283,7 +290,7 @@ export function TemplatesView() {
                 <div className="absolute top-2.5 left-2.5 flex gap-1.5">
                   {info.popular && <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-orange-500 text-white shadow-sm">POPULAR</span>}
                   {info.isNew && <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-blue-600 text-white shadow-sm">NEW</span>}
-                  {isDefault && <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-[#111111] dark:bg-white text-white dark:text-[#111111] shadow-sm">DEFAULT</span>}
+                  {isDefault && <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded text-white shadow-sm" style={{ background: '#F97316' }}>DEFAULT</span>}
                 </div>
 
                 {/* Bottom action bar slides up on hover */}
@@ -297,7 +304,10 @@ export function TemplatesView() {
                   <button
                     onClick={(e) => { e.stopPropagation(); handleUse(info.id); }}
                     disabled={creatingId !== null}
-                    className="px-3.5 py-1.5 rounded-lg text-[12px] font-semibold bg-[#111111] text-white shadow-lg hover:bg-[#2a2a2a] transition-colors disabled:opacity-50"
+                    className="px-3.5 py-1.5 rounded-lg text-[12px] font-semibold text-white shadow-lg transition-colors disabled:opacity-50"
+                    style={{ background: '#F97316' }}
+                    onMouseOver={e => (e.currentTarget.style.background = '#EA580C')}
+                    onMouseOut={e => (e.currentTarget.style.background = '#F97316')}
                   >
                     {creatingId === info.id ? 'Creating…' : 'Use template'}
                   </button>

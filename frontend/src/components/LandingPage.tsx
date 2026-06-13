@@ -1,20 +1,34 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from './Logo';
+import { CvPreview, PAGE_WIDTH } from '../templates/CvPreview';
+import { makeSampleCv } from '../templates/sampleCv';
+import type { TemplateId } from '../types/cv';
 
 /* ── Design tokens ──────────────────────────────────────────────────────── */
 const C = {
-  bg:        '#FBFBFA',
+  bg:        '#FEFCF9',
   bgElev:    '#FFFFFF',
-  bgSoft:    '#F4F4F1',
+  bgSoft:    '#FEF6EE',
   ink:       '#0A0A0A',
   ink2:      '#1F1F1D',
   muted:     '#6B6B68',
   muted2:    '#98988F',
   line:      '#E7E7E2',
   line2:     '#EFEFEA',
-  accent:    '#2D5BFF',
-  accentInk: '#1E3FB8',
+  accent:    '#F97316',
+  accentInk: '#C2510A',
   success:   '#16A34A',
+} as const;
+
+/* Refined multi-accent palette — used purposefully across the page */
+const ACCENTS = {
+  blue:    { fg: '#F97316', ink: '#C2510A', tint: '#FFF3E8' },  // primary: pumpkin orange
+  emerald: { fg: '#0E9F6E', ink: '#057A55', tint: '#E3F6EE' },
+  violet:  { fg: '#7C3AED', ink: '#5B21B6', tint: '#F1EBFE' },
+  amber:   { fg: '#D97706', ink: '#B45309', tint: '#FEF1D6' },
+  rose:    { fg: '#E11D48', ink: '#BE123C', tint: '#FCE7EC' },
+  cyan:    { fg: '#0891B2', ink: '#0E7490', tint: '#E0F5FA' },
 } as const;
 
 const shadowCard = '0 1px 0 rgba(10,10,10,.04), 0 1px 2px rgba(10,10,10,.04)';
@@ -23,8 +37,47 @@ const shadowLift = '0 1px 0 rgba(10,10,10,.04), 0 10px 30px -12px rgba(10,10,10,
 const font    = '"Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif';
 const fontMono = '"Geist Mono", ui-monospace, "SF Mono", Menlo, monospace';
 
+/* ── Real template renderer ─────────────────────────────────────────────────
+   Renders the genuine template component (via makeSampleCv + CvPreview) scaled
+   to fill its container width. `crop` clips the visible page height (1 = full
+   A4 page, 0.6 = top 60%). Lazy-mounts when scrolled near the viewport. */
+function AutoTemplate({ templateId, crop = 1 }: { templateId: TemplateId; crop?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(260);
+  const [show, setShow] = useState(false);
+  const cv = useMemo(() => makeSampleCv(templateId), [templateId]);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setWidth(e.contentRect.width));
+    ro.observe(el);
+    const io = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) setShow(true); },
+      { rootMargin: '400px' },
+    );
+    io.observe(el);
+    return () => { ro.disconnect(); io.disconnect(); };
+  }, []);
+
+  const scale = width / PAGE_WIDTH;
+  const height = Math.round(width * (1123 / 794) * crop);
+
+  return (
+    <div ref={ref} style={{ width: '100%', height, overflow: 'hidden', background: '#fff', position: 'relative' }}>
+      {show && (
+        <div style={{ width: PAGE_WIDTH, transform: `scale(${scale})`, transformOrigin: 'top left', pointerEvents: 'none' }}>
+          <CvPreview cv={cv} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Buttons ────────────────────────────────────────────────────────────── */
-function BtnPrimary({ onClick, children, lg }: { onClick?: () => void; children: React.ReactNode; lg?: boolean }) {
+function BtnPrimary({ onClick, children, lg, blue }: { onClick?: () => void; children: React.ReactNode; lg?: boolean; blue?: boolean }) {
+  const bg = blue ? 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)' : C.ink;
+  const bgHover = blue ? '#C2510A' : '#000';
   return (
     <button
       onClick={onClick}
@@ -33,13 +86,15 @@ function BtnPrimary({ onClick, children, lg }: { onClick?: () => void; children:
         height: lg ? 46 : 38, padding: lg ? '0 22px' : '0 16px',
         borderRadius: lg ? 9 : 8, fontSize: lg ? 15 : 14, fontWeight: 500,
         letterSpacing: '-0.005em', border: '1px solid transparent',
-        background: C.ink, color: '#fff',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.08), 0 1px 0 rgba(0,0,0,.1)',
+        background: bg, color: '#fff',
+        boxShadow: blue
+          ? 'inset 0 1px 0 rgba(255,255,255,.15), 0 1px 0 rgba(0,0,0,.12), 0 4px 16px -4px rgba(249,115,22,.45)'
+          : 'inset 0 1px 0 rgba(255,255,255,.08), 0 1px 0 rgba(0,0,0,.1)',
         cursor: 'pointer', whiteSpace: 'nowrap', fontFamily: font,
-        transition: 'background .15s ease',
+        transition: 'background .15s ease, box-shadow .15s ease',
       }}
-      onMouseOver={e => (e.currentTarget.style.background = '#000')}
-      onMouseOut={e => (e.currentTarget.style.background = C.ink)}
+      onMouseOver={e => (e.currentTarget.style.background = bgHover)}
+      onMouseOut={e => (e.currentTarget.style.background = bg)}
       onMouseDown={e => (e.currentTarget.style.transform = 'translateY(1px)')}
       onMouseUp={e => (e.currentTarget.style.transform = '')}
     >
@@ -182,212 +237,62 @@ function HeroVisual() {
   return (
     <div style={{ position: 'relative', aspectRatio: '1 / 1.05', perspective: 1400, width: '100%' }}>
       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        {/* back-2 */}
+        {/* back-2 — violet accent */}
         <ResumeCard
-          style={{ top: '8%', left: '-4%', width: '58%', aspectRatio: '8.5/11', zIndex: 1, transform: 'rotate(-6deg)', opacity: 0.85 }}
+          style={{ top: '8%', left: '-4%', width: '58%', aspectRatio: '8.5/11', zIndex: 1, transform: 'rotate(-6deg)', opacity: 0.88, borderTop: `3px solid ${ACCENTS.violet.fg}` }}
           name="A. Mendes" role="Product Designer"
           skills={['Figma', 'CSS', 'Design Systems']}
         />
-        {/* back-1 */}
+        {/* back-1 — amber accent */}
         <ResumeCard
-          style={{ top: '1%', left: '33%', width: '64%', aspectRatio: '8.5/11', zIndex: 2, transform: 'rotate(5deg)', opacity: 0.95 }}
+          style={{ top: '1%', left: '33%', width: '64%', aspectRatio: '8.5/11', zIndex: 2, transform: 'rotate(5deg)', opacity: 0.95, borderTop: `3px solid ${ACCENTS.amber.fg}` }}
           name="M. Tanaka" role="Engineering Lead"
           experiences={[{ company: 'Linear', date: '2023 — Present', title: 'Staff Engineer' }]}
         />
-        {/* front */}
-        <ResumeCard
-          style={{ top: '4%', left: '11%', width: '78%', aspectRatio: '8.5/11', zIndex: 3, transform: 'rotate(-1.2deg)' }}
-          name="Sam Carter" role="Senior Frontend Engineer"
-          contact={['sam@carter.dev', '+1 (415) 555 0117', 'sf · california']}
-          experiences={[
-            { company: 'Stripe', date: '2022 — Present', title: 'Senior Frontend Engineer', bullets: ['Led migration of Checkout to React 18, reducing TTI by 41%.', 'Owned design-system contributions across 14 product teams.'] },
-            { company: 'Notion', date: '2019 — 2022', title: 'Frontend Engineer', bullets: ['Built the new database block, used by 6M+ daily users.'] },
-          ]}
-          skills={['TypeScript', 'React', 'Next.js', 'PostgreSQL', 'Spring Boot', 'Design Systems']}
-        />
-        {/* ATS chip */}
+        {/* front — real template render */}
+        <div style={{
+          position: 'absolute', top: '4%', left: '11%', width: '78%', aspectRatio: '8.5/11',
+          zIndex: 3, transform: 'rotate(-1.2deg)', background: '#fff',
+          border: `1px solid ${C.line}`, borderRadius: 12, boxShadow: shadowLift, overflow: 'hidden',
+        }}>
+          <AutoTemplate templateId="EXECUTIVE" crop={1} />
+        </div>
+        {/* ATS chip — emerald tinted */}
         <div style={{
           position: 'absolute', bottom: '8%', left: '-2%', zIndex: 5,
-          background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 10,
-          padding: '10px 12px', boxShadow: '0 8px 24px -12px rgba(10,10,10,.18)',
+          background: ACCENTS.emerald.tint, border: `1px solid rgba(14,159,110,.28)`, borderRadius: 10,
+          padding: '10px 12px', boxShadow: '0 8px 24px -12px rgba(14,159,110,.25)',
           display: 'flex', alignItems: 'center', gap: 10, fontSize: 12,
         }}>
-          <div style={{ fontFamily: fontMono, fontSize: 16, fontWeight: 600, color: C.success }}>98</div>
+          <div style={{ fontFamily: fontMono, fontSize: 16, fontWeight: 700, color: ACCENTS.emerald.ink }}>98</div>
           <div>
-            <div style={{ fontWeight: 500, color: C.ink }}>ATS Score</div>
-            <div style={{ fontFamily: fontMono, fontSize: 10, color: C.muted }}>Passes 12 of 12 checks</div>
+            <div style={{ fontWeight: 600, color: ACCENTS.emerald.ink, fontSize: 12 }}>ATS Score</div>
+            <div style={{ fontFamily: fontMono, fontSize: 10, color: ACCENTS.emerald.fg }}>Passes 12 of 12 checks</div>
           </div>
         </div>
-        {/* Sync chip */}
+        {/* Sync chip — blue tinted */}
         <div style={{
           position: 'absolute', top: '6%', right: '-2%', zIndex: 5,
-          background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 10,
-          padding: '10px 12px', boxShadow: '0 8px 24px -12px rgba(10,10,10,.18)',
+          background: ACCENTS.blue.tint, border: `1px solid rgba(45,91,255,.25)`, borderRadius: 10,
+          padding: '10px 12px', boxShadow: '0 8px 24px -12px rgba(45,91,255,.20)',
           display: 'flex', alignItems: 'center', gap: 10, fontSize: 12,
         }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: C.success, boxShadow: '0 0 0 3px rgba(22,163,74,.18)', display: 'inline-block' }} />
-          <div style={{ fontFamily: fontMono, fontSize: 11, color: C.ink2 }}>Auto-saved · just now</div>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: ACCENTS.blue.fg, boxShadow: '0 0 0 3px rgba(45,91,255,.22)', display: 'inline-block' }} />
+          <div style={{ fontFamily: fontMono, fontSize: 11, color: ACCENTS.blue.ink }}>Auto-saved · just now</div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Mini resume thumb (template gallery) ───────────────────────────────── */
-function MiniLine({ w = 'l' }: { w?: 's' | 'm' | 'l' }) {
-  const widths = { s: '60%', m: '80%', l: '95%' };
-  return <div style={{ height: 3, background: '#E5E5E0', borderRadius: 1, marginBottom: 3, width: widths[w] }} />;
-}
-
-function MiniSecH({ children }: { children: string }) {
-  return (
-    <div style={{ fontFamily: fontMono, fontSize: 6, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.muted, borderBottom: `0.5px solid ${C.line}`, paddingBottom: 2, marginBottom: 4 }}>
-      {children}
-    </div>
-  );
-}
-
-function TplClassic() {
-  return (
-    <div style={{ padding: 16, height: '100%', fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: font }}>
-      <div style={{ textAlign: 'center', borderBottom: `0.5px solid ${C.line}`, paddingBottom: 6 }}>
-        <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>SAM CARTER</div>
-        <div style={{ fontFamily: fontMono, fontSize: 6, color: C.muted, marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>sam@carter.dev · sf, ca</div>
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <MiniSecH>Experience</MiniSecH>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontWeight: 600, fontSize: 7 }}>Stripe</span>
-          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
-        </div>
-        <MiniLine /><MiniLine w="m" />
-        <div style={{ height: 6 }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontWeight: 600, fontSize: 7 }}>Notion</span>
-          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
-        </div>
-        <MiniLine />
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <MiniSecH>Education</MiniSecH>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontWeight: 600, fontSize: 7 }}>UC Berkeley</span>
-          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2015 — 2019</span>
-        </div>
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <MiniSecH>Skills</MiniSecH>
-        <MiniLine w="m" />
-      </div>
-    </div>
-  );
-}
-
-function TplSidebar() {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '32% 1fr', height: '100%' }}>
-      <div style={{ background: '#0A0A0A', color: '#fff', padding: '14px 10px', fontSize: 6 }}>
-        <div style={{ fontWeight: 700, fontSize: 9, letterSpacing: '-0.02em', color: '#fff' }}>Sam<br />Carter</div>
-        <div style={{ fontSize: 5, color: '#888', marginTop: 3 }}>Frontend Engineer</div>
-        <div style={{ marginTop: 14 }}>
-          <div style={{ fontFamily: fontMono, fontSize: 6, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#888', borderBottom: '0.5px solid #2a2a2a', paddingBottom: 2, marginBottom: 4 }}>Contact</div>
-          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '60%' }} />
-          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '80%' }} />
-        </div>
-        <div style={{ marginTop: 10 }}>
-          <div style={{ fontFamily: fontMono, fontSize: 6, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#888', borderBottom: '0.5px solid #2a2a2a', paddingBottom: 2, marginBottom: 4 }}>Skills</div>
-          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '95%' }} />
-          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '80%' }} />
-          <div style={{ height: 3, background: '#2a2a2a', borderRadius: 1, marginBottom: 3, width: '60%' }} />
-        </div>
-      </div>
-      <div style={{ padding: '14px 12px' }}>
-        <div style={{ marginTop: 0 }}>
-          <MiniSecH>Experience</MiniSecH>
-          <div style={{ fontWeight: 600, fontSize: 7 }}>Stripe</div>
-          <MiniLine /><MiniLine w="m" />
-          <div style={{ height: 4 }} />
-          <div style={{ fontWeight: 600, fontSize: 7 }}>Notion</div>
-          <MiniLine />
-        </div>
-        <div style={{ marginTop: 10 }}>
-          <MiniSecH>Education</MiniSecH>
-          <MiniLine w="m" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TplModern() {
-  return (
-    <div style={{ padding: 16, height: '100%', fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: font }}>
-      <div style={{ fontWeight: 700, fontSize: 13, letterSpacing: '-0.03em' }}>Sam Carter.</div>
-      <div style={{ height: 3, width: 32, background: C.accent, margin: '6px 0 8px' }} />
-      <div style={{ fontFamily: fontMono, fontSize: 6, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Frontend Engineer · San Francisco</div>
-      <div style={{ marginTop: 10 }}>
-        <MiniSecH>Experience</MiniSecH>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontWeight: 600, fontSize: 7 }}>Stripe</span>
-          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
-        </div>
-        <MiniLine /><MiniLine w="m" />
-        <div style={{ height: 6 }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontWeight: 600, fontSize: 7 }}>Notion</span>
-          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
-        </div>
-        <MiniLine /><MiniLine w="s" />
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <MiniSecH>Skills</MiniSecH>
-        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-          {['React', 'TypeScript', 'Spring'].map(s => (
-            <span key={s} style={{ fontSize: 5, padding: '1px 4px', border: `0.5px solid ${C.line}`, borderRadius: 2 }}>{s}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TplSerif() {
-  return (
-    <div style={{ padding: 16, height: '100%', fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: '"Times New Roman", Georgia, serif' }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>Sam Carter</div>
-        <div style={{ fontSize: 6, color: C.muted, fontStyle: 'italic' }}>Frontend Engineer</div>
-        <div style={{ fontSize: 5.5, color: C.muted, marginTop: 2 }}>sam@carter.dev — +1 415 555 0117</div>
-      </div>
-      <div style={{ height: 0.5, background: C.ink, margin: '8px 0' }} />
-      <div>
-        <MiniSecH>Experience</MiniSecH>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontWeight: 600, fontSize: 7, fontStyle: 'italic' }}>Stripe — San Francisco</span>
-          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
-        </div>
-        <MiniLine /><MiniLine w="m" />
-        <div style={{ height: 6 }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ fontWeight: 600, fontSize: 7, fontStyle: 'italic' }}>Notion</span>
-          <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
-        </div>
-        <MiniLine />
-      </div>
-      <div style={{ marginTop: 10 }}>
-        <MiniSecH>Education</MiniSecH>
-        <MiniLine w="m" />
       </div>
     </div>
   );
 }
 
 /* ── Feature icon wrapper ────────────────────────────────────────────────── */
-function FeatureIcon({ children }: { children: React.ReactNode }) {
+function FeatureIcon({ children, ac }: { children: React.ReactNode; ac?: { fg: string; tint: string } }) {
   return (
     <div style={{
-      width: 32, height: 32, borderRadius: 8, background: C.bgSoft,
-      border: `1px solid ${C.line}`, display: 'grid', placeItems: 'center', color: C.ink,
+      width: 36, height: 36, borderRadius: 9,
+      background: ac ? ac.tint : C.bgSoft,
+      border: `1px solid ${ac ? ac.fg + '33' : C.line}`,
+      display: 'grid', placeItems: 'center', color: ac ? ac.fg : C.ink,
     }}>
       {children}
     </div>
@@ -449,6 +354,12 @@ export function LandingPage() {
 
       {/* ── HERO ── */}
       <section style={{ position: 'relative', padding: '80px 0 40px', overflow: 'hidden' }}>
+        {/* soft color glows */}
+        <div style={{ position: 'absolute', top: -100, left: -60, width: 600, height: 600, pointerEvents: 'none', background: 'radial-gradient(circle, rgba(249,115,22,.22), transparent 65%)', filter: 'blur(6px)' }} />
+        <div style={{ position: 'absolute', top: -40, right: -100, width: 580, height: 580, pointerEvents: 'none', background: 'radial-gradient(circle, rgba(234,88,12,.16), transparent 65%)', filter: 'blur(6px)' }} />
+        <div style={{ position: 'absolute', bottom: -120, left: '38%', width: 520, height: 520, pointerEvents: 'none', background: 'radial-gradient(circle, rgba(14,159,110,.13), transparent 65%)', filter: 'blur(6px)' }} />
+        {/* warm amber accent bottom-left */}
+        <div style={{ position: 'absolute', bottom: -80, left: -60, width: 400, height: 400, pointerEvents: 'none', background: 'radial-gradient(circle, rgba(251,191,36,.14), transparent 65%)', filter: 'blur(10px)' }} />
         {/* grid bg */}
         <div style={{
           position: 'absolute', inset: 0, pointerEvents: 'none',
@@ -466,13 +377,19 @@ export function LandingPage() {
               border: `1px solid ${C.line}`, borderRadius: 999,
               fontSize: 12, color: C.muted, marginBottom: 24,
             }}>
-              <span style={{ background: '#EAF0FF', color: C.accentInk, fontFamily: fontMono, fontSize: 11, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.02em' }}>v2.4</span>
+              <span style={{ background: '#FFF3E8', color: C.accentInk, fontFamily: fontMono, fontSize: 11, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.02em' }}>v2.4</span>
               Now with AI-assisted content suggestions
             </div>
 
             <h1 style={{ margin: 0, fontSize: 'clamp(40px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.035em', fontWeight: 600, color: C.ink }}>
               A resume builder<br />
-              recruiters <em style={{ fontStyle: 'normal', color: C.muted }}>actually</em><br />
+              recruiters <em style={{
+                fontStyle: 'normal',
+                background: 'linear-gradient(95deg, #F97316 0%, #FBBF24 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}>actually</em><br />
               finish reading.
             </h1>
 
@@ -481,15 +398,17 @@ export function LandingPage() {
             </p>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 32, flexWrap: 'wrap' }}>
-              <BtnPrimary onClick={goAuth} lg>Build Resume <Arr /></BtnPrimary>
+              <BtnPrimary onClick={goAuth} lg blue>Build Resume <Arr /></BtnPrimary>
               <BtnSecondary onClick={() => scrollTo('templates')} lg>View Templates</BtnSecondary>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 28, fontSize: 13, color: C.muted }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.success, boxShadow: '0 0 0 4px rgba(22,163,74,.12)', display: 'inline-block' }} />
-              <span>Free forever · No card required</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 28, fontSize: 13 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: ACCENTS.emerald.ink }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: ACCENTS.emerald.fg, boxShadow: '0 0 0 4px rgba(14,159,110,.18)', display: 'inline-block', flexShrink: 0 }} />
+                Free forever · No card required
+              </span>
               <span style={{ width: 1, height: 14, background: C.line, display: 'inline-block' }} />
-              <span>Exports to PDF &amp; DOCX</span>
+              <span style={{ color: ACCENTS.blue.ink }}>Exports to PDF &amp; DOCX</span>
             </div>
           </div>
 
@@ -498,14 +417,14 @@ export function LandingPage() {
       </section>
 
       {/* ── LOGOS ── */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px' }}>
-        <div style={{ padding: '56px 0 40px', textAlign: 'center' }}>
+      <section style={{ padding: '0 32px', background: 'linear-gradient(180deg, rgba(249,115,22,.06) 0%, transparent 100%)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 0 44px', textAlign: 'center' }}>
           <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 28 }}>
             Resumes built here have landed roles at
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 36, alignItems: 'center', opacity: 0.55 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 36, alignItems: 'center', opacity: 0.6 }}>
             {['Atlassian', 'Shopify', 'Datadog', 'Figma', 'Cloudflare'].map(name => (
-              <div key={name} style={{ textAlign: 'center', fontWeight: 600, letterSpacing: '-0.02em', color: C.ink2, fontSize: 16 }}>{name}</div>
+              <div key={name} style={{ textAlign: 'center', fontWeight: 700, letterSpacing: '-0.02em', color: C.ink2, fontSize: 16 }}>{name}</div>
             ))}
           </div>
         </div>
@@ -532,55 +451,32 @@ export function LandingPage() {
             {/* large feature: live preview */}
             <div style={{ gridColumn: 'span 2', padding: 0, overflow: 'hidden', minHeight: 360, position: 'relative', background: 'linear-gradient(180deg, #FFFFFF 0%, #F9F9F6 100%)', borderRight: `1px solid ${C.line}`, borderBottom: `1px solid ${C.line}` }}>
               <div style={{ padding: 32, display: 'flex', flexDirection: 'column', gap: 14, maxWidth: '50%' }}>
-                <FeatureIcon>
+                <FeatureIcon ac={ACCENTS.blue}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
                 </FeatureIcon>
                 <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>Live preview, always in view</div>
                 <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55 }}>Edit on the left, see the typeset PDF on the right. No "render" buttons, no surprises at export time.</div>
               </div>
-              {/* floating mini resume */}
-              <div style={{ position: 'absolute', right: -40, bottom: -40, width: '56%', aspectRatio: '1/1', borderRadius: 16, background: '#fff', border: `1px solid ${C.line}`, boxShadow: '0 30px 60px -30px rgba(10,10,10,.18)', overflow: 'hidden', transform: 'rotate(-3deg)' }}>
-                <div style={{ padding: 16, fontSize: 6.5, lineHeight: 1.4, color: C.ink2, fontFamily: font }}>
-                  <div style={{ fontWeight: 700, fontSize: 11, letterSpacing: '-0.02em' }}>Sam Carter</div>
-                  <div style={{ fontFamily: fontMono, fontSize: 6, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>Frontend Engineer</div>
-                  <div style={{ marginTop: 10 }}>
-                    <MiniSecH>Experience</MiniSecH>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontWeight: 600, fontSize: 7 }}>Stripe</span>
-                      <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2022 — Now</span>
-                    </div>
-                    <div style={{ height: 4 }} />
-                    <MiniLine /><MiniLine w="m" />
-                    <div style={{ height: 8 }} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <span style={{ fontWeight: 600, fontSize: 7 }}>Notion</span>
-                      <span style={{ fontFamily: fontMono, fontSize: 5.5, color: C.muted }}>2019 — 2022</span>
-                    </div>
-                    <div style={{ height: 4 }} />
-                    <MiniLine /><MiniLine w="s" />
-                  </div>
-                  <div style={{ marginTop: 10 }}>
-                    <MiniSecH>Skills</MiniSecH>
-                    <MiniLine w="m" /><MiniLine />
-                  </div>
-                </div>
+              {/* floating real template preview */}
+              <div style={{ position: 'absolute', right: -40, bottom: -40, width: '56%', aspectRatio: '1/1', borderRadius: 16, background: '#fff', border: `1px solid ${C.line}`, boxShadow: '0 30px 60px -30px rgba(10,10,10,.22)', overflow: 'hidden', transform: 'rotate(-3deg)' }}>
+                <AutoTemplate templateId="MODERN" crop={1} />
               </div>
             </div>
 
             {/* small features */}
             {[
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7 9 18l-5-5"/></svg>, title: 'ATS-friendly by default', desc: 'Every template is parsed and validated against the same systems recruiters use, so your file makes it past the filter.', col: 1, row: 1 },
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>, title: 'Keyboard-first editing', desc: 'Reorder sections, duplicate roles, format bullets — all with shortcuts. Slash-commands open a quick action palette.', col: 1, row: 2 },
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>, title: 'Pixel-true PDF export', desc: 'Font-embedded, vector PDF output. What you see on screen is exactly what lands in the recruiter\'s inbox.', col: 2, row: 1 },
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, title: 'Twelve curated templates', desc: 'Switch layouts without redoing your content. Type, spacing, and rhythm tuned individually — not just recolored.', col: 2, row: 2 },
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>, title: 'Tailored versions', desc: 'Keep one master profile. Spin up role-specific variants in seconds and track which one you sent where.', col: 3, row: 2 },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7 9 18l-5-5"/></svg>, title: 'ATS-friendly by default', desc: 'Every template is parsed and validated against the same systems recruiters use, so your file makes it past the filter.', ac: ACCENTS.emerald },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>, title: 'Keyboard-first editing', desc: 'Reorder sections, duplicate roles, format bullets — all with shortcuts. Slash-commands open a quick action palette.', ac: ACCENTS.violet },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>, title: 'Pixel-true PDF export', desc: 'Font-embedded, vector PDF output. What you see on screen is exactly what lands in the recruiter\'s inbox.', ac: ACCENTS.rose },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, title: 'Eight curated templates', desc: 'Switch layouts without redoing your content. Type, spacing, and rhythm tuned individually — not just recolored.', ac: ACCENTS.amber },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>, title: 'Tailored versions', desc: 'Keep one master profile. Spin up role-specific variants in seconds and track which one you sent where.', ac: ACCENTS.cyan },
             ].map((f, i) => (
               <div key={f.title} style={{
                 padding: 32, borderRight: i === 0 || i === 2 ? `1px solid ${C.line}` : 'none',
                 borderBottom: i < 2 ? `1px solid ${C.line}` : 'none',
                 background: C.bgElev, display: 'flex', flexDirection: 'column', gap: 14, minHeight: 220,
               }}>
-                <FeatureIcon>{f.icon}</FeatureIcon>
+                <FeatureIcon ac={f.ac}>{f.icon}</FeatureIcon>
                 <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: '-0.01em' }}>{f.title}</div>
                 <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55 }}>{f.desc}</div>
               </div>
@@ -596,7 +492,7 @@ export function LandingPage() {
             <div>
               <Eyebrow>Templates</Eyebrow>
               <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.03em', fontWeight: 600, lineHeight: 1.08, margin: '12px 0 0', maxWidth: '18ch' }}>
-                Twelve layouts. One source of truth.
+                Eight layouts. One source of truth.
               </h2>
             </div>
             <p style={{ color: C.muted, fontSize: 17, lineHeight: 1.55, maxWidth: '44ch' }}>
@@ -615,33 +511,41 @@ export function LandingPage() {
             ))}
           </div>
 
-          {/* template cards */}
+          {/* template cards — real templates rendered at scale */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-            {[
-              { component: <TplClassic />, name: 'Classic', tag: 'Minimal' },
-              { component: <TplSidebar />, name: 'Aperture', tag: 'Technical' },
-              { component: <TplModern />, name: 'Vector', tag: 'Modern' },
-              { component: <TplSerif />, name: 'Bodoni', tag: 'Executive' },
-            ].map(tpl => (
-              <article key={tpl.name}
-                style={{ background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'transform .15s ease, box-shadow .15s ease, border-color .15s ease' }}
-                onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = shadowLift; (e.currentTarget as HTMLElement).style.borderColor = '#D4D4CE'; }}
+            {([
+              { id: 'CLASSIC',   name: 'Classic',   tag: 'Minimal',   ac: ACCENTS.blue },
+              { id: 'MODERN',    name: 'Modern',    tag: 'Modern',    ac: ACCENTS.violet },
+              { id: 'EXECUTIVE', name: 'Executive', tag: 'Leadership', ac: ACCENTS.amber },
+              { id: 'TECH',      name: 'Tech',      tag: 'Engineering', ac: ACCENTS.cyan },
+              { id: 'MINIMAL',   name: 'Minimal',   tag: 'Editorial', ac: ACCENTS.emerald },
+              { id: 'ATS',       name: 'ATS',       tag: 'Recruiter-safe', ac: ACCENTS.blue },
+              { id: 'PRO',       name: 'Pro',       tag: 'Polished',  ac: ACCENTS.rose },
+              { id: 'GRADUATE',  name: 'Graduate',  tag: 'Entry-level', ac: ACCENTS.emerald },
+            ] as { id: TemplateId; name: string; tag: string; ac: { fg: string; ink: string; tint: string } }[]).map(tpl => (
+              <article key={tpl.id}
+                style={{ background: C.bgElev, border: `1px solid ${C.line}`, borderRadius: 14, overflow: 'hidden', cursor: 'pointer', transition: 'transform .18s ease, box-shadow .18s ease, border-color .18s ease' }}
+                onMouseOver={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = shadowLift; (e.currentTarget as HTMLElement).style.borderColor = tpl.ac.fg; }}
                 onMouseOut={e => { (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.borderColor = C.line; }}
                 onClick={goAuth}
               >
-                <div style={{ aspectRatio: '8.5/11', background: '#fff', borderBottom: `1px solid ${C.line2}`, position: 'relative', overflow: 'hidden' }}>
-                  {tpl.component}
+                {/* colored top accent bar */}
+                <div style={{ height: 3, background: tpl.ac.fg }} />
+                <div style={{ borderBottom: `1px solid ${C.line2}`, position: 'relative', overflow: 'hidden' }}>
+                  <AutoTemplate templateId={tpl.id} crop={0.82} />
+                  {/* soft fade at the crop edge */}
+                  <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 48, background: 'linear-gradient(to top, rgba(255,255,255,.9), transparent)', pointerEvents: 'none' }} />
                 </div>
-                <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, letterSpacing: '-0.01em' }}>{tpl.name}</div>
-                  <div style={{ fontFamily: fontMono, fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{tpl.tag}</div>
+                <div style={{ padding: '13px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em' }}>{tpl.name}</div>
+                  <span style={{ fontFamily: fontMono, fontSize: 10, color: tpl.ac.ink, background: tpl.ac.tint, padding: '3px 8px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{tpl.tag}</span>
                 </div>
               </article>
             ))}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
-            <BtnSecondary onClick={goAuth}>Browse all 12 templates <Arr /></BtnSecondary>
+            <BtnSecondary onClick={goAuth}>Browse all templates <Arr /></BtnSecondary>
           </div>
         </div>
       </section>
@@ -664,7 +568,7 @@ export function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, border: `1px solid ${C.line}`, borderRadius: 14, background: C.bgElev, padding: 8 }}>
             {/* step 1 */}
             <div style={{ background: C.bgSoft, borderRadius: 10, padding: 28, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.04em' }}>01 / Draft</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, width: 'fit-content', fontFamily: fontMono, fontSize: 12, color: ACCENTS.blue.ink, background: ACCENTS.blue.tint, padding: '4px 10px', borderRadius: 999, letterSpacing: '0.04em' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENTS.blue.fg }} />01 / Draft</div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Pick a layout, start typing.</div>
                 <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Start from a blank profile or paste an old resume — we'll parse it into structured fields automatically.</div>
@@ -677,7 +581,7 @@ export function LandingPage() {
             </div>
             {/* step 2 */}
             <div style={{ background: C.bgSoft, borderRadius: 10, padding: 28, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.04em' }}>02 / Refine</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, width: 'fit-content', fontFamily: fontMono, fontSize: 12, color: ACCENTS.amber.ink, background: ACCENTS.amber.tint, padding: '4px 10px', borderRadius: 999, letterSpacing: '0.04em' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENTS.amber.fg }} />02 / Refine</div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Polish with smart suggestions.</div>
                 <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Stronger verbs, missing metrics, gaps in dates — the editor flags them inline. Take the suggestion or skip it.</div>
@@ -689,7 +593,7 @@ export function LandingPage() {
             </div>
             {/* step 3 */}
             <div style={{ background: C.bgSoft, borderRadius: 10, padding: 28, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.04em' }}>03 / Export</div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, width: 'fit-content', fontFamily: fontMono, fontSize: 12, color: ACCENTS.emerald.ink, background: ACCENTS.emerald.tint, padding: '4px 10px', borderRadius: 999, letterSpacing: '0.04em' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENTS.emerald.fg }} />03 / Export</div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Send a file recruiters can parse.</div>
                 <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Download as PDF or DOCX, share a private link, or push directly to LinkedIn Easy Apply.</div>

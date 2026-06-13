@@ -2,6 +2,22 @@
 
 @keyframes lp-blink { 50% { opacity: 0; } }
 
+/* Dashboard warm branded surface — cream base with a faint orange glow up top.
+   The glow is fixed to the top so it doesn't scroll away with content. */
+.dashboard-warm-bg {
+  background-color: #FEFCF9;
+  background-image: radial-gradient(ellipse 70% 420px at 50% -120px, rgba(249, 115, 22, 0.08), transparent 70%);
+  background-repeat: no-repeat;
+  background-attachment: local;
+}
+
+/* Dark mode: drop the cream + glow, fall back to the app's dark floor.
+   This rule is unlayered like the one above so it reliably overrides it. */
+.dark .dashboard-warm-bg {
+  background-color: #161616;
+  background-image: none;
+}
+
 /* Use class-based dark mode (not OS media query).
    This makes dark: utilities AND @tailwindcss/forms dark styles
    respond to the .dark class on <html>, not prefers-color-scheme. */
