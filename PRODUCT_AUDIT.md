@@ -20,6 +20,35 @@ But it is **not publishable as a paid product today**, for three categories of r
 
 ---
 
+## 1b. Progress Log
+
+> Updated: 2026-06-13. Work completed against this audit since it was written. Items here are reflected (✅) in the checklists and tables below.
+
+### ✅ Shipped this cycle
+
+**Trust & correctness (audit Phase 1 — essentially complete):**
+- **Real debounced autosave** in `CvEditor.tsx` — saves 1.5s after the last edit, with in-flight/coalesce handling, a "save now" Ctrl+S/Save path, flush-on-back, and unmount + `beforeunload` safety nets. The "Auto-saved" claim is now **true**; the data-loss bug (audit §4 #1) is fixed. Verified: rapid typing coalesces to a single save; status shows real `Saving… → Saved`.
+- **Honest marketing copy** — removed every advertised-but-nonexistent feature from the landing + auth pages: fake ATS score ("98 / Passes 12 of 12"), DOCX export, LinkedIn Easy Apply, share links, AI suggestions, resume import/parse, fabricated employer logos ("landed roles at Atlassian/Shopify…"), fake "99.98% uptime"/"Cancel anytime". Removed the dead "Forgot password?" link. Corrected template count 8 → 13. Kept only real claims (PDF export, autosave, OAuth, templates, customization).
+- **First automated tests — 23 unit tests, all green** (was zero). `CvMapperTest` (12: round-trips incl. new fields, CREATE-drops-IDs / UPDATE-preserves-IDs), `AuthServiceTest` (6: register/login/duplicate/wrong-password/OAuth-null-password), `CvServiceTest` (5: cross-user ownership denial via `findByIdAndUser`). Addresses audit §6 #6.
+
+**Product surface / templates:**
+- **Templates 8 → 13** — added Sidebar, Compact, Timeline (no-schema) + Aurora, Polished (photo). Covers more information architectures and the previously-missing "with photo" category. (Improves audit §5 / §8 template gap — though new *section types* are still missing.)
+- **Per-resume customization layer** — accent-colour picker (8 swatches), serif/sans font toggle, density (compact/normal/relaxed), wired live into the editor and persisted. Implements audit §3 nice-to-have "Custom fonts / accent-color picker per resume".
+- **Profile photo support** — `photo_url` column + base64 upload/auto-resize control + 2 photo templates.
+
+**Bugs fixed along the way:**
+- Backend **500 on creating a CV with child collections** (Hibernate treated client-supplied child IDs as detached on the persist path) — broke the dashboard "Duplicate" action. Now drops child IDs on CREATE, preserves on UPDATE; covered by `CvMapperTest`.
+- Customization controls weren't affecting the preview (`previewCv` wasn't carrying the new fields) — fixed.
+
+### ◻️ Still open (unchanged by this cycle)
+The audit's other headline gaps remain: PDF browser pooling + env-driven CORS/OAuth/Dockerfiles/CI (§6 / Phase 2), security hardening (rich-text XSS sanitization, auth rate limiting), resume import, **real** ATS score, AI features, DOCX export, mobile-responsive editor, password-reset/email-verification backends, new section types (Certifications/Languages/Awards).
+
+### Score movement
+- **Publishability: 4 → ~6.5** (paid-product lens). Autosave + honesty + first tests remove the three most damaging "feels like a prototype" issues; deployment story + real differentiating features are what still cap it.
+- **Market readiness: 3 → ~3.5.** Templates/customization improved, but the table-stakes competitive features (import, real ATS, AI, DOCX) are still absent, so the competitive position is largely unchanged.
+
+---
+
 ## 2. Brutally Honest Assessment
 
 **What a paying customer thinks in their first session:**
@@ -45,13 +74,13 @@ But it is **not publishable as a paid product today**, for three categories of r
 ## 3. Missing Features Checklist
 
 ### 🔴 Must-have before any paid launch
-- [ ] **Real auto-save** (debounced, with conflict handling) — OR remove every "Auto-saved" claim from UI. Right now it is false.
+- [x] **Real auto-save** (debounced, with conflict handling) — ✅ DONE this cycle. Debounced 1.5s autosave + coalescing + Ctrl+S "save now" + safety nets. "Auto-saved" is now true.
 - [ ] **Resume import / parse** (upload existing PDF/DOCX → prefill). The #1 reason users abandon "from scratch" builders.
-- [ ] **Honest landing page** — strip or build AI/ATS/DOCX/LinkedIn/share claims. Shipping marketing for non-existent features is the single biggest credibility killer here.
-- [ ] **DOCX export** — you advertise it twice on the landing page; it does not exist (only `PdfController`/`exportPdf`). Build it or delete the claim.
+- [x] **Honest landing page** — ✅ DONE this cycle. All AI/ATS-score/DOCX/LinkedIn/share/fake-logo claims removed; only real features advertised.
+- [x] **DOCX export claim** — ✅ resolved by REMOVING the claim (export still PDF-only). Building a real DOCX export remains a separate 🟠 feature.
 - [ ] **ATS-safety labeling** per template (single-column = "ATS-safe", two-column = "Design — may not parse").
 - [ ] **Mobile-responsive editor** (or an explicit "best on desktop" gate). Currently broken on phones.
-- [ ] **Password reset / forgot-password flow** — the UI has a dead "Forgot password?" link; there is no backend for it.
+- [~] **Password reset / forgot-password flow** — dead link ✅ REMOVED this cycle; the actual reset backend is still not built.
 - [ ] **Email verification** on signup.
 
 ### 🟠 Important (needed to compete)
@@ -68,7 +97,7 @@ But it is **not publishable as a paid product today**, for three categories of r
 - [ ] LinkedIn import (OAuth scope or profile-URL scrape).
 - [ ] Multi-language resumes.
 - [ ] More section types: Certifications, Awards, Languages, Publications, Volunteering (currently only 5 fixed sections).
-- [ ] Custom fonts / accent-color picker per resume.
+- [x] Custom fonts / accent-color picker per resume. — ✅ DONE this cycle (accent swatches + serif/sans + density, live + persisted).
 - [ ] Resume analytics (views, downloads).
 
 ### 💎 Premium / monetizable
@@ -80,13 +109,13 @@ But it is **not publishable as a paid product today**, for three categories of r
 
 | # | Problem | Where | Fix |
 |---|---------|-------|-----|
-| 1 | **"Auto-saved" is a lie** — implies autosave, but save is manual | `CvEditor.tsx`, dashboard chip, landing hero | Implement debounced autosave (save 1.5s after last keystroke) or relabel to "Saved" + keep explicit Save |
+| 1 | ✅ FIXED — debounced autosave implemented; "Auto-saved" is now accurate | `CvEditor.tsx`, landing hero | ~~Implement debounced autosave~~ Done: 1.5s debounce + Ctrl+S "save now" + flush-on-exit |
 | 2 | **No onboarding / first-run** — new user lands on an empty form with no guidance | `CvEditor` empty state | Add a 3-step intro, "start from sample," or import flow |
 | 3 | **No empty content states inside sections** — empty Experience just shows a bare "Add" | section lists | Add illustrative empty states + example prompts |
 | 4 | **Inline styles + hard-coded hex everywhere** — no token system | all components | Extract a `theme.ts` / Tailwind theme; replace `#F97316` literal (used 30+ times) with `--brand` |
 | 5 | **Accessibility is thin** — icon-only buttons without `aria-label`, custom selects, drag-drop with no keyboard path | editor, dashboard | Add ARIA labels, focus rings, keyboard reordering |
-| 6 | **Forgot-password link goes nowhere** | `AuthScreen.tsx` | Wire it or remove it |
-| 7 | **Marketing logos imply customers** ("Hired at Atlassian, Shopify…") with no basis | landing, auth | Remove or replace with honest social proof |
+| 6 | ✅ FIXED — dead forgot-password link removed | `AuthScreen.tsx` | Removed (reset backend still TODO) |
+| 7 | ✅ FIXED — fabricated employer logos/social proof removed | landing, auth | Replaced with honest feature highlights |
 | 8 | **Dark-mode regressions slip in** (you just hit the warm-bg bug) because styling is ad-hoc | global | Token system + a dark-mode visual check would prevent these |
 | 9 | **No edit history / undo** beyond browser | editor | Add undo stack or version snapshots |
 | 10 | **PDF export is the only output** but the button copy promises more | editor top bar | Align copy with reality |
@@ -96,7 +125,7 @@ But it is **not publishable as a paid product today**, for three categories of r
 ## 5. Template Problems
 
 **General:**
-- 8 templates, but **layout diversity is mostly cosmetic** (color/header changes). Missing genuinely different *information architectures* (e.g., skills-matrix, project-led, academic CV with publications).
+- ~~8 templates~~ **now 13** (added Sidebar, Compact, Timeline, Aurora, Polished incl. a photo category) + a per-resume accent/font/density customization layer. Diversity is better but still partly cosmetic — genuinely different *information architectures* (skills-matrix, academic CV with publications) and new *section types* are still missing.
 - **No ATS-risk indication.** Two-column templates (Classic/Tech/Executive) can break ATS parsing; you market all as ATS-friendly.
 - **No content-overflow handling per template** beyond a global page-count warning — long bullet lists can collide with section spacing.
 - **Skills have a `level` field** (`Expert`, etc.) but ATS template flattens to comma list, discarding it — inconsistent data usage across templates.
@@ -118,7 +147,7 @@ But it is **not publishable as a paid product today**, for three categories of r
 3. **CORS origin hard-coded** to `http://localhost:5173` in `SecurityConfig.java`. Breaks in prod. → env-driven allowed origins.
 4. **OAuth redirect URIs hard-coded** to `localhost:8081` in `application.properties`. OAuth is broken the moment you deploy.
 5. **No deployment artifacts.** `docker-compose.yml` only runs Postgres. No backend Dockerfile, no frontend build/serve image, no reverse-proxy config, no CI/CD.
-6. **Zero automated tests.** Auth, ownership scoping, and the mapper are exactly the code you must not break silently.
+6. ✅ **Partially addressed** — first 23 unit tests added (CvMapper round-trip, AuthService, CvService ownership scoping). Coverage is now non-zero on exactly the must-not-break paths; broader coverage (controllers, PDF, frontend) still TODO, and no CI yet.
 
 ### 🟠 Important
 7. **JWT stored in `localStorage`** (`authStore` persist key `auth-storage`) → stealable via any XSS. Templates use `dangerouslySetInnerHTML` on user HTML (rich text) — **XSS surface is real**. → sanitize rich-text server-side (e.g., OWASP Java HTML Sanitizer) AND move to httpOnly cookie or accept the risk consciously.
@@ -135,29 +164,29 @@ But it is **not publishable as a paid product today**, for three categories of r
 
 ---
 
-## 7. Publishability Score: **4 / 10**
+## 7. Publishability Score: **4 → ~6.5 / 10** (updated 2026-06-13)
 
 > As a **free public beta**: ~6/10 — usable, the core loop works, people would try it.
 > As a **paid product today**: **4/10**. The false feature claims, manual-save-masquerading-as-autosave, no deployment story, and single-instance PDF make it feel like a polished prototype, not a product. Fix the honesty + deployment + autosave and this jumps to ~7.
 
-**What makes it feel amateur right now:** marketing features that don't exist; "Auto-saved" that isn't; fake company logos; dead links; no tests; no onboarding; localhost-coded config.
+**What made it feel amateur (now largely fixed 2026-06-13):** ~~marketing features that don't exist; "Auto-saved" that isn't; fake company logos; dead links; no tests~~ — all addressed this cycle. **Still amateur:** no onboarding; localhost-coded config; single-instance PDF; no deployment story.
 
 **What already feels professional:** the editor UX, live preview fidelity, the PDF-from-real-template architecture, the backend layering and auth.
 
 ---
 
-## 8. Market Readiness Score: **3 / 10**
+## 8. Market Readiness Score: **3 → ~3.5 / 10** (updated 2026-06-13)
 
 Against Resume.io / Zety / Novorésumé / Enhancv / Teal:
 
 | Capability | Competitors | CV Builder |
 |---|---|---|
 | Resume import / parse | ✅ | ❌ |
-| AI content / rewrite | ✅ | ❌ (advertised, absent) |
-| Real ATS score vs JD | ✅ | ❌ (faked visually) |
+| AI content / rewrite | ✅ | ❌ (claim now removed) |
+| Real ATS score vs JD | ✅ | ❌ (fake score removed; real one TODO) |
 | Cover letters | ✅ | ❌ |
-| DOCX export | ✅ | ❌ (advertised, absent) |
-| Templates | 20–40 | 8 |
+| DOCX export | ✅ | ❌ (claim now removed) |
+| Templates | 20–40 | 13 (+ accent/font/density customization) |
 | Onboarding | guided | none |
 | Mobile | yes | no |
 | Trust (reviews, honest copy) | yes | undermined by false claims |
@@ -168,11 +197,11 @@ Against Resume.io / Zety / Novorésumé / Enhancv / Teal:
 
 ## 9. Priority Roadmap (Phase 1 → 5)
 
-### Phase 1 — Stop lying & stop losing data (1–2 weeks) — *trust + correctness*
-- Implement **debounced autosave** in `CvEditor` (or relabel everything to manual "Save").
-- **Rewrite the landing/auth copy** to match reality; remove AI/ATS/DOCX/LinkedIn/share/fake-logos until built.
-- Wire or remove **Forgot password**.
-- Add **basic tests**: auth flow, CV ownership scoping (`findByIdAndUser`), `CvMapper` round-trip.
+### Phase 1 — Stop lying & stop losing data (1–2 weeks) — *trust + correctness* — ✅ **DONE (2026-06-13)**
+- [x] Implement **debounced autosave** in `CvEditor`.
+- [x] **Rewrite the landing/auth copy** to match reality; removed AI/ATS/DOCX/LinkedIn/share/fake-logos.
+- [x] Remove **Forgot password** dead link (reset backend deferred to Phase 2).
+- [x] Add **basic tests**: auth flow, CV ownership scoping (`findByIdAndUser`), `CvMapper` round-trip (23 tests, green).
 
 ### Phase 2 — Make it deployable & safe (2–3 weeks) — *productionize*
 - **Browser pooling + render queue** in `PdfService` (one persistent Chromium, bounded concurrency).

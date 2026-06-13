@@ -233,15 +233,6 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <label style={{ fontSize: 12, fontWeight: 600, color: A.ink2, fontFamily: font, letterSpacing: '0.01em' }}>Password</label>
-                {isLogin && (
-                  <button type="button" tabIndex={-1}
-                    style={{ fontSize: 12, color: A.muted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: font, padding: 0, transition: 'color .15s' }}
-                    onMouseOver={e => (e.currentTarget.style.color = A.ink)}
-                    onMouseOut={e => (e.currentTarget.style.color = A.muted)}
-                  >
-                    Forgot password?
-                  </button>
-                )}
               </div>
               <div style={{ position: 'relative' }}>
                 <input
@@ -350,13 +341,13 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
         </p>
       </div>
 
-      {/* ── Social proof footer ──────────────────────────────────────────── */}
+      {/* ── Feature strip ────────────────────────────────────────────────── */}
       <div style={{ position: 'relative', borderTop: `1px solid ${A.line2}`, padding: '22px 40px 28px', textAlign: 'center', flexShrink: 0 }}>
         <div style={{ fontFamily: fontMono, fontSize: 11, color: A.muted2, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 14 }}>
-          Resumes built here have landed roles at
+          Everything you need to ship a polished resume
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, flexWrap: 'wrap', opacity: 0.55 }}>
-          {['Atlassian', 'Shopify', 'Datadog', 'Figma', 'Cloudflare'].map(name => (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, flexWrap: 'wrap', opacity: 0.7 }}>
+          {['13 templates', 'Live preview', 'PDF export', 'Autosave', 'No watermarks'].map(name => (
             <span key={name} style={{ fontWeight: 700, fontSize: 14, letterSpacing: '-0.02em', color: A.ink2, fontFamily: font }}>{name}</span>
           ))}
         </div>

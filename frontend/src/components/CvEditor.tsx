@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   DEFAULT_SECTION_ORDER,
@@ -148,6 +148,13 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const [hydratedCvId, setHydratedCvId]           = useState<string | null>(null);
   const [draggedSection, setDraggedSection]       = useState<SectionId | null>(null);
   const [isExporting, setIsExporting]             = useState(false);
+  const [autosaveState, setAutosaveState]         = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  /* Autosave plumbing — refs avoid stale closures inside the debounced timer. */
+  const AUTOSAVE_DELAY = 1500;
+  const autosaveTimer = useRef<number | null>(null);
+  const savingRef     = useRef(false); // a save is currently in flight
+  const pendingRef    = useRef(false); // a change landed while a save was in flight
 
   const fitZoom = showPreview
     ? Math.floor(((window.innerWidth * (100 - leftWidth) / 100) - 48) / PAGE_WIDTH * 100)
@@ -217,32 +224,87 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     })();
   };
 
-  const handleSave = async () => {
-    if (!cvId) return;
-    try {
-      const attempted = normalizeForSnapshot(formData);
-      const saved = await updateCv(cvId, formData);
-      if (normalizeForSnapshot(toFormData(saved)) !== attempted) {
-        toast.error('Some fields were not saved. Please try again.');
-        return;
-      }
-      setLastSavedSnapshot(currentSnapshot);
-      toast.success('Saved');
-    } catch { toast.error('Save failed'); }
-  };
+  /* ── Save core ──
+     Shared by autosave (quiet) and the explicit Save button / Ctrl+S (toast=true).
+     Reads the latest form data via refs so the debounced timer never persists a
+     stale snapshot. Serializes overlapping saves with savingRef/pendingRef. */
+  const formDataRef = useRef(formData);
+  const savedSnapRef = useRef(lastSavedSnapshot);
+  // Declared before `commit` so the pending-resave path can recurse without
+  // `commit` referencing itself (which would block memoization).
+  const commitRef = useRef<((opts?: { toast?: boolean }) => Promise<boolean>) | null>(null);
 
-  /* ── Ctrl+S ── */
+  const commit = useCallback(async (opts?: { toast?: boolean }): Promise<boolean> => {
+    if (!cvId || hydratedCvId !== cvId) return false;
+    const data = formDataRef.current;
+    const snap = JSON.stringify(data);
+    if (snap === savedSnapRef.current) return true;      // nothing to save
+    if (savingRef.current) { pendingRef.current = true; return false; } // coalesce
+
+    savingRef.current = true;
+    setAutosaveState('saving');
+    try {
+      const attempted = normalizeForSnapshot(data);
+      const saved = await updateCv(cvId, data);
+      if (normalizeForSnapshot(toFormData(saved)) !== attempted) {
+        setAutosaveState('error');
+        if (opts?.toast) toast.error('Some fields were not saved. Please try again.');
+        return false;
+      }
+      setLastSavedSnapshot(snap);
+      setAutosaveState('saved');
+      if (opts?.toast) toast.success('Saved');
+      return true;
+    } catch {
+      setAutosaveState('error');
+      if (opts?.toast) toast.error('Save failed');
+      return false;
+    } finally {
+      savingRef.current = false;
+      // A change arrived mid-save → persist the delta right away.
+      if (pendingRef.current) {
+        pendingRef.current = false;
+        autosaveTimer.current = window.setTimeout(() => void commitRef.current?.(), 300);
+      }
+    }
+  }, [cvId, hydratedCvId, updateCv]);
+
+  // Sync refs after each render (kept out of render body so the linter is happy).
+  useEffect(() => {
+    formDataRef.current = formData;
+    savedSnapRef.current = lastSavedSnapshot;
+    commitRef.current = commit;
+  });
+
+  const handleSave = useCallback(() => {
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    void commit({ toast: true });
+  }, [commit]);
+
+  /* ── Debounced autosave ── */
+  useEffect(() => {
+    if (!cvId || hydratedCvId !== cvId || !hasUnsavedChanges) return;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = window.setTimeout(() => void commit(), AUTOSAVE_DELAY);
+    return () => { if (autosaveTimer.current) clearTimeout(autosaveTimer.current); };
+  }, [currentSnapshot, hasUnsavedChanges, cvId, hydratedCvId, commit]);
+
+  /* ── Best-effort flush on unmount (covers in-app navigation away) ── */
+  useEffect(() => () => { void commitRef.current?.(); }, []);
+
+  /* ── Ctrl+S = save now ── */
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); handleSave(); } };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData, cvId]);
+  }, [handleSave]);
 
   const handleDownloadPdf = async () => {
     setIsExporting(true);
     const t = toast.loading('Generating PDF…');
     try {
+      // Cancel any pending autosave so it can't race this export's own save.
+      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
       const attempted = normalizeForSnapshot(formData);
       const saved = await updateCv(cvId, formData);
       if (normalizeForSnapshot(toFormData(saved)) !== attempted) {
@@ -250,6 +312,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         return;
       }
       setLastSavedSnapshot(currentSnapshot);
+      setAutosaveState('saved');
       const blob = await exportPdf(cvId);
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
@@ -262,9 +325,13 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     finally { setIsExporting(false); }
   };
 
-  const handleBackClick = () => {
-    if (hasUnsavedChanges) { setShowUnsavedLeaveWarning(true); return; }
-    onBack();
+  const handleBackClick = async () => {
+    if (!hasUnsavedChanges) { onBack(); return; }
+    // Autosave guarantees persistence — flush now and leave. Only warn if it fails.
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    const ok = await commit();
+    if (ok) onBack();
+    else setShowUnsavedLeaveWarning(true);
   };
 
   const toggleSection = (id: string) => setExpandedSection(expandedSection === id ? '' : id);
@@ -354,12 +421,16 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         {/* Auto-save status */}
         <div className="flex items-center gap-1.5 shrink-0 ml-1">
           <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${
-            loading             ? 'bg-blue-500 animate-pulse'
-            : hasUnsavedChanges ? 'bg-amber-400'
-            :                     'bg-emerald-500'
+            autosaveState === 'saving'   ? 'bg-blue-500 animate-pulse'
+            : autosaveState === 'error'  ? 'bg-red-500'
+            : hasUnsavedChanges          ? 'bg-amber-400'
+            :                              'bg-emerald-500'
           }`} />
           <span className="text-[11.5px] text-gray-400 dark:text-[#666] hidden md:block">
-            {loading ? 'Saving…' : hasUnsavedChanges ? 'Unsaved changes' : 'All changes saved'}
+            {autosaveState === 'saving'  ? 'Saving…'
+            : autosaveState === 'error'  ? 'Save failed'
+            : hasUnsavedChanges          ? 'Saving soon…'
+            :                              'Saved'}
           </span>
         </div>
 

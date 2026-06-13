@@ -257,17 +257,17 @@ function HeroVisual() {
         }}>
           <AutoTemplate templateId="EXECUTIVE" crop={1} />
         </div>
-        {/* ATS chip — emerald tinted */}
+        {/* Export chip — emerald tinted */}
         <div style={{
           position: 'absolute', bottom: '8%', left: '-2%', zIndex: 5,
           background: ACCENTS.emerald.tint, border: `1px solid rgba(14,159,110,.28)`, borderRadius: 10,
           padding: '10px 12px', boxShadow: '0 8px 24px -12px rgba(14,159,110,.25)',
           display: 'flex', alignItems: 'center', gap: 10, fontSize: 12,
         }}>
-          <div style={{ fontFamily: fontMono, fontSize: 16, fontWeight: 700, color: ACCENTS.emerald.ink }}>98</div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={ACCENTS.emerald.ink} strokeWidth="2" style={{ flexShrink: 0 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>
           <div>
-            <div style={{ fontWeight: 600, color: ACCENTS.emerald.ink, fontSize: 12 }}>ATS Score</div>
-            <div style={{ fontFamily: fontMono, fontSize: 10, color: ACCENTS.emerald.fg }}>Passes 12 of 12 checks</div>
+            <div style={{ fontWeight: 600, color: ACCENTS.emerald.ink, fontSize: 12 }}>PDF export</div>
+            <div style={{ fontFamily: fontMono, fontSize: 10, color: ACCENTS.emerald.fg }}>Pixel-true, no watermark</div>
           </div>
         </div>
         {/* Sync chip — blue tinted */}
@@ -378,7 +378,7 @@ export function LandingPage() {
               fontSize: 12, color: C.muted, marginBottom: 24,
             }}>
               <span style={{ background: '#FFF3E8', color: C.accentInk, fontFamily: fontMono, fontSize: 11, padding: '2px 8px', borderRadius: 999, letterSpacing: '0.02em' }}>v2.4</span>
-              Now with AI-assisted content suggestions
+              Live preview with autosave as you type
             </div>
 
             <h1 style={{ margin: 0, fontSize: 'clamp(40px, 6vw, 68px)', lineHeight: 1.02, letterSpacing: '-0.035em', fontWeight: 600, color: C.ink }}>
@@ -408,7 +408,7 @@ export function LandingPage() {
                 Free forever · No card required
               </span>
               <span style={{ width: 1, height: 14, background: C.line, display: 'inline-block' }} />
-              <span style={{ color: ACCENTS.blue.ink }}>Exports to PDF &amp; DOCX</span>
+              <span style={{ color: ACCENTS.blue.ink }}>Exports to PDF · No watermarks</span>
             </div>
           </div>
 
@@ -416,15 +416,15 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ── LOGOS ── */}
+      {/* ── HIGHLIGHTS ── */}
       <section style={{ padding: '0 32px', background: 'linear-gradient(180deg, rgba(249,115,22,.06) 0%, transparent 100%)' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 0 44px', textAlign: 'center' }}>
           <div style={{ fontFamily: fontMono, fontSize: 12, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 28 }}>
-            Resumes built here have landed roles at
+            Built for getting a polished resume out the door
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 36, alignItems: 'center', opacity: 0.6 }}>
-            {['Atlassian', 'Shopify', 'Datadog', 'Figma', 'Cloudflare'].map(name => (
-              <div key={name} style={{ textAlign: 'center', fontWeight: 700, letterSpacing: '-0.02em', color: C.ink2, fontSize: 16 }}>{name}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 36, alignItems: 'center', opacity: 0.75 }}>
+            {['13 templates', 'Live preview', 'PDF export', 'Autosave', 'No watermarks'].map(name => (
+              <div key={name} style={{ textAlign: 'center', fontWeight: 700, letterSpacing: '-0.02em', color: C.ink2, fontSize: 15 }}>{name}</div>
             ))}
           </div>
         </div>
@@ -465,11 +465,11 @@ export function LandingPage() {
 
             {/* small features */}
             {[
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7 9 18l-5-5"/></svg>, title: 'ATS-friendly by default', desc: 'Every template is parsed and validated against the same systems recruiters use, so your file makes it past the filter.', ac: ACCENTS.emerald },
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>, title: 'Keyboard-first editing', desc: 'Reorder sections, duplicate roles, format bullets — all with shortcuts. Slash-commands open a quick action palette.', ac: ACCENTS.violet },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7 9 18l-5-5"/></svg>, title: 'ATS-friendly layouts', desc: 'Single-column templates use clean, parseable structure and standard headings — no graphics that trip up applicant tracking systems.', ac: ACCENTS.emerald },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>, title: 'Drag-to-reorder editing', desc: 'Reorder sections by dragging, duplicate roles, and format bullets with rich text. Save instantly with Ctrl+S — or let autosave handle it.', ac: ACCENTS.violet },
               { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>, title: 'Pixel-true PDF export', desc: 'Font-embedded, vector PDF output. What you see on screen is exactly what lands in the recruiter\'s inbox.', ac: ACCENTS.rose },
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, title: 'Eight curated templates', desc: 'Switch layouts without redoing your content. Type, spacing, and rhythm tuned individually — not just recolored.', ac: ACCENTS.amber },
-              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>, title: 'Tailored versions', desc: 'Keep one master profile. Spin up role-specific variants in seconds and track which one you sent where.', ac: ACCENTS.cyan },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, title: '13 curated templates', desc: 'Switch layouts without redoing your content. Type, spacing, and rhythm tuned individually — not just recolored.', ac: ACCENTS.amber },
+              { icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>, title: 'Per-resume styling', desc: 'Tune accent color, font, and density on each resume. Add a profile photo and keep as many versions as you need.', ac: ACCENTS.cyan },
             ].map((f, i) => (
               <div key={f.title} style={{
                 padding: 32, borderRight: i === 0 || i === 2 ? `1px solid ${C.line}` : 'none',
@@ -492,7 +492,7 @@ export function LandingPage() {
             <div>
               <Eyebrow>Templates</Eyebrow>
               <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', letterSpacing: '-0.03em', fontWeight: 600, lineHeight: 1.08, margin: '12px 0 0', maxWidth: '18ch' }}>
-                Eight layouts. One source of truth.
+                Thirteen layouts. One source of truth.
               </h2>
             </div>
             <p style={{ color: C.muted, fontSize: 17, lineHeight: 1.55, maxWidth: '44ch' }}>
@@ -571,7 +571,7 @@ export function LandingPage() {
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, width: 'fit-content', fontFamily: fontMono, fontSize: 12, color: ACCENTS.blue.ink, background: ACCENTS.blue.tint, padding: '4px 10px', borderRadius: 999, letterSpacing: '0.04em' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENTS.blue.fg }} />01 / Draft</div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Pick a layout, start typing.</div>
-                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Start from a blank profile or paste an old resume — we'll parse it into structured fields automatically.</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Start from a blank profile and fill in structured fields for experience, education, skills, and projects.</div>
               </div>
               <div style={{ marginTop: 'auto', height: 64, borderRadius: 8, background: '#fff', border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, fontFamily: fontMono, fontSize: 11, color: C.muted }}>
                 <span style={{ color: C.accent }}>›</span>
@@ -583,12 +583,12 @@ export function LandingPage() {
             <div style={{ background: C.bgSoft, borderRadius: 10, padding: 28, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, width: 'fit-content', fontFamily: fontMono, fontSize: 12, color: ACCENTS.amber.ink, background: ACCENTS.amber.tint, padding: '4px 10px', borderRadius: 999, letterSpacing: '0.04em' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENTS.amber.fg }} />02 / Refine</div>
               <div>
-                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Polish with smart suggestions.</div>
-                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Stronger verbs, missing metrics, gaps in dates — the editor flags them inline. Take the suggestion or skip it.</div>
+                <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Polish with a live preview.</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Watch the typeset page update as you edit. Tune accent color, font, and density — and every change autosaves.</div>
               </div>
               <div style={{ marginTop: 'auto', height: 64, borderRadius: 8, background: '#fff', border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, fontFamily: fontMono, fontSize: 11, color: C.muted }}>
-                <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 6px', borderRadius: 3, fontSize: 10 }}>→ add metric</span>
-                <span>Led migration of Checkout…</span>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: ACCENTS.emerald.fg, flexShrink: 0 }} />
+                <span>Saved · just now</span>
               </div>
             </div>
             {/* step 3 */}
@@ -596,7 +596,7 @@ export function LandingPage() {
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, width: 'fit-content', fontFamily: fontMono, fontSize: 12, color: ACCENTS.emerald.ink, background: ACCENTS.emerald.tint, padding: '4px 10px', borderRadius: 999, letterSpacing: '0.04em' }}><span style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENTS.emerald.fg }} />03 / Export</div>
               <div>
                 <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em', marginTop: 28 }}>Send a file recruiters can parse.</div>
-                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Download as PDF or DOCX, share a private link, or push directly to LinkedIn Easy Apply.</div>
+                <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.55, marginTop: 8 }}>Download a clean, font-embedded PDF — the exact page from your preview, with no watermark.</div>
               </div>
               <div style={{ marginTop: 'auto', height: 64, borderRadius: 8, background: '#fff', border: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 10, fontFamily: fontMono, fontSize: 11, color: C.muted }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#fff', border: `1px solid ${C.line}`, padding: '3px 8px', borderRadius: 4 }}>
@@ -633,7 +633,7 @@ export function LandingPage() {
                 </p>
                 <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14, fontSize: 13, color: 'rgba(255,255,255,.55)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', boxShadow: '0 0 0 3px rgba(74,222,128,.18)', display: 'inline-block' }} />
-                  <span style={{ fontFamily: fontMono }}>99.98% uptime · last 90 days</span>
+                  <span style={{ fontFamily: fontMono }}>Open source · self-hostable</span>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -661,7 +661,7 @@ export function LandingPage() {
             Your next resume,<br />in about ten minutes.
           </h2>
           <p style={{ fontSize: 17, color: C.muted, margin: '0 0 32px' }}>
-            Free to start. No watermarks. Cancel anytime — but you probably won't need to.
+            Free to use. No watermarks. No template lock-in.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
             <BtnPrimary onClick={goAuth} lg>Build Resume <Arr /></BtnPrimary>
@@ -708,7 +708,7 @@ export function LandingPage() {
             <div>© 2026 CV Builder. All rights reserved.</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.success, boxShadow: '0 0 0 3px rgba(22,163,74,.15)', display: 'inline-block' }} />
-              <span style={{ fontFamily: fontMono }}>All systems operational</span>
+              <span style={{ fontFamily: fontMono }}>Free &amp; open source</span>
             </div>
           </div>
         </div>
