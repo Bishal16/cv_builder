@@ -2,6 +2,7 @@ package com.cvbuilder.mapper;
 
 import com.cvbuilder.dto.*;
 import com.cvbuilder.entity.*;
+import com.cvbuilder.service.HtmlSanitizerService;
 import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,6 +12,16 @@ import java.util.Comparator;
 public class CvMapper {
 
     private static final List<String> DEFAULT_SECTION_ORDER = List.of("personal", "experience", "education", "skills", "projects");
+
+    private final HtmlSanitizerService sanitizer;
+
+    public CvMapper(HtmlSanitizerService sanitizer) {
+        this.sanitizer = sanitizer;
+    }
+
+    public CvMapper() {
+        this.sanitizer = new HtmlSanitizerService();
+    }
 
     public CvDto toDto(Cv cv) {
         if (cv == null) return null;
@@ -89,7 +100,7 @@ public class CvMapper {
             personalInfo.setLocation(request.getPersonalInfo().getLocation());
             personalInfo.setLinkedinUrl(request.getPersonalInfo().getLinkedinUrl());
             personalInfo.setGithubUrl(request.getPersonalInfo().getGithubUrl());
-            personalInfo.setSummary(request.getPersonalInfo().getSummary());
+            personalInfo.setSummary(sanitizer.sanitize(request.getPersonalInfo().getSummary()));
             personalInfo.setPhotoUrl(request.getPersonalInfo().getPhotoUrl());
             cv.setPersonalInfo(personalInfo);
         }
@@ -155,7 +166,7 @@ public class CvMapper {
             personalInfo.setLocation(request.getPersonalInfo().getLocation());
             personalInfo.setLinkedinUrl(request.getPersonalInfo().getLinkedinUrl());
             personalInfo.setGithubUrl(request.getPersonalInfo().getGithubUrl());
-            personalInfo.setSummary(request.getPersonalInfo().getSummary());
+            personalInfo.setSummary(sanitizer.sanitize(request.getPersonalInfo().getSummary()));
             personalInfo.setPhotoUrl(request.getPersonalInfo().getPhotoUrl());
             cv.setPersonalInfo(personalInfo);
         }
@@ -207,7 +218,7 @@ public class CvMapper {
         exp.setRole(dto.getRole());
         exp.setStartDate(dto.getStartDate());
         exp.setEndDate(dto.getEndDate());
-        exp.setDescription(dto.getDescription());
+        exp.setDescription(sanitizer.sanitize(dto.getDescription()));
         exp.setCv(cv);
         return exp;
     }
@@ -277,7 +288,7 @@ public class CvMapper {
         Project proj = new Project();
         if (preserveId && dto.getId() != null) proj.setId(dto.getId());
         proj.setName(dto.getName());
-        proj.setDescription(dto.getDescription());
+        proj.setDescription(sanitizer.sanitize(dto.getDescription()));
         proj.setUrl(dto.getUrl());
         proj.setCv(cv);
         return proj;
