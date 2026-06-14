@@ -6,10 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="ab78d57a-d731-4f62-8a0e-005265ffcd64" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/PRODUCT_AUDIT.md" beforeDir="false" afterPath="$PROJECT_DIR$/PRODUCT_AUDIT.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/AuthScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/AuthScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/CvEditor.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/LandingPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/LandingPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/cvbuilder/config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application-dev.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application-dev.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application-prod.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application-prod.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,6 +92,8 @@
       <workItem from="1780396249983" duration="2685000" />
       <workItem from="1780456341201" duration="327000" />
       <workItem from="1780459725508" duration="1317000" />
+      <workItem from="1781432775350" duration="1818000" />
+      <workItem from="1781436953580" duration="1098000" />
     </task>
     <servers />
   </component>
