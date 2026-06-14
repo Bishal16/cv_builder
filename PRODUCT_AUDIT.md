@@ -75,28 +75,28 @@ The audit's other headline gaps remain: PDF browser pooling + env-driven CORS/OA
 
 ### 🔴 Must-have before any paid launch
 - [x] **Real auto-save** (debounced, with conflict handling) — ✅ DONE this cycle. Debounced 1.5s autosave + coalescing + Ctrl+S "save now" + safety nets. "Auto-saved" is now true.
-- [ ] **Resume import / parse** (upload existing PDF/DOCX → prefill). The #1 reason users abandon "from scratch" builders.
+- [x] **Resume import / parse** (upload existing PDF/DOCX → prefill) — ✅ DONE. PDFBox/POI text extraction + Claude structures it into a CreateCvRequest. Backend: POST /api/v1/import (multipart). Frontend: drag-and-drop ImportModal on the dashboard → creates CV → opens editor.
 - [x] **Honest landing page** — ✅ DONE this cycle. All AI/ATS-score/DOCX/LinkedIn/share/fake-logo claims removed; only real features advertised.
-- [x] **DOCX export claim** — ✅ resolved by REMOVING the claim (export still PDF-only). Building a real DOCX export remains a separate 🟠 feature.
-- [ ] **ATS-safety labeling** per template (single-column = "ATS-safe", two-column = "Design — may not parse").
-- [ ] **Mobile-responsive editor** (or an explicit "best on desktop" gate). Currently broken on phones.
-- [~] **Password reset / forgot-password flow** — dead link ✅ REMOVED this cycle; the actual reset backend is still not built.
-- [ ] **Email verification** on signup.
+- [x] **DOCX export** — ✅ DONE. `DocxService` (Apache POI) builds a single-column ATS-grade Word doc from the CV model. Backend: GET /api/v1/cv/{id}/export/docx. Frontend: DOCX button in editor header + "Download DOCX" in dashboard card menu.
+- [x] **ATS-safety labeling** per template — ✅ DONE. Green/amber dot per template pill + context line "ATS-safe" or "Design layout — multi-column" below picker.
+- [x] **Mobile-responsive editor** (or an explicit "best on desktop" gate) — ✅ DONE. Full-screen overlay on screens < 768px with "Continue anyway" option.
+- [x] **Password reset / forgot-password flow** — ✅ DONE. POST /api/v1/auth/forgot-password (1-hour token, emailed via SMTP or logged in dev) + POST /api/v1/auth/reset-password. Frontend: "Forgot password?" link → ForgotPasswordModal; /reset-password?token= page. V4 migration adds password_reset_tokens.
+- [x] **Email verification** on signup — ✅ DONE. V5 migration adds email_verified + email_verification_tokens (existing users grandfathered, OAuth users auto-verified). Register sends a 24h verification link (emailed or logged in dev). Non-blocking: dashboard banner with resend + /verify-email page. Endpoints: POST /api/v1/auth/verify-email (public), /resend-verification (auth).
 
 ### 🟠 Important (needed to compete)
-- [ ] **Real ATS score** computed from content (keyword density, section presence, length, contact completeness, action verbs). You already fake "98/100" visually — make it real; it's your most marketable feature.
-- [ ] **AI content suggestions** (bullet rewrite, summary generation, "improve this") via Claude API — you already build on the latest Claude models elsewhere.
-- [ ] **Job-description tailoring** — paste a JD, get keyword gap analysis + tailored bullet suggestions. This is the premium feature users actually pay for at Enhancv/Teal.
-- [ ] **Cover letter generator** tied to the resume.
-- [ ] **Resume versions / variants** ("Resume for Google", "Resume for startups") from one master profile.
-- [ ] **Spellcheck / grammar** pass.
-- [ ] **Section-level content templates** (pre-written bullet examples per role).
+- [x] **Real ATS score** computed from content — ✅ DONE. `utils/atsScore.ts` runs 12 weighted checks (contact completeness, summary length, experience + bullets, action-verb ratio, education, skills count, word count, single-column template) live in the editor with an expandable pass/fail checklist + actionable hints. The fake "98/100" was removed in Phase 1.
+- [x] **AI content suggestions** (bullet rewrite, summary generation, "improve this") via Claude API — ✅ DONE. "✨ Improve with AI" button on summary + experience description → modal with 3 Claude-generated alternatives. Backend: POST /api/v1/ai/suggest (requires ANTHROPIC_API_KEY env var).
+- [x] **Job-description tailoring** — ✅ DONE. POST /api/v1/ai/tailor sends CV content + JD to Claude → match score, present/missing keywords, tailoring suggestions. Frontend: 🎯 Tailor button in editor header → JdTailorPanel (score gauge + keyword chips).
+- [x] **Cover letter generator** tied to the resume — ✅ DONE. POST /api/v1/ai/cover-letter (Claude) using resume content + company/role/JD + tone. Frontend: ✉️ Cover letter button in editor → CoverLetterModal (editable result, copy/download .txt).
+- [x] **Resume versions / variants** ("Resume for Google", "Resume for startups") from one master profile — ✅ DONE. "Create variant" in the dashboard card menu → CreateVariantModal deep-copies the resume under a new title.
+- [x] **Spellcheck / grammar** pass — ✅ DONE. POST /api/v1/grammar (Claude proofreader) returns corrected text + itemised issues. "🔤 Grammar" button on summary + experience description fields → GrammarPanel.
+- [x] **Section-level content templates** (pre-written bullet examples per role) — ✅ DONE. `data/bulletLibrary.ts` (10 role families, metric-driven bullets) + "📋 Examples" picker in experience description (multi-select → appends as bullets).
 
 ### 🟡 Nice-to-have
-- [ ] Public share link (`/r/:slug`) with view tracking.
+- [x] Public share link (`/r/:slug`) — ✅ DONE (no view tracking yet). Per-CV shareable token (V6 migration `share_links`); Share button in editor → ShareModal (create/copy/disable). Public read-only page at /r/:token via GET /api/v1/public/cv/{token} (unauthenticated).
 - [ ] LinkedIn import (OAuth scope or profile-URL scrape).
 - [ ] Multi-language resumes.
-- [ ] More section types: Certifications, Awards, Languages, Publications, Volunteering (currently only 5 fixed sections).
+- [x] More section types: Certifications, Languages, Awards — ✅ DONE. Full stack: backend entities + Flyway V3 migration + form components + all 13 templates updated.
 - [x] Custom fonts / accent-color picker per resume. — ✅ DONE this cycle (accent swatches + serif/sans + density, live + persisted).
 - [ ] Resume analytics (views, downloads).
 

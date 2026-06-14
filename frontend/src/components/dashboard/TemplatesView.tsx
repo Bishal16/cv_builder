@@ -172,6 +172,9 @@ export function TemplatesView() {
         educations: [],
         skills: [],
         projects: [],
+        certifications: [],
+        languages: [],
+        awards: [],
       });
       if (newCv) {
         toast.success('Resume created');

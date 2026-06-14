@@ -6,6 +6,8 @@ import com.cvbuilder.dto.RegisterRequest;
 import com.cvbuilder.entity.User;
 import com.cvbuilder.exception.InvalidCredentialsException;
 import com.cvbuilder.exception.UserAlreadyExistsException;
+import com.cvbuilder.repository.EmailVerificationTokenRepository;
+import com.cvbuilder.repository.PasswordResetTokenRepository;
 import com.cvbuilder.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,12 @@ class AuthServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private JwtService jwtService;
+    @Mock
+    private PasswordResetTokenRepository resetTokenRepository;
+    @Mock
+    private EmailVerificationTokenRepository verificationTokenRepository;
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private AuthService authService;

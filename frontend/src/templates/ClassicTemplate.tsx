@@ -105,7 +105,7 @@ const toDisplayUrl = (value: string): string =>
   value.replace(/^https?:\/\//i, '');
 
 export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }: ClassicTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
   const orderedContentSections = getOrderedContentSections(cv);
   const rankBySection = (section: 'experience' | 'education' | 'skills' | 'projects'): number => {
     const rank = orderedContentSections.indexOf(section);
@@ -254,6 +254,46 @@ export function ClassicTemplate({ cv, containerClass = '', containerStyle = {} }
               </section>
             );
           })}
+
+          {certifications.length > 0 && (
+            <section>
+              <h2 style={styles.sectionTitle}>Certifications</h2>
+              {certifications.map((cert) => (
+                <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
+                  <div>
+                    <span style={{ fontWeight: '500', fontSize: '12px' }}>{cert.name}</span>
+                    {cert.issuer && <span style={{ fontSize: '11px', color: '#4a5568' }}> · {cert.issuer}</span>}
+                  </div>
+                  {cert.issueDate && <span style={{ fontSize: '10px', color: '#718096', flexShrink: 0 }}>{cert.issueDate}</span>}
+                </div>
+              ))}
+            </section>
+          )}
+
+          {languages.length > 0 && (
+            <section>
+              <h2 style={styles.sectionTitle}>Languages</h2>
+              <p style={{ fontSize: '11px', color: '#4a5568', lineHeight: '1.6' }}>
+                {languages.map((l) => `${l.name}${l.proficiency ? ` (${l.proficiency})` : ''}`).join(' · ')}
+              </p>
+            </section>
+          )}
+
+          {awards.length > 0 && (
+            <section>
+              <h2 style={styles.sectionTitle}>Awards</h2>
+              {awards.map((award) => (
+                <div key={award.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
+                  <div>
+                    <span style={{ fontWeight: '500', fontSize: '12px' }}>{award.title}</span>
+                    {award.issuer && <span style={{ fontSize: '11px', color: '#4a5568' }}> · {award.issuer}</span>}
+                    {award.description && <p style={{ fontSize: '11px', color: '#718096', marginTop: '2px' }}>{award.description}</p>}
+                  </div>
+                  {award.date && <span style={{ fontSize: '10px', color: '#718096', flexShrink: 0 }}>{award.date}</span>}
+                </div>
+              ))}
+            </section>
+          )}
         </main>
       </div>
     </div>

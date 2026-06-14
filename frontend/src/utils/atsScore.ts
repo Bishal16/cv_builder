@@ -45,7 +45,7 @@ function hasActionVerb(text: string): boolean {
 }
 
 export function computeAtsScore(data: CVFormData): AtsResult {
-  const { personalInfo: pi, experiences, educations, skills, templateId } = data;
+  const { personalInfo: pi, experiences, educations, skills, certifications, languages, templateId } = data;
   const summaryText = stripHtml(pi.summary ?? '');
   const summaryWords = countWords(summaryText);
 
@@ -55,6 +55,8 @@ export function computeAtsScore(data: CVFormData): AtsResult {
     ...experiences.map(e => `${e.role} ${e.company} ${stripHtml(e.description)}`),
     ...educations.map(e => `${e.institution} ${e.degree} ${e.field}`),
     ...skills.map(s => s.name),
+    ...certifications.map(c => `${c.name} ${c.issuer}`),
+    ...languages.map(l => l.name),
   ].join(' ');
   const totalWords = countWords(allText);
 

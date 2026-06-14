@@ -13,7 +13,7 @@ const toExternalUrl = (v: string) => (/^https?:\/\//i.test(v) ? v : `https://${v
 const toDisplayUrl = (v: string) => v.replace(/^https?:\/\//i, '');
 
 export function AuroraTemplate({ cv, containerClass = '', containerStyle = {} }: AuroraTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
   const c = resolveCustomization(cv);
   const ordered = getOrderedContentSections(cv);
   const photo = personalInfo.photoUrl;
@@ -67,7 +67,7 @@ export function AuroraTemplate({ cv, containerClass = '', containerStyle = {} }:
 
   const initials = (personalInfo.name || 'Y N').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
 
-  const mainSections = ordered.filter((s) => s === 'experience' || s === 'projects');
+  const mainSections = ordered.filter((s) => s === 'experience' || s === 'projects' || s === 'certifications' || s === 'languages' || s === 'awards');
   const railSections = ordered.filter((s) => s === 'skills' || s === 'education');
 
   const renderMain = (id: string, first: boolean) => {
@@ -100,6 +100,48 @@ export function AuroraTemplate({ cv, containerClass = '', containerStyle = {} }:
                 {p.url && <a href={toExternalUrl(p.url)} target="_blank" rel="noreferrer" style={{ ...styles.date, color: c.accent, textDecoration: 'none', wordBreak: 'break-all', maxWidth: '180px', textAlign: 'right' }}>{toDisplayUrl(p.url)}</a>}
               </div>
               <div className="cv-rich-text" style={styles.richText} dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(p.description) }} />
+            </div>
+          ))}
+        </section>
+      );
+    }
+    if (id === 'certifications' && certifications.length > 0) {
+      return (
+        <section key="certifications">
+          <h2 style={t}>Certifications</h2>
+          {certifications.map((cert) => (
+            <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginBottom: '6px' }}>
+              <div>
+                <span style={{ fontWeight: '600', fontSize: '11px' }}>{cert.name}</span>
+                {cert.issuer && <span style={{ fontSize: '10px', color: '#6b7280' }}> · {cert.issuer}</span>}
+              </div>
+              {cert.issueDate && <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>{cert.issueDate}</span>}
+            </div>
+          ))}
+        </section>
+      );
+    }
+    if (id === 'languages' && languages.length > 0) {
+      return (
+        <section key="languages">
+          <h2 style={t}>Languages</h2>
+          <p style={{ fontSize: '11px', color: '#374151' }}>
+            {languages.map((l) => `${l.name}${l.proficiency ? ` (${l.proficiency})` : ''}`).join(' · ')}
+          </p>
+        </section>
+      );
+    }
+    if (id === 'awards' && awards.length > 0) {
+      return (
+        <section key="awards">
+          <h2 style={t}>Awards</h2>
+          {awards.map((award) => (
+            <div key={award.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginBottom: '6px' }}>
+              <div>
+                <span style={{ fontWeight: '600', fontSize: '11px' }}>{award.title}</span>
+                {award.issuer && <span style={{ fontSize: '10px', color: '#6b7280' }}> · {award.issuer}</span>}
+              </div>
+              {award.date && <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>{award.date}</span>}
             </div>
           ))}
         </section>

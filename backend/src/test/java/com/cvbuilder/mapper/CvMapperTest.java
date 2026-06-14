@@ -306,7 +306,8 @@ class CvMapperTest {
         Cv cv = mapper.toEntity(request);
 
         assertThat(cv.getSectionOrder())
-                .containsExactly("personal", "experience", "education", "skills", "projects");
+                .containsExactly("personal", "experience", "education", "skills", "projects",
+                        "certifications", "languages", "awards");
     }
 
     @Test
@@ -320,7 +321,8 @@ class CvMapperTest {
 
         // provided-and-valid first (in given order), then remaining defaults in canonical order
         assertThat(cv.getSectionOrder())
-                .containsExactly("skills", "personal", "experience", "education", "projects");
+                .containsExactly("skills", "personal", "experience", "education", "projects",
+                        "certifications", "languages", "awards");
     }
 
     @Test
@@ -333,6 +335,7 @@ class CvMapperTest {
         Cv cv = mapper.toEntity(request);
 
         assertThat(cv.getSectionOrder())
-                .containsExactly("skills", "experience", "personal", "education", "projects");
+                .containsExactly("skills", "experience", "personal", "education", "projects",
+                        "certifications", "languages", "awards");
     }
 }

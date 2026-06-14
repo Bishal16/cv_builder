@@ -2,9 +2,12 @@ package com.cvbuilder.controller;
 
 import com.cvbuilder.dto.AuthResponse;
 import com.cvbuilder.dto.ChangePasswordRequest;
+import com.cvbuilder.dto.ForgotPasswordRequest;
 import com.cvbuilder.dto.LoginRequest;
 import com.cvbuilder.dto.RegisterRequest;
+import com.cvbuilder.dto.ResetPasswordRequest;
 import com.cvbuilder.dto.UpdateProfileRequest;
+import com.cvbuilder.dto.VerifyEmailRequest;
 import com.cvbuilder.entity.User;
 import com.cvbuilder.service.AuthService;
 import jakarta.validation.Valid;
@@ -32,12 +35,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<AuthResponse.UserDetailsDto> getMe(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(AuthResponse.UserDetailsDto.builder()
-            .id(user.getId())
-            .email(user.getEmail())
-            .firstName(user.getFirstName())
-            .lastName(user.getLastName())
-            .build());
+        return ResponseEntity.ok(AuthService.toUserDetailsDto(user));
     }
 
     @PutMapping("/profile")
@@ -52,6 +50,30 @@ public class AuthController {
             @AuthenticationPrincipal User user,
             @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(user, request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        authService.verifyEmail(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Void> resendVerification(@AuthenticationPrincipal User user) {
+        authService.resendVerification(user);
         return ResponseEntity.noContent().build();
     }
 }

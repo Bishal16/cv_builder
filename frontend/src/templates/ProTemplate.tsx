@@ -7,7 +7,7 @@ interface ProTemplateProps {
 }
 
 export function ProTemplate({ cv }: ProTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
 
   // Group skills by category
   const groupedSkills = skills.reduce((acc, skill) => {
@@ -124,6 +124,43 @@ export function ProTemplate({ cv }: ProTemplateProps) {
           </section>
         ) : null;
 
+      case 'certifications':
+        return certifications.length > 0 ? (
+          <section key="certifications" className="mb-6">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#888888] mb-3 border-b border-[#e5e5e5] pb-1">Certifications</h2>
+            {certifications.map((cert) => (
+              <div key={cert.id} className="flex justify-between gap-3 mb-1.5">
+                <span className="text-[11px] font-semibold text-[#111111]">{cert.name}{cert.issuer ? <span className="font-normal text-[#555555]"> · {cert.issuer}</span> : ''}</span>
+                {cert.issueDate && <span className="text-[10px] text-[#888888] shrink-0">{cert.issueDate}</span>}
+              </div>
+            ))}
+          </section>
+        ) : null;
+      case 'languages':
+        return languages.length > 0 ? (
+          <section key="languages" className="mb-6">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#888888] mb-3 border-b border-[#e5e5e5] pb-1">Languages</h2>
+            <p className="text-[11px] text-[#444444] leading-relaxed">
+              {languages.map((l) => `${l.name}${l.proficiency ? ` (${l.proficiency})` : ''}`).join(' · ')}
+            </p>
+          </section>
+        ) : null;
+      case 'awards':
+        return awards.length > 0 ? (
+          <section key="awards" className="mb-6">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#888888] mb-3 border-b border-[#e5e5e5] pb-1">Awards</h2>
+            {awards.map((award) => (
+              <div key={award.id} className="flex justify-between gap-3 mb-1.5">
+                <div>
+                  <span className="text-[11px] font-semibold text-[#111111]">{award.title}</span>
+                  {award.issuer && <span className="text-[10.5px] text-[#555555]"> · {award.issuer}</span>}
+                  {award.description && <p className="text-[10px] text-[#666666] mt-0.5">{award.description}</p>}
+                </div>
+                {award.date && <span className="text-[10px] text-[#888888] shrink-0">{award.date}</span>}
+              </div>
+            ))}
+          </section>
+        ) : null;
       default:
         return null;
     }

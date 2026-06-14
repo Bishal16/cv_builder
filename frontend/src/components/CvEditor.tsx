@@ -10,21 +10,30 @@ import {
   type Education,
   type Skill,
   type Project,
+  type Certification,
+  type Language,
+  type Award,
   type PersonalInfo,
   type Cv,
 } from '../types/cv';
 import { useCvStore } from '../store/cvStore';
-import { exportPdf } from '../api/cvApi';
+import { exportPdf, exportDocx } from '../api/cvApi';
 import { useThemeStore } from '../store/themeStore';
 import { PersonalInfoForm } from './PersonalInfoForm';
 import { ExperienceList } from './ExperienceList';
 import { EducationList } from './EducationList';
 import { SkillList } from './SkillList';
 import { ProjectList } from './ProjectList';
+import { CertificationList } from './CertificationList';
+import { LanguageList } from './LanguageList';
+import { AwardList } from './AwardList';
 import { MultiPagePreview, PAGE_WIDTH } from '../templates/CvPreview';
 import { ACCENT_SWATCHES, TEMPLATE_DEFAULTS, type FontChoice, type Density } from '../templates/customization';
 import { computeAtsScore, type AtsResult } from '../utils/atsScore';
 import { ConfirmDialog } from './ConfirmDialog';
+import { JdTailorPanel } from './JdTailorPanel';
+import { CoverLetterModal } from './CoverLetterModal';
+import { ShareModal } from './ShareModal';
 
 interface CvEditorProps {
   cvId: string;
@@ -40,6 +49,9 @@ const defaultFormData: CVFormData = {
   educations: [],
   skills: [],
   projects: [],
+  certifications: [],
+  languages: [],
+  awards: [],
 };
 
 const normalizeSkillLevel = (value: unknown): Skill['level'] => {
@@ -64,6 +76,9 @@ const normalizeForSnapshot = (data: CVFormData): string =>
     educations: sortById(data.educations),
     skills: sortById(data.skills),
     projects: sortById(data.projects),
+    certifications: sortById(data.certifications),
+    languages: sortById(data.languages),
+    awards: sortById(data.awards),
   });
 
 const toFormData = (cv: Cv): CVFormData => ({
@@ -84,6 +99,9 @@ const toFormData = (cv: Cv): CVFormData => ({
   educations: cv.educations ?? [],
   skills: (cv.skills ?? []).map(skill => ({ ...skill, level: normalizeSkillLevel(skill.level) })),
   projects: cv.projects ?? [],
+  certifications: cv.certifications ?? [],
+  languages: cv.languages ?? [],
+  awards: cv.awards ?? [],
   accentColor: cv.accentColor,
   fontFamily: cv.fontFamily,
   density: cv.density,
@@ -112,22 +130,34 @@ const SECTIONS: Record<SectionId, { label: string; path: string }> = {
     label: 'Projects',
     path: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z',
   },
+  certifications: {
+    label: 'Certifications',
+    path: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z',
+  },
+  languages: {
+    label: 'Languages',
+    path: 'M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129',
+  },
+  awards: {
+    label: 'Awards',
+    path: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z',
+  },
 };
 
-const TEMPLATES: { id: TemplateId; label: string; desc: string }[] = [
-  { id: 'CLASSIC',   label: 'Classic',   desc: 'Traditional' },
-  { id: 'MODERN',    label: 'Modern',    desc: 'Clean & bold' },
-  { id: 'ATS',       label: 'ATS',       desc: 'Bot-friendly' },
-  { id: 'PRO',       label: 'Pro',       desc: 'Academic' },
-  { id: 'MINIMAL',   label: 'Minimal',   desc: 'Clean & spare' },
-  { id: 'EXECUTIVE', label: 'Executive', desc: 'Corporate' },
-  { id: 'TECH',      label: 'Tech',      desc: 'Engineer' },
-  { id: 'GRADUATE',  label: 'Graduate',  desc: 'Entry level' },
-  { id: 'SIDEBAR',   label: 'Sidebar',   desc: 'Colored rail' },
-  { id: 'COMPACT',   label: 'Compact',   desc: 'Dense one-page' },
-  { id: 'TIMELINE',  label: 'Timeline',  desc: 'Dated rail' },
-  { id: 'AURORA',    label: 'Aurora',    desc: 'Photo header' },
-  { id: 'POLISHED',  label: 'Polished',  desc: 'Photo sidebar' },
+const TEMPLATES: { id: TemplateId; label: string; desc: string; atsSafe: boolean }[] = [
+  { id: 'CLASSIC',   label: 'Classic',   desc: 'Traditional',    atsSafe: false },
+  { id: 'MODERN',    label: 'Modern',    desc: 'Clean & bold',   atsSafe: false },
+  { id: 'ATS',       label: 'ATS',       desc: 'Bot-friendly',   atsSafe: true  },
+  { id: 'PRO',       label: 'Pro',       desc: 'Academic',       atsSafe: false },
+  { id: 'MINIMAL',   label: 'Minimal',   desc: 'Clean & spare',  atsSafe: true  },
+  { id: 'EXECUTIVE', label: 'Executive', desc: 'Corporate',      atsSafe: false },
+  { id: 'TECH',      label: 'Tech',      desc: 'Engineer',       atsSafe: false },
+  { id: 'GRADUATE',  label: 'Graduate',  desc: 'Entry level',    atsSafe: true  },
+  { id: 'SIDEBAR',   label: 'Sidebar',   desc: 'Colored rail',   atsSafe: false },
+  { id: 'COMPACT',   label: 'Compact',   desc: 'Dense one-page', atsSafe: true  },
+  { id: 'TIMELINE',  label: 'Timeline',  desc: 'Dated rail',     atsSafe: false },
+  { id: 'AURORA',    label: 'Aurora',    desc: 'Photo header',   atsSafe: false },
+  { id: 'POLISHED',  label: 'Polished',  desc: 'Photo sidebar',  atsSafe: false },
 ];
 
 /* ─────────────────────────────────────────────────────────────── */
@@ -151,6 +181,13 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const [isExporting, setIsExporting]             = useState(false);
   const [autosaveState, setAutosaveState]         = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [showAtsPanel, setShowAtsPanel]           = useState(false);
+  const [showJdTailor, setShowJdTailor]           = useState(false);
+  const [showCoverLetter, setShowCoverLetter]     = useState(false);
+  const [showShare, setShowShare]                 = useState(false);
+  const [isExportingDocx, setIsExportingDocx]     = useState(false);
+  const [mobileWarningDismissed, setMobileWarningDismissed] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth >= 768
+  );
 
   /* Autosave plumbing — refs avoid stale closures inside the debounced timer. */
   const AUTOSAVE_DELAY = 1500;
@@ -200,11 +237,14 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   }, [isResizing]);
 
   /* ── Updaters ── */
-  const updatePersonalInfo = (personalInfo: PersonalInfo) => setFormData({ ...formData, personalInfo });
-  const updateExperience   = (experiences: Experience[]) => setFormData({ ...formData, experiences });
-  const updateEducation    = (educations: Education[])   => setFormData({ ...formData, educations });
-  const updateSkills       = (skills: Skill[])           => setFormData({ ...formData, skills });
-  const updateProjects     = (projects: Project[])       => setFormData({ ...formData, projects });
+  const updatePersonalInfo   = (personalInfo: PersonalInfo)     => setFormData({ ...formData, personalInfo });
+  const updateExperience     = (experiences: Experience[])      => setFormData({ ...formData, experiences });
+  const updateEducation      = (educations: Education[])        => setFormData({ ...formData, educations });
+  const updateSkills         = (skills: Skill[])                => setFormData({ ...formData, skills });
+  const updateProjects       = (projects: Project[])            => setFormData({ ...formData, projects });
+  const updateCertifications = (certifications: Certification[]) => setFormData({ ...formData, certifications });
+  const updateLanguages      = (languages: Language[])          => setFormData({ ...formData, languages });
+  const updateAwards         = (awards: Award[])                => setFormData({ ...formData, awards });
 
   /* ── Customization (Phase 3) ── */
   const setAccent  = (accentColor?: string)     => setFormData({ ...formData, accentColor });
@@ -327,6 +367,26 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     finally { setIsExporting(false); }
   };
 
+  const handleDownloadDocx = async () => {
+    setIsExportingDocx(true);
+    const t = toast.loading('Generating DOCX…');
+    try {
+      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+      await updateCv(cvId, formData);
+      setLastSavedSnapshot(currentSnapshot);
+      setAutosaveState('saved');
+      const blob = await exportDocx(cvId);
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `${formData.title || 'resume'}.docx`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      toast.success('DOCX downloaded', { id: t });
+    } catch { toast.error('DOCX export failed', { id: t }); }
+    finally { setIsExportingDocx(false); }
+  };
+
   const handleBackClick = async () => {
     if (!hasUnsavedChanges) { onBack(); return; }
     // Autosave guarantees persistence — flush now and leave. Only warn if it fails.
@@ -384,6 +444,9 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     educations: formData.educations,
     skills: formData.skills,
     projects: formData.projects,
+    certifications: formData.certifications,
+    languages: formData.languages,
+    awards: formData.awards,
     accentColor: formData.accentColor,
     fontFamily: formData.fontFamily,
     density: formData.density,
@@ -394,6 +457,23 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   /* ─────────────── RENDER ─────────────── */
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#f7f7f6] dark:bg-[#141414]">
+
+      {/* ══ MOBILE WARNING ═══════════════════════════════════════════════ */}
+      {!mobileWarningDismissed && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#141414]/95 backdrop-blur-sm p-6 text-center">
+          <div className="text-4xl mb-4">💻</div>
+          <h2 className="text-white text-xl font-bold mb-2">Best on Desktop</h2>
+          <p className="text-gray-400 text-sm max-w-xs mb-6 leading-relaxed">
+            The CV editor is optimised for desktop browsers. On mobile, the split-pane layout may be cramped.
+          </p>
+          <button
+            onClick={() => setMobileWarningDismissed(true)}
+            className="px-5 py-2.5 rounded-xl bg-[#F97316] hover:bg-orange-600 text-white font-semibold text-sm transition-colors"
+          >
+            Continue anyway
+          </button>
+        </div>
+      )}
 
       {/* ══ TOP BAR ══════════════════════════════════════════════════════ */}
       <header className="h-[52px] flex-shrink-0 flex items-center gap-2 px-4 bg-white dark:bg-[#141414] border-b border-gray-100 dark:border-[#252525] z-10">
@@ -488,6 +568,55 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           </button>
         )}
 
+        {/* Share */}
+        <button
+          onClick={() => setShowShare(true)}
+          title="Share a public link to this resume"
+          className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-[7px] rounded-lg border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#aaa] hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:text-white dark:hover:bg-white/[0.05] transition-all shrink-0"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+          </svg>
+          <span className="hidden md:inline">Share</span>
+        </button>
+
+        {/* Cover letter */}
+        <button
+          onClick={() => setShowCoverLetter(true)}
+          title="Generate a cover letter from this resume"
+          className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-[7px] rounded-lg border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#aaa] hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:text-white dark:hover:bg-white/[0.05] transition-all shrink-0"
+        >
+          <span className="text-[13px]">✉️</span>
+          <span className="hidden md:inline">Cover letter</span>
+        </button>
+
+        {/* Tailor to JD */}
+        <button
+          onClick={() => setShowJdTailor(true)}
+          title="Tailor resume to a job description"
+          className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-[7px] rounded-lg border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#aaa] hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:text-white dark:hover:bg-white/[0.05] transition-all shrink-0"
+        >
+          <span className="text-[13px]">🎯</span>
+          <span className="hidden sm:inline">Tailor</span>
+        </button>
+
+        {/* Export DOCX */}
+        <button
+          onClick={handleDownloadDocx}
+          disabled={isExportingDocx}
+          title="Export as Word (.docx)"
+          className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-[7px] rounded-lg border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#aaa] hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:text-white dark:hover:bg-white/[0.05] transition-all shrink-0 disabled:opacity-50"
+        >
+          {isExportingDocx ? (
+            <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+          ) : (
+            <span className="text-[12px] font-bold">DOCX</span>
+          )}
+        </button>
+
         {/* Export PDF — primary CTA */}
         <button
           onClick={handleDownloadPdf}
@@ -529,17 +658,30 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                   <button
                     key={t.id}
                     onClick={() => updateTemplate(t.id)}
-                    title={t.desc}
-                    className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all whitespace-nowrap shrink-0 ${
+                    title={`${t.desc} — ${t.atsSafe ? 'ATS-safe single-column' : 'Design layout (multi-column)'}`}
+                    className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all whitespace-nowrap shrink-0 ${
                       formData.templateId === t.id
                         ? 'bg-white dark:bg-[#2a2a2a] text-[#111] dark:text-white shadow-sm'
                         : 'text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]'
                     }`}
                   >
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${t.atsSafe ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                     {t.label}
                   </button>
                 ))}
               </div>
+              {/* ATS safety context for the active template */}
+              {(() => {
+                const active = TEMPLATES.find(t => t.id === formData.templateId);
+                if (!active) return null;
+                return (
+                  <p className={`text-[10px] mt-1 ${active.atsSafe ? 'text-emerald-500' : 'text-amber-500'}`}>
+                    {active.atsSafe
+                      ? '✓ ATS-safe — single-column layout, optimised for automated parsers.'
+                      : '⚠ Design layout — multi-column. Switch to ATS, Minimal, Compact or Graduate for maximum parse accuracy.'}
+                  </p>
+                );
+              })()}
             </div>
 
             {/* Customize row — accent / font / density */}
@@ -777,11 +919,14 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                   {/* Expanded content */}
                   {expanded && (
                     <div className="px-3 pb-4 pt-2 border-t border-gray-100 dark:border-[#232323]">
-                      {section.id === 'personal'   && <PersonalInfoForm personalInfo={formData.personalInfo} onChange={updatePersonalInfo} />}
-                      {section.id === 'experience' && <ExperienceList   experiences={formData.experiences}   onChange={updateExperience} />}
-                      {section.id === 'education'  && <EducationList    education={formData.educations}       onChange={updateEducation} />}
-                      {section.id === 'skills'     && <SkillList        skills={formData.skills}             onChange={updateSkills} />}
-                      {section.id === 'projects'   && <ProjectList      projects={formData.projects}         onChange={updateProjects} />}
+                      {section.id === 'personal'        && <PersonalInfoForm personalInfo={formData.personalInfo}               onChange={updatePersonalInfo} />}
+                      {section.id === 'experience'      && <ExperienceList   experiences={formData.experiences}               onChange={updateExperience} />}
+                      {section.id === 'education'       && <EducationList    education={formData.educations}                  onChange={updateEducation} />}
+                      {section.id === 'skills'          && <SkillList        skills={formData.skills}                         onChange={updateSkills} />}
+                      {section.id === 'projects'        && <ProjectList      projects={formData.projects}                     onChange={updateProjects} />}
+                      {section.id === 'certifications'  && <CertificationList certifications={formData.certifications}        onChange={updateCertifications} />}
+                      {section.id === 'languages'       && <LanguageList     languages={formData.languages}                   onChange={updateLanguages} />}
+                      {section.id === 'awards'          && <AwardList        awards={formData.awards}                         onChange={updateAwards} />}
                     </div>
                   )}
                 </div>
@@ -889,6 +1034,27 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         onConfirm={() => { setShowUnsavedLeaveWarning(false); onBack(); }}
         onCancel={() => setShowUnsavedLeaveWarning(false)}
       />
+
+      {showJdTailor && (
+        <JdTailorPanel
+          formData={formData}
+          onClose={() => setShowJdTailor(false)}
+        />
+      )}
+
+      {showCoverLetter && (
+        <CoverLetterModal
+          formData={formData}
+          onClose={() => setShowCoverLetter(false)}
+        />
+      )}
+
+      {showShare && (
+        <ShareModal
+          cvId={cvId}
+          onClose={() => setShowShare(false)}
+        />
+      )}
     </div>
   );
 }

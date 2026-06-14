@@ -13,7 +13,7 @@ const toExternalUrl = (v: string) => (/^https?:\/\//i.test(v) ? v : `https://${v
 const toDisplayUrl = (v: string) => v.replace(/^https?:\/\//i, '');
 
 export function CompactTemplate({ cv, containerClass = '', containerStyle = {} }: CompactTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
   const c = resolveCustomization(cv);
 
   const styles = {
@@ -128,6 +128,39 @@ export function CompactTemplate({ cv, containerClass = '', containerStyle = {} }
                 </div>
                 <div className="cv-rich-text" style={styles.richText}
                   dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(p.description) }} />
+              </div>
+            ))}
+          </section>
+        ) : null;
+      case 'certifications':
+        return certifications.length > 0 ? (
+          <section key="certifications">
+            <h2 style={styles.sectionTitle}>Certifications</h2>
+            {certifications.map((cert) => (
+              <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px', marginBottom: '3px' }}>
+                <span style={{ fontSize: '10.5px', fontWeight: '600', color: '#111827' }}>{cert.name}{cert.issuer ? <span style={styles.company}> — {cert.issuer}</span> : ''}</span>
+                <span style={styles.date}>{cert.issueDate}</span>
+              </div>
+            ))}
+          </section>
+        ) : null;
+      case 'languages':
+        return languages.length > 0 ? (
+          <section key="languages">
+            <h2 style={styles.sectionTitle}>Languages</h2>
+            <p style={{ fontSize: '10.5px', color: '#374151', lineHeight: String(c.lineHeight) }}>
+              {languages.map((l) => `${l.name}${l.proficiency ? ` (${l.proficiency})` : ''}`).join(' · ')}
+            </p>
+          </section>
+        ) : null;
+      case 'awards':
+        return awards.length > 0 ? (
+          <section key="awards">
+            <h2 style={styles.sectionTitle}>Awards</h2>
+            {awards.map((award) => (
+              <div key={award.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px', marginBottom: '3px' }}>
+                <span style={{ fontSize: '10.5px', fontWeight: '600', color: '#111827' }}>{award.title}{award.issuer ? <span style={styles.company}> — {award.issuer}</span> : ''}</span>
+                <span style={styles.date}>{award.date}</span>
               </div>
             ))}
           </section>

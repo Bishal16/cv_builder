@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useCvStore } from '../store/cvStore';
 import { useThemeStore } from '../store/themeStore';
 import { CvPreview, PAGE_WIDTH } from '../templates/CvPreview';
@@ -10,7 +10,10 @@ interface CvPrintViewProps {
 export function CvPrintView({ cvId }: CvPrintViewProps) {
   const { currentCv, selectCv, loading, error } = useCvStore();
   const { setMode } = useThemeStore();
-  const [ready, setReady] = useState(false);
+
+  // Derived, not stored: the print view is "ready" once the requested CV is
+  // the one loaded. Playwright waits for data-print-ready='true'.
+  const ready = currentCv?.id === cvId;
 
   useEffect(() => {
     setMode('light');
@@ -21,29 +24,8 @@ export function CvPrintView({ cvId }: CvPrintViewProps) {
   }, [setMode]);
 
   useEffect(() => {
-    let active = true;
-    const loadCv = async () => {
-      try {
-        await selectCv(cvId);
-      } catch {
-        if (active) {
-          setReady(false);
-        }
-      }
-    };
-
-    setReady(false);
-    loadCv();
-    return () => {
-      active = false;
-    };
+    void selectCv(cvId).catch(() => { /* error surfaced via store `error` */ });
   }, [cvId, selectCv]);
-
-  useEffect(() => {
-    if (currentCv?.id === cvId) {
-      setReady(true);
-    }
-  }, [currentCv, cvId]);
 
   if (loading && !currentCv) {
     return <div style={{ padding: '24px', fontFamily: 'Inter, system-ui, sans-serif' }}>Loading...</div>;

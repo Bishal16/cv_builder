@@ -47,6 +47,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .lastName(lastName)
                 .provider(registrationId)
                 .providerId(providerId)
+                .emailVerified(true)
                 .build();
         } else {
             if (user.getProviderId() == null) {

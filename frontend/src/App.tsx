@@ -7,6 +7,9 @@ import { AuthScreen } from './components/AuthScreen'
 import { LandingPage } from './components/LandingPage'
 import { Dashboard } from './components/Dashboard'
 import { OAuthCallback } from './components/OAuthCallback'
+import { ResetPasswordPage } from './components/ResetPasswordPage'
+import { VerifyEmailPage } from './components/VerifyEmailPage'
+import { PublicCvView } from './components/PublicCvView'
 import { useCvStore } from './store/cvStore'
 import { useAuthStore } from './store/authStore'
 
@@ -88,6 +91,9 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/r/:token" element={<PublicCvView />} />
         <Route path="/print/:id" element={<PrintPage />} />
 
         {/* Protected */}

@@ -33,6 +33,10 @@ public class User implements UserDetails {
     private String provider; // e.g., "google", "github"
     private String providerId;
 
+    @Column(name = "email_verified", nullable = false)
+    @Builder.Default
+    private boolean emailVerified = false;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

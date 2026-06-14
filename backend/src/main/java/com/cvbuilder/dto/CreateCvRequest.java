@@ -39,6 +39,15 @@ public class CreateCvRequest {
     @Valid
     private List<ProjectDto> projects;
 
+    @Valid
+    private List<CertificationDto> certifications;
+
+    @Valid
+    private List<LanguageDto> languages;
+
+    @Valid
+    private List<AwardDto> awards;
+
     private String accentColor;
     private String fontFamily;
     private String density;

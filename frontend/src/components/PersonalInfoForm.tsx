@@ -3,6 +3,8 @@ import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import toast from 'react-hot-toast';
 import type { PersonalInfo } from '../types/cv';
+import { AiSuggestPanel } from './AiSuggestPanel';
+import { GrammarPanel } from './GrammarPanel';
 
 interface PersonalInfoFormProps {
   personalInfo: PersonalInfo;
@@ -107,6 +109,9 @@ function PhotoField({ personalInfo, onChange }: PersonalInfoFormProps) {
 }
 
 export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormProps) {
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [showGrammar, setShowGrammar] = useState(false);
+
   const handleChange = (field: keyof PersonalInfo, value: string) => {
     onChange({ ...personalInfo, [field]: value });
   };
@@ -186,7 +191,27 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
         </div>
       </div>
       <div className="pt-1">
-        <label className="form-label">Professional Summary</label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="form-label !mb-0">Professional Summary</label>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowGrammar(true)}
+              className="flex items-center gap-1 text-[11px] font-medium text-gray-500 hover:text-[#111] dark:text-[#999] dark:hover:text-white transition-colors"
+              title="Check grammar & spelling"
+            >
+              <span>🔤</span> Grammar
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAiPanel(true)}
+              className="flex items-center gap-1 text-[11px] font-medium text-[#F97316] hover:text-orange-600 transition-colors"
+              title="Improve with AI"
+            >
+              <span>✨</span> Improve with AI
+            </button>
+          </div>
+        </div>
         <div className="rich-text-editor">
           <ReactQuill
             theme="snow"
@@ -197,6 +222,22 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
           />
         </div>
       </div>
+
+      {showAiPanel && (
+        <AiSuggestPanel
+          request={{ type: 'summary', content: personalInfo.summary }}
+          onApply={(text) => handleChange('summary', text)}
+          onClose={() => setShowAiPanel(false)}
+        />
+      )}
+
+      {showGrammar && (
+        <GrammarPanel
+          text={personalInfo.summary}
+          onApply={(html) => handleChange('summary', html)}
+          onClose={() => setShowGrammar(false)}
+        />
+      )}
     </div>
   );
 }

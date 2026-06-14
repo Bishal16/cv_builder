@@ -67,6 +67,7 @@ export interface UserDetails {
   email: string;
   firstName: string;
   lastName: string;
+  emailVerified?: boolean;
 }
 
 export interface AuthResponse {
@@ -112,6 +113,37 @@ export async function updateProfile(data: { firstName: string; lastName: string 
     body: JSON.stringify(data),
   });
   return handleResponse<UserDetails>(response);
+}
+
+// Auth: forgot password — always 204, never reveals if email exists
+export async function forgotPassword(email: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: 'POST',
+    headers: await getHeaders(false),
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, 'Request failed');
+  }
+}
+
+// Auth: reset password with token from email link
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: 'POST',
+    headers: await getHeaders(false),
+    body: JSON.stringify({ token, newPassword }),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Reset failed');
+    try {
+      const j = JSON.parse(text);
+      throw new ApiError(response.status, j.message || j.error || text);
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw new ApiError(response.status, text);
+    }
+  }
 }
 
 // Auth: change password (local accounts only)
@@ -178,6 +210,50 @@ export async function exportPdf(id: string): Promise<Blob> {
     throw new ApiError(response.status, errorText);
   }
   return response.blob();
+}
+
+export async function exportDocx(id: string): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/cv/${id}/export/docx`, {
+    headers: await getHeaders(),
+  });
+  if (response.status === 401) {
+    useAuthStore.getState().logout();
+  }
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Export failed');
+    throw new ApiError(response.status, errorText);
+  }
+  return response.blob();
+}
+
+// Email verification
+export async function verifyEmail(token: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+    method: 'POST',
+    headers: await getHeaders(false),
+    body: JSON.stringify({ token }),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Verification failed');
+    try {
+      const j = JSON.parse(text);
+      throw new ApiError(response.status, j.message || j.error || text);
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw new ApiError(response.status, text);
+    }
+  }
+}
+
+export async function resendVerification(): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+    method: 'POST',
+    headers: await getHeaders(),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Could not resend');
+    throw new ApiError(response.status, text);
+  }
 }
 
 export async function deleteCv(id: string): Promise<void> {

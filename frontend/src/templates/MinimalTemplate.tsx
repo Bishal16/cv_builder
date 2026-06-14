@@ -90,7 +90,7 @@ const toExternalUrl = (v: string) => /^https?:\/\//i.test(v) ? v : `https://${v}
 const toDisplayUrl = (v: string) => v.replace(/^https?:\/\//i, '');
 
 export function MinimalTemplate({ cv, containerClass = '', containerStyle = {} }: MinimalTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
 
   const contactParts: { label: string; href?: string }[] = [
     personalInfo.email    ? { label: personalInfo.email } : null,
@@ -197,6 +197,45 @@ export function MinimalTemplate({ cv, containerClass = '', containerStyle = {} }
           </section>
         ) : null;
 
+      case 'certifications':
+        return certifications.length > 0 ? (
+          <section key="certifications">
+            <h2 style={styles.sectionTitle}>Certifications</h2>
+            {certifications.map((cert) => (
+              <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '5px' }}>
+                <div>
+                  <span style={{ fontWeight: '600', fontSize: '11px', color: '#1a1a1a' }}>{cert.name}</span>
+                  {cert.issuer && <span style={{ fontSize: '10px', color: '#777' }}> · {cert.issuer}</span>}
+                </div>
+                {cert.issueDate && <span style={{ fontSize: '10px', color: '#777', flexShrink: 0 }}>{cert.issueDate}</span>}
+              </div>
+            ))}
+          </section>
+        ) : null;
+      case 'languages':
+        return languages.length > 0 ? (
+          <section key="languages">
+            <h2 style={styles.sectionTitle}>Languages</h2>
+            <p style={{ fontSize: '11px', color: '#4a4a4a', lineHeight: '1.5' }}>
+              {languages.map((l) => `${l.name}${l.proficiency ? ` (${l.proficiency})` : ''}`).join(' · ')}
+            </p>
+          </section>
+        ) : null;
+      case 'awards':
+        return awards.length > 0 ? (
+          <section key="awards">
+            <h2 style={styles.sectionTitle}>Awards</h2>
+            {awards.map((award) => (
+              <div key={award.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '5px' }}>
+                <div>
+                  <span style={{ fontWeight: '600', fontSize: '11px', color: '#1a1a1a' }}>{award.title}</span>
+                  {award.issuer && <span style={{ fontSize: '10px', color: '#777' }}> · {award.issuer}</span>}
+                </div>
+                {award.date && <span style={{ fontSize: '10px', color: '#777', flexShrink: 0 }}>{award.date}</span>}
+              </div>
+            ))}
+          </section>
+        ) : null;
       default:
         return null;
     }

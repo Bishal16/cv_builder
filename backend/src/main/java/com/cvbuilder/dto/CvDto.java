@@ -22,6 +22,9 @@ public class CvDto {
     private List<EducationDto> educations;
     private List<SkillDto> skills;
     private List<ProjectDto> projects;
+    private List<CertificationDto> certifications;
+    private List<LanguageDto> languages;
+    private List<AwardDto> awards;
     private String accentColor;
     private String fontFamily;
     private String density;

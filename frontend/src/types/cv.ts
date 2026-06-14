@@ -2,13 +2,18 @@ export type TemplateId =
   | 'CLASSIC' | 'MODERN' | 'ATS' | 'PRO' | 'MINIMAL'
   | 'EXECUTIVE' | 'TECH' | 'GRADUATE'
   | 'SIDEBAR' | 'COMPACT' | 'TIMELINE' | 'AURORA' | 'POLISHED';
-export type SectionId = 'personal' | 'experience' | 'education' | 'skills' | 'projects';
+export type SectionId =
+  | 'personal' | 'experience' | 'education' | 'skills' | 'projects'
+  | 'certifications' | 'languages' | 'awards';
 
 /** Customization (Phase 3) — optional per-CV overrides of a template's defaults. */
 export type FontFamilyChoice = 'sans' | 'serif';
 export type DensityChoice = 'compact' | 'normal' | 'relaxed';
 
-export const DEFAULT_SECTION_ORDER: SectionId[] = ['personal', 'experience', 'education', 'skills', 'projects'];
+export const DEFAULT_SECTION_ORDER: SectionId[] = [
+  'personal', 'experience', 'education', 'skills', 'projects',
+  'certifications', 'languages', 'awards',
+];
 
 const SECTION_ID_SET = new Set<SectionId>(DEFAULT_SECTION_ORDER);
 
@@ -80,6 +85,30 @@ export interface Project {
   url: string;
 }
 
+export type LanguageProficiency = '' | 'Basic' | 'Conversational' | 'Fluent' | 'Native';
+
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  issueDate: string;
+  expiryDate: string;
+}
+
+export interface Language {
+  id: string;
+  name: string;
+  proficiency: LanguageProficiency;
+}
+
+export interface Award {
+  id: string;
+  title: string;
+  issuer: string;
+  date: string;
+  description: string;
+}
+
 /** Per-CV customization overrides (Phase 3). All optional. */
 export interface Customization {
   accentColor?: string;
@@ -97,6 +126,9 @@ export interface Cv extends Customization {
   educations: Education[];
   skills: Skill[];
   projects: Project[];
+  certifications: Certification[];
+  languages: Language[];
+  awards: Award[];
   createdAt: string;
   updatedAt: string;
 }
@@ -110,6 +142,9 @@ export interface CreateCvRequest extends Customization {
   educations: Education[];
   skills: Skill[];
   projects: Project[];
+  certifications: Certification[];
+  languages: Language[];
+  awards: Award[];
 }
 
 export interface UpdateCvRequest extends Customization {
@@ -121,6 +156,9 @@ export interface UpdateCvRequest extends Customization {
   educations?: Education[];
   skills?: Skill[];
   projects?: Project[];
+  certifications?: Certification[];
+  languages?: Language[];
+  awards?: Award[];
 }
 
 export type CreateCvData = CreateCvRequest;
@@ -135,4 +173,7 @@ export interface CVFormData extends Customization {
   educations: Education[];
   skills: Skill[];
   projects: Project[];
+  certifications: Certification[];
+  languages: Language[];
+  awards: Award[];
 }

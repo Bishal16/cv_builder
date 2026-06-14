@@ -8,6 +8,12 @@ export {
   register,
   updateProfile,
   changePassword,
+  forgotPassword,
+  resetPassword,
+  exportPdf,
+  exportDocx,
+  verifyEmail,
+  resendVerification,
 } from './cvApi';
 
 export type {

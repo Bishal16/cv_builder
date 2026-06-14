@@ -58,6 +58,18 @@ public class Cv {
     @Builder.Default
     private Set<Project> projects = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<Certification> certifications = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<Language> languages = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "cv", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<Award> awards = new LinkedHashSet<>();
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "cv_section_order", joinColumns = @JoinColumn(name = "cv_id"))
     @Column(name = "section_key")

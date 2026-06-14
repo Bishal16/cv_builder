@@ -1,6 +1,10 @@
+import { useState } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import type { Experience } from '../types/cv';
+import { AiSuggestPanel } from './AiSuggestPanel';
+import { BulletLibraryModal } from './BulletLibraryModal';
+import { GrammarPanel } from './GrammarPanel';
 
 interface ExperienceItemProps {
   experience: Experience;
@@ -9,6 +13,10 @@ interface ExperienceItemProps {
 }
 
 export function ExperienceItem({ experience, onChange, onRemove }: ExperienceItemProps) {
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [showBulletLibrary, setShowBulletLibrary] = useState(false);
+  const [showGrammar, setShowGrammar] = useState(false);
+
   const handleChange = (field: keyof Experience, value: string) => {
     onChange({ ...experience, [field]: value });
   };
@@ -75,7 +83,35 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
         </div>
       </div>
       <div className="mt-3">
-        <label className="form-label">Description</label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="form-label !mb-0">Description</label>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowBulletLibrary(true)}
+              className="flex items-center gap-1 text-[11px] font-medium text-gray-500 hover:text-[#111] dark:text-[#999] dark:hover:text-white transition-colors"
+              title="Insert example bullets"
+            >
+              <span>📋</span> Examples
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowGrammar(true)}
+              className="flex items-center gap-1 text-[11px] font-medium text-gray-500 hover:text-[#111] dark:text-[#999] dark:hover:text-white transition-colors"
+              title="Check grammar & spelling"
+            >
+              <span>🔤</span> Grammar
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAiPanel(true)}
+              className="flex items-center gap-1 text-[11px] font-medium text-[#F97316] hover:text-orange-600 transition-colors"
+              title="Improve with AI"
+            >
+              <span>✨</span> Improve with AI
+            </button>
+          </div>
+        </div>
         <div className="rich-text-editor sm">
           <ReactQuill
             theme="snow"
@@ -86,6 +122,33 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
           />
         </div>
       </div>
+
+      {showAiPanel && (
+        <AiSuggestPanel
+          request={{
+            type: 'experience',
+            content: experience.description,
+            context: `${experience.role} at ${experience.company}`,
+          }}
+          onApply={(text) => handleChange('description', text)}
+          onClose={() => setShowAiPanel(false)}
+        />
+      )}
+
+      {showBulletLibrary && (
+        <BulletLibraryModal
+          onInsert={(html) => handleChange('description', (experience.description ?? '') + html)}
+          onClose={() => setShowBulletLibrary(false)}
+        />
+      )}
+
+      {showGrammar && (
+        <GrammarPanel
+          text={experience.description}
+          onApply={(html) => handleChange('description', html)}
+          onClose={() => setShowGrammar(false)}
+        />
+      )}
     </div>
   );
 }

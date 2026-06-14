@@ -2,6 +2,9 @@ package com.cvbuilder.mapper;
 
 import com.cvbuilder.dto.*;
 import com.cvbuilder.entity.*;
+import com.cvbuilder.entity.Award;
+import com.cvbuilder.entity.Certification;
+import com.cvbuilder.entity.Language;
 import com.cvbuilder.service.HtmlSanitizerService;
 import org.springframework.stereotype.Component;
 import java.util.*;
@@ -11,7 +14,9 @@ import java.util.Comparator;
 @Component
 public class CvMapper {
 
-    private static final List<String> DEFAULT_SECTION_ORDER = List.of("personal", "experience", "education", "skills", "projects");
+    private static final List<String> DEFAULT_SECTION_ORDER = List.of(
+            "personal", "experience", "education", "skills", "projects",
+            "certifications", "languages", "awards");
 
     private final HtmlSanitizerService sanitizer;
 
@@ -77,7 +82,28 @@ public class CvMapper {
                     .map(this::toProjectDto)
                     .collect(Collectors.toList()));
         }
-        
+
+        if (cv.getCertifications() != null) {
+            dto.setCertifications(cv.getCertifications().stream()
+                    .sorted(Comparator.comparing(Certification::getId))
+                    .map(this::toCertificationDto)
+                    .collect(Collectors.toList()));
+        }
+
+        if (cv.getLanguages() != null) {
+            dto.setLanguages(cv.getLanguages().stream()
+                    .sorted(Comparator.comparing(Language::getId))
+                    .map(this::toLanguageDto)
+                    .collect(Collectors.toList()));
+        }
+
+        if (cv.getAwards() != null) {
+            dto.setAwards(cv.getAwards().stream()
+                    .sorted(Comparator.comparing(Award::getId))
+                    .map(this::toAwardDto)
+                    .collect(Collectors.toList()));
+        }
+
         return dto;
     }
 
@@ -130,6 +156,24 @@ public class CvMapper {
         if (request.getProjects() != null) {
             cv.setProjects(request.getProjects().stream()
                     .map(dto -> toProjectEntity(dto, cv, false))
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
+        }
+
+        if (request.getCertifications() != null) {
+            cv.setCertifications(request.getCertifications().stream()
+                    .map(dto -> toCertificationEntity(dto, cv, false))
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
+        }
+
+        if (request.getLanguages() != null) {
+            cv.setLanguages(request.getLanguages().stream()
+                    .map(dto -> toLanguageEntity(dto, cv, false))
+                    .collect(Collectors.toCollection(LinkedHashSet::new)));
+        }
+
+        if (request.getAwards() != null) {
+            cv.setAwards(request.getAwards().stream()
+                    .map(dto -> toAwardEntity(dto, cv, false))
                     .collect(Collectors.toCollection(LinkedHashSet::new)));
         }
 
@@ -192,6 +236,24 @@ public class CvMapper {
             cv.getProjects().clear();
             cv.getProjects().addAll(request.getProjects().stream()
                     .map(dto -> toProjectEntity(dto, cv))
+                    .collect(Collectors.toList()));
+        }
+        if (request.getCertifications() != null) {
+            cv.getCertifications().clear();
+            cv.getCertifications().addAll(request.getCertifications().stream()
+                    .map(dto -> toCertificationEntity(dto, cv))
+                    .collect(Collectors.toList()));
+        }
+        if (request.getLanguages() != null) {
+            cv.getLanguages().clear();
+            cv.getLanguages().addAll(request.getLanguages().stream()
+                    .map(dto -> toLanguageEntity(dto, cv))
+                    .collect(Collectors.toList()));
+        }
+        if (request.getAwards() != null) {
+            cv.getAwards().clear();
+            cv.getAwards().addAll(request.getAwards().stream()
+                    .map(dto -> toAwardEntity(dto, cv))
                     .collect(Collectors.toList()));
         }
     }
@@ -292,6 +354,77 @@ public class CvMapper {
         proj.setUrl(dto.getUrl());
         proj.setCv(cv);
         return proj;
+    }
+
+    private CertificationDto toCertificationDto(Certification cert) {
+        CertificationDto dto = new CertificationDto();
+        dto.setId(cert.getId());
+        dto.setName(cert.getName());
+        dto.setIssuer(cert.getIssuer());
+        dto.setIssueDate(cert.getIssueDate());
+        dto.setExpiryDate(cert.getExpiryDate());
+        return dto;
+    }
+
+    private Certification toCertificationEntity(CertificationDto dto, Cv cv) {
+        return toCertificationEntity(dto, cv, true);
+    }
+
+    private Certification toCertificationEntity(CertificationDto dto, Cv cv, boolean preserveId) {
+        Certification cert = new Certification();
+        if (preserveId && dto.getId() != null) cert.setId(dto.getId());
+        cert.setName(dto.getName());
+        cert.setIssuer(dto.getIssuer());
+        cert.setIssueDate(dto.getIssueDate());
+        cert.setExpiryDate(dto.getExpiryDate());
+        cert.setCv(cv);
+        return cert;
+    }
+
+    private LanguageDto toLanguageDto(Language lang) {
+        LanguageDto dto = new LanguageDto();
+        dto.setId(lang.getId());
+        dto.setName(lang.getName());
+        dto.setProficiency(lang.getProficiency());
+        return dto;
+    }
+
+    private Language toLanguageEntity(LanguageDto dto, Cv cv) {
+        return toLanguageEntity(dto, cv, true);
+    }
+
+    private Language toLanguageEntity(LanguageDto dto, Cv cv, boolean preserveId) {
+        Language lang = new Language();
+        if (preserveId && dto.getId() != null) lang.setId(dto.getId());
+        lang.setName(dto.getName());
+        lang.setProficiency(dto.getProficiency());
+        lang.setCv(cv);
+        return lang;
+    }
+
+    private AwardDto toAwardDto(Award award) {
+        AwardDto dto = new AwardDto();
+        dto.setId(award.getId());
+        dto.setTitle(award.getTitle());
+        dto.setIssuer(award.getIssuer());
+        dto.setDate(award.getDate());
+        dto.setDescription(award.getDescription());
+        return dto;
+    }
+
+    private Award toAwardEntity(AwardDto dto, Cv cv) {
+        return toAwardEntity(dto, cv, true);
+    }
+
+    private Award toAwardEntity(AwardDto dto, Cv cv, boolean preserveId) {
+        Award award = new Award();
+        if (preserveId && dto.getId() != null) award.setId(dto.getId());
+        award.setTitle(dto.getTitle());
+        award.setIssuer(dto.getIssuer());
+        award.setDate(dto.getDate());
+        award.setDescription(dto.getDescription());
+        award.setCv(cv);
+        return award;
     }
 
     private List<String> normalizeSectionOrder(List<String> sectionOrder) {

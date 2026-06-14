@@ -13,7 +13,7 @@ const toExternalUrl = (v: string) => (/^https?:\/\//i.test(v) ? v : `https://${v
 const toDisplayUrl = (v: string) => v.replace(/^https?:\/\//i, '');
 
 export function SidebarTemplate({ cv, containerClass = '', containerStyle = {} }: SidebarTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
   const c = resolveCustomization(cv);
 
   const styles = {
@@ -156,6 +156,48 @@ export function SidebarTemplate({ cv, containerClass = '', containerStyle = {} }
                 </div>
                 <div className="cv-rich-text" style={styles.richText}
                   dangerouslySetInnerHTML={{ __html: preventHyphenLineBreaks(p.description) }} />
+              </div>
+            ))}
+          </section>
+        ) : null;
+      case 'certifications':
+        return certifications.length > 0 ? (
+          <section key="certifications">
+            <h2 style={styles.sectionTitle}>Certifications</h2>
+            {certifications.map((cert) => (
+              <div key={cert.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginBottom: '6px' }}>
+                <div>
+                  <span style={{ fontWeight: '600', fontSize: '11px' }}>{cert.name}</span>
+                  {cert.issuer && <span style={{ fontSize: '10px', color: '#6b7280' }}> · {cert.issuer}</span>}
+                </div>
+                {cert.issueDate && <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>{cert.issueDate}</span>}
+              </div>
+            ))}
+          </section>
+        ) : null;
+      case 'languages':
+        return languages.length > 0 ? (
+          <section key="languages">
+            <h2 style={styles.sectionTitle}>Languages</h2>
+            {languages.map((lang) => (
+              <div key={lang.id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '500' }}>{lang.name}</span>
+                {lang.proficiency && <span style={{ fontSize: '10px', color: '#6b7280' }}>{lang.proficiency}</span>}
+              </div>
+            ))}
+          </section>
+        ) : null;
+      case 'awards':
+        return awards.length > 0 ? (
+          <section key="awards">
+            <h2 style={styles.sectionTitle}>Awards</h2>
+            {awards.map((award) => (
+              <div key={award.id} style={{ marginBottom: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+                  <span style={{ fontWeight: '600', fontSize: '11px' }}>{award.title}</span>
+                  {award.date && <span style={{ fontSize: '10px', color: '#9ca3af', flexShrink: 0 }}>{award.date}</span>}
+                </div>
+                {award.issuer && <div style={{ fontSize: '10px', color: '#6b7280' }}>{award.issuer}</div>}
               </div>
             ))}
           </section>

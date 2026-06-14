@@ -2,6 +2,7 @@ import type { Cv, SectionId } from '../types/cv';
 import { normalizeSectionOrder } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
 import { resolveCustomization } from './customization';
+import { CertificationsSection, LanguagesSection, AwardsSection } from './extraSections';
 
 interface ModernTemplateProps {
   cv: Cv;
@@ -132,7 +133,7 @@ const toDisplayUrl = (value: string): string =>
   value.replace(/^https?:\/\//i, '');
 
 export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }: ModernTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
   const styles = makeStyles(resolveCustomization(cv).accent);
 
   const sectionNodes: Record<SectionId, React.ReactNode> = {
@@ -214,6 +215,9 @@ export function ModernTemplate({ cv, containerClass = '', containerStyle = {} }:
         ))}
       </section>
     ) : null,
+    certifications: <CertificationsSection certifications={certifications} styles={{ sectionTitle: styles.sectionTitle, itemName: { fontWeight: 'bold', fontSize: '12px', color: '#1e293b' }, itemMeta: { fontSize: '11px', color: '#64748b' } }} />,
+    languages: <LanguagesSection languages={languages} styles={{ sectionTitle: styles.sectionTitle, itemName: { fontSize: '12px', color: '#1e293b' }, itemMeta: { fontSize: '11px', color: '#64748b' } }} />,
+    awards: <AwardsSection awards={awards} styles={{ sectionTitle: styles.sectionTitle, itemName: { fontWeight: 'bold', fontSize: '12px', color: '#1e293b' }, itemMeta: { fontSize: '11px', color: '#64748b' }, itemDesc: { fontSize: '11px', color: '#475569' } }} />,
   };
 
   const orderedSections = normalizeSectionOrder(cv.sectionOrder).filter((id) => sectionNodes[id] !== null);

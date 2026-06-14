@@ -1,6 +1,7 @@
 import type { Cv, SectionId } from '../types/cv';
 import { normalizeSectionOrder } from '../types/cv';
 import { preventHyphenLineBreaks } from './richTextUtils';
+import { CertificationsSection, LanguagesSection, AwardsSection } from './extraSections';
 
 interface AtsTemplateProps {
   cv: Cv;
@@ -100,7 +101,7 @@ const toDisplayUrl = (value: string): string =>
   value.replace(/^https?:\/\//i, '');
 
 export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: AtsTemplateProps) {
-  const { personalInfo, experiences, educations, skills, projects } = cv;
+  const { personalInfo, experiences, educations, skills, projects, certifications, languages, awards } = cv;
 
   const contactItems: Array<{ label: string; href?: string }> = [
     personalInfo.email ? { label: personalInfo.email } : null,
@@ -184,6 +185,9 @@ export function AtsTemplate({ cv, containerClass = '', containerStyle = {} }: At
         ))}
       </section>
     ) : null,
+    certifications: <CertificationsSection certifications={certifications} styles={{ sectionTitle: styles.sectionTitle, itemName: { fontWeight: 'bold', fontSize: '12px' }, itemMeta: { fontSize: '11px', fontStyle: 'italic', color: '#333333' } }} />,
+    languages: <LanguagesSection languages={languages} styles={{ sectionTitle: styles.sectionTitle, itemName: { fontSize: '12px' }, itemMeta: { fontSize: '11px', color: '#333333' } }} inline />,
+    awards: <AwardsSection awards={awards} styles={{ sectionTitle: styles.sectionTitle, itemName: { fontWeight: 'bold', fontSize: '12px' }, itemMeta: { fontSize: '11px', fontStyle: 'italic', color: '#333333' }, itemDesc: { fontSize: '11px', color: '#555555' } }} />,
   };
 
   const orderedSections = normalizeSectionOrder(cv.sectionOrder).filter((section) => sectionNodes[section] !== null);

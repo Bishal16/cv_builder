@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { login, register } from '../api';
 import { useAuthStore } from '../store/authStore';
 import { Logo } from './Logo';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 interface AuthScreenProps {
   onSuccess: () => void;
@@ -108,6 +109,7 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   const [loading,      setLoading]      = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [pwFocused,    setPwFocused]    = useState(false);
+  const [showForgot,   setShowForgot]   = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '', firstName: '', lastName: '' });
 
   const set = (key: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -233,6 +235,15 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <label style={{ fontSize: 12, fontWeight: 600, color: A.ink2, fontFamily: font, letterSpacing: '0.01em' }}>Password</label>
+                {isLogin && (
+                  <button type="button" onClick={() => setShowForgot(true)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11.5, fontWeight: 500, color: A.muted, fontFamily: font, padding: 0 }}
+                    onMouseOver={e => (e.currentTarget.style.color = A.orange)}
+                    onMouseOut={e => (e.currentTarget.style.color = A.muted)}
+                  >
+                    Forgot password?
+                  </button>
+                )}
               </div>
               <div style={{ position: 'relative' }}>
                 <input
@@ -340,6 +351,8 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
           <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Privacy Policy</span>.
         </p>
       </div>
+
+      {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}
 
       {/* ── Feature strip ────────────────────────────────────────────────── */}
       <div style={{ position: 'relative', borderTop: `1px solid ${A.line2}`, padding: '22px 40px 28px', textAlign: 'center', flexShrink: 0 }}>

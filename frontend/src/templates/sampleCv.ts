@@ -79,6 +79,14 @@ export function makeSampleCv(templateId: TemplateId): Cv {
         url: 'github.com/javery/openmetrics',
       },
     ],
+    certifications: [
+      { id: 'sample-cert-1', name: 'AWS Solutions Architect – Associate', issuer: 'Amazon Web Services', issueDate: '2023-06', expiryDate: '2026-06' },
+    ],
+    languages: [
+      { id: 'sample-lang-1', name: 'English', proficiency: 'Native' as const },
+      { id: 'sample-lang-2', name: 'Spanish', proficiency: 'Conversational' as const },
+    ],
+    awards: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

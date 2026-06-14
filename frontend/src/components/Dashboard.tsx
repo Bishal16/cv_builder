@@ -5,10 +5,12 @@ import { useCvStore } from '../store/cvStore';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore, type ThemeMode } from '../store/themeStore';
 import { useSettingsStore } from '../store/settingsStore';
-import { exportPdf } from '../api/cvApi';
+import { exportPdf, exportDocx, resendVerification } from '../api/cvApi';
 import type { Cv, TemplateId } from '../types/cv';
 import { TemplatesView } from './dashboard/TemplatesView';
 import { SettingsView } from './dashboard/SettingsView';
+import { ImportModal } from './ImportModal';
+import { CreateVariantModal } from './CreateVariantModal';
 import { Logo } from './Logo';
 import { CvPreview, PAGE_WIDTH, PAGE_HEIGHT } from '../templates/CvPreview';
 
@@ -384,11 +386,13 @@ interface CardMenuProps {
   title: string;
   onEdit: () => void;
   onDuplicate: () => void;
+  onCreateVariant: () => void;
   onExport: () => void;
+  onExportDocx: () => void;
   onDelete: () => void;
 }
 
-function CardMenu({ onEdit, onDuplicate, onExport, onDelete }: CardMenuProps) {
+function CardMenu({ onEdit, onDuplicate, onCreateVariant, onExport, onExportDocx, onDelete }: CardMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -403,7 +407,9 @@ function CardMenu({ onEdit, onDuplicate, onExport, onDelete }: CardMenuProps) {
   const items = [
     { label: 'Edit', action: onEdit },
     { label: 'Duplicate', action: onDuplicate },
+    { label: 'Create variant', action: onCreateVariant },
     { label: 'Download PDF', action: onExport },
+    { label: 'Download DOCX', action: onExportDocx },
   ];
 
   return (
@@ -448,11 +454,13 @@ interface ResumeCardProps {
   cv: Cv;
   onEdit: () => void;
   onDuplicate: () => void;
+  onCreateVariant: () => void;
   onExport: () => void;
+  onExportDocx: () => void;
   onDelete: () => void;
 }
 
-function ResumeCard({ cv, onEdit, onDuplicate, onExport, onDelete }: ResumeCardProps) {
+function ResumeCard({ cv, onEdit, onDuplicate, onCreateVariant, onExport, onExportDocx, onDelete }: ResumeCardProps) {
   const completion = getCompletion(cv);
   const isDraft = completion < 70;
   const meta = TEMPLATE_META[cv.templateId];
@@ -509,7 +517,9 @@ function ResumeCard({ cv, onEdit, onDuplicate, onExport, onDelete }: ResumeCardP
           title={cv.title}
           onEdit={onEdit}
           onDuplicate={onDuplicate}
+          onCreateVariant={onCreateVariant}
           onExport={onExport}
+          onExportDocx={onExportDocx}
           onDelete={onDelete}
         />
       </div>
@@ -709,6 +719,46 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
   );
 }
 
+/* ─────────────────────── VerifyBanner ─────────────────────── */
+
+function VerifyBanner({ email }: { email: string }) {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleResend = async () => {
+    setSending(true);
+    try {
+      await resendVerification();
+      setSent(true);
+      toast.success('Verification email sent');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not resend');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 px-4 py-3">
+      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+        <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+        </svg>
+        <p className="text-[13px] text-amber-800 dark:text-amber-200 leading-relaxed">
+          <strong>Verify your email.</strong> We sent a link to <strong>{email}</strong>. Verify to secure your account.
+        </p>
+      </div>
+      <button
+        onClick={handleResend}
+        disabled={sending || sent}
+        className="flex-shrink-0 px-3.5 py-1.5 rounded-lg text-[12.5px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors disabled:opacity-60"
+      >
+        {sent ? 'Sent ✓' : sending ? 'Sending…' : 'Resend email'}
+      </button>
+    </div>
+  );
+}
+
 /* ─────────────────────── Main Dashboard ─────────────────────── */
 
 type FilterType = 'all' | 'draft' | 'complete';
@@ -747,6 +797,8 @@ export function Dashboard() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<SortKey>('recent');
   const [exportingId, setExportingId] = useState<string | null>(null);
+  const [showImport, setShowImport] = useState(false);
+  const [variantCv, setVariantCv] = useState<Cv | null>(null);
 
   useEffect(() => { loadCvs(); }, [loadCvs]);
 
@@ -791,6 +843,7 @@ export function Dashboard() {
       sectionOrder: ['personal', 'experience', 'education', 'skills', 'projects'],
       personalInfo: { name: '', email: '', phone: '', location: '', linkedinUrl: '', githubUrl: '', summary: '' },
       experiences: [], educations: [], skills: [], projects: [],
+      certifications: [], languages: [], awards: [],
     });
     navigate(`/cv/${newCv.id}`);
   };
@@ -805,6 +858,9 @@ export function Dashboard() {
       educations: cv.educations.map(e => ({ ...e, id: crypto.randomUUID() })),
       skills: cv.skills.map(s => ({ ...s, id: crypto.randomUUID() })),
       projects: cv.projects.map(p => ({ ...p, id: crypto.randomUUID() })),
+      certifications: (cv.certifications ?? []).map(c => ({ ...c, id: crypto.randomUUID() })),
+      languages: (cv.languages ?? []).map(l => ({ ...l, id: crypto.randomUUID() })),
+      awards: (cv.awards ?? []).map(a => ({ ...a, id: crypto.randomUUID() })),
     });
     toast.success('Resume duplicated');
     navigate(`/cv/${newCv.id}`);
@@ -823,6 +879,26 @@ export function Dashboard() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success('PDF downloaded');
+    } catch {
+      toast.error('Export failed');
+    } finally {
+      setExportingId(null);
+    }
+  };
+
+  const handleExportDocx = async (cv: Cv) => {
+    setExportingId(cv.id);
+    try {
+      const blob = await exportDocx(cv.id);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${cv.title || 'resume'}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('DOCX downloaded');
     } catch {
       toast.error('Export failed');
     } finally {
@@ -866,6 +942,9 @@ export function Dashboard() {
           ) : (
             <>
 
+          {/* ── Email verification banner ── */}
+          {user && user.emailVerified === false && <VerifyBanner email={user.email} />}
+
           {/* ── Hero band ── */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-7">
             <div className="min-w-0">
@@ -895,18 +974,29 @@ export function Dashboard() {
                 </div>
               )}
             </div>
-            <button
-              onClick={handleCreate}
-              className="flex-shrink-0 flex items-center gap-2 text-white text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-all active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.12), 0 1px 0 rgba(0,0,0,.1), 0 4px 14px -4px rgba(249,115,22,.45)' }}
-              onMouseOver={e => (e.currentTarget.style.background = '#C2510A')}
-              onMouseOut={e => (e.currentTarget.style.background = 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)')}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Create Resume
-            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => setShowImport(true)}
+                className="flex items-center gap-2 text-[13px] font-semibold px-4 py-2.5 rounded-xl border border-gray-300 dark:border-[#3a3a3a] text-[#111111] dark:text-white hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:bg-[#2c2c2c] transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+                Import
+              </button>
+              <button
+                onClick={handleCreate}
+                className="flex items-center gap-2 text-white text-[13.5px] font-semibold px-5 py-2.5 rounded-xl transition-all active:scale-[0.98]"
+                style={{ background: 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.12), 0 1px 0 rgba(0,0,0,.1), 0 4px 14px -4px rgba(249,115,22,.45)' }}
+                onMouseOver={e => (e.currentTarget.style.background = '#C2510A')}
+                onMouseOut={e => (e.currentTarget.style.background = 'linear-gradient(135deg, #F97316 0%, #EA580C 100%)')}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Create Resume
+              </button>
+            </div>
           </div>
 
           {/* ── Continue where you left off ── */}
@@ -1033,7 +1123,9 @@ export function Dashboard() {
                   cv={cv}
                   onEdit={() => navigate(`/cv/${cv.id}`)}
                   onDuplicate={() => handleDuplicate(cv)}
+                  onCreateVariant={() => setVariantCv(cv)}
                   onExport={() => handleExport(cv)}
+                  onExportDocx={() => handleExportDocx(cv)}
                   onDelete={() => handleDelete(cv.id)}
                 />
               ))}
@@ -1099,7 +1191,9 @@ export function Dashboard() {
                         title={cv.title}
                         onEdit={() => navigate(`/cv/${cv.id}`)}
                         onDuplicate={() => handleDuplicate(cv)}
+                        onCreateVariant={() => setVariantCv(cv)}
                         onExport={() => handleExport(cv)}
+                        onExportDocx={() => handleExportDocx(cv)}
                         onDelete={() => handleDelete(cv.id)}
                       />
                     </div>
@@ -1125,6 +1219,16 @@ export function Dashboard() {
           )}
         </main>
       </div>
+
+      {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+
+      {variantCv && (
+        <CreateVariantModal
+          cv={variantCv}
+          onClose={() => setVariantCv(null)}
+          onCreated={(id) => navigate(`/cv/${id}`)}
+        />
+      )}
     </div>
   );
 }
