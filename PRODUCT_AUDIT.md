@@ -31,6 +31,14 @@ But it is **not publishable as a paid product today**, for three categories of r
 - **Honest marketing copy** — removed every advertised-but-nonexistent feature from the landing + auth pages: fake ATS score ("98 / Passes 12 of 12"), DOCX export, LinkedIn Easy Apply, share links, AI suggestions, resume import/parse, fabricated employer logos ("landed roles at Atlassian/Shopify…"), fake "99.98% uptime"/"Cancel anytime". Removed the dead "Forgot password?" link. Corrected template count 8 → 13. Kept only real claims (PDF export, autosave, OAuth, templates, customization).
 - **First automated tests — 23 unit tests, all green** (was zero). `CvMapperTest` (12: round-trips incl. new fields, CREATE-drops-IDs / UPDATE-preserves-IDs), `AuthServiceTest` (6: register/login/duplicate/wrong-password/OAuth-null-password), `CvServiceTest` (5: cross-user ownership denial via `findByIdAndUser`). Addresses audit §6 #6.
 
+**AI provider (free-friendly, swappable):**
+- All 5 AI features (suggestions, JD tailoring, cover letter, grammar, resume import) route through a single `LlmClient` abstraction. The provider is chosen by the `LLM_PROVIDER` env var — **no code change to switch**:
+  - `gemini` — Google Gemini Flash (free tier where eligible)
+  - `anthropic` — Claude (`ANTHROPIC_API_KEY`)
+  - `openai` — any OpenAI-compatible endpoint: **Groq**, **OpenRouter**, or local **Ollama** (`LLM_OPENAI_BASE_URL` / `_API_KEY` / `_MODEL`)
+- Verified end-to-end on a **free** OpenRouter model (`openai/gpt-oss-120b:free`): registered user → `POST /api/v1/ai/suggest` → 3 parsed rewrites returned. No credit card / no per-token cost on free models.
+- Config lives in root `.env` (gitignored) and is forwarded to the backend container via `docker-compose.yml`. Keys are never committed.
+
 **Product surface / templates:**
 - **Templates 8 → 13** — added Sidebar, Compact, Timeline (no-schema) + Aurora, Polished (photo). Covers more information architectures and the previously-missing "with photo" category. (Improves audit §5 / §8 template gap — though new *section types* are still missing.)
 - **Per-resume customization layer** — accent-colour picker (8 swatches), serif/sans font toggle, density (compact/normal/relaxed), wired live into the editor and persisted. Implements audit §3 nice-to-have "Custom fonts / accent-color picker per resume".
@@ -85,7 +93,7 @@ The audit's other headline gaps remain: PDF browser pooling + env-driven CORS/OA
 
 ### 🟠 Important (needed to compete)
 - [x] **Real ATS score** computed from content — ✅ DONE. `utils/atsScore.ts` runs 12 weighted checks (contact completeness, summary length, experience + bullets, action-verb ratio, education, skills count, word count, single-column template) live in the editor with an expandable pass/fail checklist + actionable hints. The fake "98/100" was removed in Phase 1.
-- [x] **AI content suggestions** (bullet rewrite, summary generation, "improve this") via Claude API — ✅ DONE. "✨ Improve with AI" button on summary + experience description → modal with 3 Claude-generated alternatives. Backend: POST /api/v1/ai/suggest (requires ANTHROPIC_API_KEY env var).
+- [x] **AI content suggestions** (bullet rewrite, summary generation, "improve this") — ✅ DONE. "✨ Improve with AI" button on summary + experience description → modal with 3 alternatives. Backend: POST /api/v1/ai/suggest. See **AI provider** note below — works with a free LLM, not Claude-only.
 - [x] **Job-description tailoring** — ✅ DONE. POST /api/v1/ai/tailor sends CV content + JD to Claude → match score, present/missing keywords, tailoring suggestions. Frontend: 🎯 Tailor button in editor header → JdTailorPanel (score gauge + keyword chips).
 - [x] **Cover letter generator** tied to the resume — ✅ DONE. POST /api/v1/ai/cover-letter (Claude) using resume content + company/role/JD + tone. Frontend: ✉️ Cover letter button in editor → CoverLetterModal (editable result, copy/download .txt).
 - [x] **Resume versions / variants** ("Resume for Google", "Resume for startups") from one master profile — ✅ DONE. "Create variant" in the dashboard card menu → CreateVariantModal deep-copies the resume under a new title.
