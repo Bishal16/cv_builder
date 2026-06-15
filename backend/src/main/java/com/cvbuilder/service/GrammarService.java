@@ -2,34 +2,21 @@ package com.cvbuilder.service;
 
 import com.cvbuilder.dto.GrammarRequest;
 import com.cvbuilder.dto.GrammarResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 public class GrammarService {
 
-    private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String MODEL = "claude-sonnet-4-6";
-    private static final String API_VERSION = "2023-06-01";
-
-    @Value("${anthropic.api.key:}")
-    private String apiKey;
-
-    private final RestClient restClient = RestClient.create();
+    private final LlmClient llmClient;
 
     public GrammarResponse check(GrammarRequest request) {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("AI features are not configured. Set ANTHROPIC_API_KEY.");
-        }
-
         String stripped = request.getText()
                 .replaceAll("<[^>]+>", " ")
                 .replaceAll("&nbsp;", " ")
@@ -60,23 +47,7 @@ public class GrammarService {
             and then output exactly "ISSUES:" with nothing after it.
             """.formatted(stripped);
 
-        Map<String, Object> body = Map.of(
-            "model", MODEL,
-            "max_tokens", 1024,
-            "messages", List.of(Map.of("role", "user", "content", prompt))
-        );
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = restClient.post()
-            .uri(ANTHROPIC_API_URL)
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", API_VERSION)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .body(Map.class);
-
-        String raw = extractText(response);
+        String raw = llmClient.complete(prompt, 1024);
         return parseResponse(raw);
     }
 
@@ -121,12 +92,5 @@ public class GrammarService {
         }
 
         return new GrammarResponse(correctedText, issues);
-    }
-
-    @SuppressWarnings("unchecked")
-    private String extractText(Map<String, Object> response) {
-        List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
-        if (content == null || content.isEmpty()) return "";
-        return (String) content.get(0).getOrDefault("text", "");
     }
 }

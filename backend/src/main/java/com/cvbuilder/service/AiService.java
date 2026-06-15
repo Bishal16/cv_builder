@@ -6,64 +6,30 @@ import com.cvbuilder.dto.CoverLetterRequest;
 import com.cvbuilder.dto.CoverLetterResponse;
 import com.cvbuilder.dto.JdTailorRequest;
 import com.cvbuilder.dto.JdTailorResponse;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AiService {
 
-    private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String MODEL = "claude-sonnet-4-6";
-    private static final String API_VERSION = "2023-06-01";
-
-    @Value("${anthropic.api.key:}")
-    private String apiKey;
-
-    private final RestClient restClient = RestClient.create();
+    private final LlmClient llmClient;
 
     public AiSuggestResponse suggest(AiSuggestRequest request) {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("AI suggestions are not configured. Set ANTHROPIC_API_KEY.");
-        }
-
         String prompt = buildPrompt(request);
-
-        Map<String, Object> body = Map.of(
-            "model", MODEL,
-            "max_tokens", 1024,
-            "messages", List.of(Map.of("role", "user", "content", prompt))
-        );
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = restClient.post()
-            .uri(ANTHROPIC_API_URL)
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", API_VERSION)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .body(Map.class);
-
-        String rawText = extractText(response);
+        String rawText = llmClient.complete(prompt, 1024);
         List<String> suggestions = parseSuggestions(rawText);
         return new AiSuggestResponse(suggestions);
     }
 
     public JdTailorResponse tailorForJd(JdTailorRequest request) {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("AI features are not configured. Set ANTHROPIC_API_KEY.");
-        }
-
         String cvText = buildCvText(request);
         String prompt = """
             You are an expert ATS specialist and resume coach.
@@ -92,31 +58,11 @@ public class AiService {
             ### <Third concrete suggestion>
             """.formatted(cvText, request.getJobDescription());
 
-        Map<String, Object> body = Map.of(
-            "model", MODEL,
-            "max_tokens", 1024,
-            "messages", List.of(Map.of("role", "user", "content", prompt))
-        );
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = restClient.post()
-            .uri(ANTHROPIC_API_URL)
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", API_VERSION)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .body(Map.class);
-
-        String raw = extractText(response);
+        String raw = llmClient.complete(prompt, 1024);
         return parseTailorResponse(raw);
     }
 
     public CoverLetterResponse generateCoverLetter(CoverLetterRequest request) {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("AI features are not configured. Set ANTHROPIC_API_KEY.");
-        }
-
         StringBuilder cv = new StringBuilder();
         if (request.getCandidateName() != null) cv.append("Name: ").append(request.getCandidateName()).append("\n");
         if (request.getCvSummary() != null && !request.getCvSummary().isBlank())
@@ -169,23 +115,7 @@ public class AiService {
                         ? "(not provided)" : request.getJobDescription()
             );
 
-        Map<String, Object> body = Map.of(
-            "model", MODEL,
-            "max_tokens", 1024,
-            "messages", List.of(Map.of("role", "user", "content", prompt))
-        );
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = restClient.post()
-            .uri(ANTHROPIC_API_URL)
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", API_VERSION)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .body(Map.class);
-
-        return new CoverLetterResponse(extractText(response).strip());
+        return new CoverLetterResponse(llmClient.complete(prompt, 1024).strip());
     }
 
     private String blankToNa(String s) {
@@ -283,13 +213,6 @@ public class AiService {
 
             default -> throw new IllegalArgumentException("Unknown type: " + req.getType());
         };
-    }
-
-    @SuppressWarnings("unchecked")
-    private String extractText(Map<String, Object> response) {
-        List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
-        if (content == null || content.isEmpty()) return "";
-        return (String) content.get(0).getOrDefault("text", "");
     }
 
     private List<String> parseSuggestions(String raw) {

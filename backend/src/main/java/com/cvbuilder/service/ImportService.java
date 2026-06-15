@@ -8,36 +8,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class ImportService {
 
-    private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String MODEL = "claude-sonnet-4-6";
-    private static final String API_VERSION = "2023-06-01";
-
-    @Value("${anthropic.api.key:}")
-    private String apiKey;
-
-    private final RestClient restClient = RestClient.create();
+    private final LlmClient llmClient;
     private final ObjectMapper objectMapper;
 
     public CreateCvRequest importFromFile(MultipartFile file) throws IOException {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("Resume import requires ANTHROPIC_API_KEY to be configured.");
-        }
-
         String contentType = file.getContentType() != null ? file.getContentType() : "";
         String filename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
 
@@ -122,23 +107,7 @@ public class ImportService {
             %s
             """.formatted(resumeText.length() > 6000 ? resumeText.substring(0, 6000) : resumeText);
 
-        Map<String, Object> body = Map.of(
-            "model", MODEL,
-            "max_tokens", 4096,
-            "messages", List.of(Map.of("role", "user", "content", prompt))
-        );
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = restClient.post()
-            .uri(ANTHROPIC_API_URL)
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", API_VERSION)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(body)
-            .retrieve()
-            .body(Map.class);
-
-        String rawText = extractText(response);
+        String rawText = llmClient.complete(prompt, 4096);
 
         // Strip any accidental markdown fences
         rawText = rawText.replaceAll("(?s)```json\\s*", "").replaceAll("(?s)```\\s*", "").trim();
@@ -146,18 +115,11 @@ public class ImportService {
         try {
             return objectMapper.readValue(rawText, CreateCvRequest.class);
         } catch (Exception e) {
-            log.error("Failed to parse Claude response as CreateCvRequest: {}", e.getMessage());
-            log.debug("Raw Claude response: {}", rawText);
+            log.error("Failed to parse LLM response as CreateCvRequest: {}", e.getMessage());
+            log.debug("Raw LLM response: {}", rawText);
             // Return a minimal request with whatever we got from the text
             return fallbackRequest(resumeText);
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private String extractText(Map<String, Object> response) {
-        List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
-        if (content == null || content.isEmpty()) return "";
-        return (String) content.get(0).getOrDefault("text", "");
     }
 
     private CreateCvRequest fallbackRequest(String rawText) {

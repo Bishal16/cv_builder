@@ -97,7 +97,7 @@ export function AiSuggestPanel({ request, onApply, onClose }: AiSuggestPanelProp
           {error && (
             <div className="rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-4 text-[12px] text-rose-700 dark:text-rose-300">
               {error.includes('not configured') ?
-                'AI suggestions require ANTHROPIC_API_KEY to be configured on the server.' :
+                'AI suggestions need an AI provider configured on the server.' :
                 error}
             </div>
           )}

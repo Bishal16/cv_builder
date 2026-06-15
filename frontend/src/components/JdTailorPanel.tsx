@@ -57,7 +57,7 @@ export function JdTailorPanel({ formData, onClose }: Props) {
       });
       setResult(res);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Analysis failed. Check that ANTHROPIC_API_KEY is configured.');
+      setError(e instanceof Error ? e.message : 'Analysis failed. Check that an AI provider is configured.');
     } finally {
       setLoading(false);
     }
@@ -116,7 +116,7 @@ export function JdTailorPanel({ formData, onClose }: Props) {
 
           {error && (
             <div className="rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-4 text-[12px] text-rose-700 dark:text-rose-300">
-              {error.includes('ANTHROPIC_API_KEY') ? 'JD tailoring requires ANTHROPIC_API_KEY to be configured on the server.' : error}
+              {error.toLowerCase().includes('not configured') ? 'JD tailoring needs an AI provider configured on the server.' : error}
             </div>
           )}
 

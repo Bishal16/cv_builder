@@ -89,8 +89,8 @@ export function GrammarPanel({ text, onApply, onClose }: Props) {
 
           {error && (
             <div className="rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-4 text-[12px] text-rose-700 dark:text-rose-300">
-              {error.includes('ANTHROPIC_API_KEY')
-                ? 'Grammar check requires ANTHROPIC_API_KEY to be configured on the server.'
+              {error.toLowerCase().includes('not configured')
+                ? 'Grammar check needs an AI provider configured on the server.'
                 : error}
             </div>
           )}
