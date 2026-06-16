@@ -11,7 +11,6 @@ export {
   forgotPassword,
   resetPassword,
   exportPdf,
-  exportDocx,
   verifyEmail,
   resendVerification,
 } from './cvApi';

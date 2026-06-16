@@ -212,19 +212,6 @@ export async function exportPdf(id: string): Promise<Blob> {
   return response.blob();
 }
 
-export async function exportDocx(id: string): Promise<Blob> {
-  const response = await fetch(`${API_BASE_URL}/cv/${id}/export/docx`, {
-    headers: await getHeaders(),
-  });
-  if (response.status === 401) {
-    useAuthStore.getState().logout();
-  }
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => 'Export failed');
-    throw new ApiError(response.status, errorText);
-  }
-  return response.blob();
-}
 
 // Email verification
 export async function verifyEmail(token: string): Promise<void> {

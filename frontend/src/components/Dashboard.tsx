@@ -5,7 +5,7 @@ import { useCvStore } from '../store/cvStore';
 import { useAuthStore } from '../store/authStore';
 import { useThemeStore, type ThemeMode } from '../store/themeStore';
 import { useSettingsStore } from '../store/settingsStore';
-import { exportPdf, exportDocx, resendVerification } from '../api/cvApi';
+import { exportPdf, resendVerification } from '../api/cvApi';
 import type { Cv, TemplateId } from '../types/cv';
 import { TemplatesView } from './dashboard/TemplatesView';
 import { SettingsView } from './dashboard/SettingsView';
@@ -388,11 +388,10 @@ interface CardMenuProps {
   onDuplicate: () => void;
   onCreateVariant: () => void;
   onExport: () => void;
-  onExportDocx: () => void;
   onDelete: () => void;
 }
 
-function CardMenu({ onEdit, onDuplicate, onCreateVariant, onExport, onExportDocx, onDelete }: CardMenuProps) {
+function CardMenu({ onEdit, onDuplicate, onCreateVariant, onExport, onDelete }: CardMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -409,7 +408,6 @@ function CardMenu({ onEdit, onDuplicate, onCreateVariant, onExport, onExportDocx
     { label: 'Duplicate', action: onDuplicate },
     { label: 'Create variant', action: onCreateVariant },
     { label: 'Download PDF', action: onExport },
-    { label: 'Download DOCX', action: onExportDocx },
   ];
 
   return (
@@ -456,11 +454,10 @@ interface ResumeCardProps {
   onDuplicate: () => void;
   onCreateVariant: () => void;
   onExport: () => void;
-  onExportDocx: () => void;
   onDelete: () => void;
 }
 
-function ResumeCard({ cv, onEdit, onDuplicate, onCreateVariant, onExport, onExportDocx, onDelete }: ResumeCardProps) {
+function ResumeCard({ cv, onEdit, onDuplicate, onCreateVariant, onExport, onDelete }: ResumeCardProps) {
   const completion = getCompletion(cv);
   const isDraft = completion < 70;
   const meta = TEMPLATE_META[cv.templateId];
@@ -519,7 +516,6 @@ function ResumeCard({ cv, onEdit, onDuplicate, onCreateVariant, onExport, onExpo
           onDuplicate={onDuplicate}
           onCreateVariant={onCreateVariant}
           onExport={onExport}
-          onExportDocx={onExportDocx}
           onDelete={onDelete}
         />
       </div>
@@ -886,26 +882,6 @@ export function Dashboard() {
     }
   };
 
-  const handleExportDocx = async (cv: Cv) => {
-    setExportingId(cv.id);
-    try {
-      const blob = await exportDocx(cv.id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${cv.title || 'resume'}.docx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast.success('DOCX downloaded');
-    } catch {
-      toast.error('Export failed');
-    } finally {
-      setExportingId(null);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this resume? This cannot be undone.')) return;
     await deleteCv(id);
@@ -1125,7 +1101,6 @@ export function Dashboard() {
                   onDuplicate={() => handleDuplicate(cv)}
                   onCreateVariant={() => setVariantCv(cv)}
                   onExport={() => handleExport(cv)}
-                  onExportDocx={() => handleExportDocx(cv)}
                   onDelete={() => handleDelete(cv.id)}
                 />
               ))}
@@ -1193,7 +1168,6 @@ export function Dashboard() {
                         onDuplicate={() => handleDuplicate(cv)}
                         onCreateVariant={() => setVariantCv(cv)}
                         onExport={() => handleExport(cv)}
-                        onExportDocx={() => handleExportDocx(cv)}
                         onDelete={() => handleDelete(cv.id)}
                       />
                     </div>

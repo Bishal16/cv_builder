@@ -17,7 +17,7 @@ import {
   type Cv,
 } from '../types/cv';
 import { useCvStore } from '../store/cvStore';
-import { exportPdf, exportDocx } from '../api/cvApi';
+import { exportPdf } from '../api/cvApi';
 import { useThemeStore } from '../store/themeStore';
 import { PersonalInfoForm } from './PersonalInfoForm';
 import { ExperienceList } from './ExperienceList';
@@ -168,7 +168,6 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const [showJdTailor, setShowJdTailor]           = useState(false);
   const [showCoverLetter, setShowCoverLetter]     = useState(false);
   const [showShare, setShowShare]                 = useState(false);
-  const [isExportingDocx, setIsExportingDocx]     = useState(false);
   const [mobileWarningDismissed, setMobileWarningDismissed] = useState(
     () => typeof window !== 'undefined' && window.innerWidth >= 768
   );
@@ -349,26 +348,6 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     finally { setIsExporting(false); }
   };
 
-  const handleDownloadDocx = async () => {
-    setIsExportingDocx(true);
-    const t = toast.loading('Generating DOCX…');
-    try {
-      if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
-      await updateCv(cvId, formData);
-      setLastSavedSnapshot(currentSnapshot);
-      setAutosaveState('saved');
-      const blob = await exportDocx(cvId);
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href     = url;
-      a.download = `${formData.title || 'resume'}.docx`;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(url);
-      toast.success('DOCX downloaded', { id: t });
-    } catch { toast.error('DOCX export failed', { id: t }); }
-    finally { setIsExportingDocx(false); }
-  };
-
   const handleBackClick = async () => {
     if (!hasUnsavedChanges) { onBack(); return; }
     // Autosave guarantees persistence — flush now and leave. Only warn if it fails.
@@ -437,6 +416,25 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   };
 
   /* ─────────────── RENDER ─────────────── */
+
+  // Gate the editor on hydration. Until formData reflects the loaded CV, do NOT
+  // render the form: otherwise inputs (especially react-quill) mount with empty
+  // pre-hydration data and capture a stale onChange that later overwrites the
+  // real personalInfo (name/email/photo) with blanks — silent data loss.
+  if (!cv || hydratedCvId !== cvId) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#f7f7f6] dark:bg-[#141414]">
+        <div className="flex items-center gap-3 text-gray-500 dark:text-[#888]">
+          <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+          <span className="text-[14px] font-medium">Loading resume…</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#f7f7f6] dark:bg-[#141414]">
 
@@ -580,23 +578,6 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         >
           <span className="text-[13px]">🎯</span>
           <span className="hidden sm:inline">Tailor</span>
-        </button>
-
-        {/* Export DOCX */}
-        <button
-          onClick={handleDownloadDocx}
-          disabled={isExportingDocx}
-          title="Export as Word (.docx)"
-          className="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-[7px] rounded-lg border border-gray-200 dark:border-[#3a3a3a] text-gray-600 dark:text-[#aaa] hover:border-[#F97316]/50 hover:text-[#C2510A] dark:hover:text-white dark:hover:bg-white/[0.05] transition-all shrink-0 disabled:opacity-50"
-        >
-          {isExportingDocx ? (
-            <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
-          ) : (
-            <span className="text-[12px] font-bold">DOCX</span>
-          )}
         </button>
 
         {/* Export PDF — primary CTA */}
