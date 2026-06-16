@@ -65,22 +65,6 @@ const normalizeSkillLevel = (value: unknown): Skill['level'] => {
   }
 };
 
-type WithId = { id: string };
-const sortById = <T extends WithId>(arr: T[]): T[] =>
-  [...arr].sort((a, b) => a.id.localeCompare(b.id));
-
-const normalizeForSnapshot = (data: CVFormData): string =>
-  JSON.stringify({
-    ...data,
-    experiences: sortById(data.experiences),
-    educations: sortById(data.educations),
-    skills: sortById(data.skills),
-    projects: sortById(data.projects),
-    certifications: sortById(data.certifications),
-    languages: sortById(data.languages),
-    awards: sortById(data.awards),
-  });
-
 const toFormData = (cv: Cv): CVFormData => ({
   title: cv.title,
   templateId: cv.templateId as TemplateId,
@@ -237,19 +221,22 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   }, [isResizing]);
 
   /* ── Updaters ── */
-  const updatePersonalInfo   = (personalInfo: PersonalInfo)     => setFormData({ ...formData, personalInfo });
-  const updateExperience     = (experiences: Experience[])      => setFormData({ ...formData, experiences });
-  const updateEducation      = (educations: Education[])        => setFormData({ ...formData, educations });
-  const updateSkills         = (skills: Skill[])                => setFormData({ ...formData, skills });
-  const updateProjects       = (projects: Project[])            => setFormData({ ...formData, projects });
-  const updateCertifications = (certifications: Certification[]) => setFormData({ ...formData, certifications });
-  const updateLanguages      = (languages: Language[])          => setFormData({ ...formData, languages });
-  const updateAwards         = (awards: Award[])                => setFormData({ ...formData, awards });
+  // Functional updaters: always read the latest state. A plain `{ ...formData }`
+  // here can capture a STALE closure (e.g. react-quill keeps an onChange from an
+  // earlier render) and silently revert every other field — which wiped CVs.
+  const updatePersonalInfo   = (personalInfo: PersonalInfo)      => setFormData(prev => ({ ...prev, personalInfo }));
+  const updateExperience     = (experiences: Experience[])      => setFormData(prev => ({ ...prev, experiences }));
+  const updateEducation      = (educations: Education[])        => setFormData(prev => ({ ...prev, educations }));
+  const updateSkills         = (skills: Skill[])                => setFormData(prev => ({ ...prev, skills }));
+  const updateProjects       = (projects: Project[])            => setFormData(prev => ({ ...prev, projects }));
+  const updateCertifications = (certifications: Certification[]) => setFormData(prev => ({ ...prev, certifications }));
+  const updateLanguages      = (languages: Language[])          => setFormData(prev => ({ ...prev, languages }));
+  const updateAwards         = (awards: Award[])                => setFormData(prev => ({ ...prev, awards }));
 
   /* ── Customization (Phase 3) ── */
-  const setAccent  = (accentColor?: string)     => setFormData({ ...formData, accentColor });
-  const setFont    = (fontFamily?: FontChoice)  => setFormData({ ...formData, fontFamily });
-  const setDensity = (density?: Density)        => setFormData({ ...formData, density });
+  const setAccent  = (accentColor?: string)     => setFormData(prev => ({ ...prev, accentColor }));
+  const setFont    = (fontFamily?: FontChoice)  => setFormData(prev => ({ ...prev, fontFamily }));
+  const setDensity = (density?: Density)        => setFormData(prev => ({ ...prev, density }));
 
   const updateTemplate = (templateId: TemplateId) => {
     if (templateId === formData.templateId) return;
@@ -257,7 +244,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     const next: CVFormData = { ...formData, templateId };
     const nextSnap = JSON.stringify(next);
     const shouldAutoSave = !hasUnsavedChanges && Boolean(cvId) && hydratedCvId === cvId;
-    setFormData(next);
+    setFormData(curr => ({ ...curr, templateId }));
     if (!shouldAutoSave) return;
     setLastSavedSnapshot(nextSnap);
     void (async () => {
@@ -286,13 +273,11 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     savingRef.current = true;
     setAutosaveState('saving');
     try {
-      const attempted = normalizeForSnapshot(data);
-      const saved = await updateCv(cvId, data);
-      if (normalizeForSnapshot(toFormData(saved)) !== attempted) {
-        setAutosaveState('error');
-        if (opts?.toast) toast.error('Some fields were not saved. Please try again.');
-        return false;
-      }
+      // Trust the server's 2xx response (updateCv throws on non-2xx). We do NOT
+      // byte-compare the round-trip: the backend HTML-sanitizes rich text
+      // (e.g. "8+" -> "8&#43;", "&" -> "&amp;"), so an exact match is impossible
+      // and produced false "save failed" errors on every freshly-typed save.
+      await updateCv(cvId, data);
       setLastSavedSnapshot(snap);
       setAutosaveState('saved');
       if (opts?.toast) toast.success('Saved');
@@ -347,12 +332,9 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     try {
       // Cancel any pending autosave so it can't race this export's own save.
       if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
-      const attempted = normalizeForSnapshot(formData);
-      const saved = await updateCv(cvId, formData);
-      if (normalizeForSnapshot(toFormData(saved)) !== attempted) {
-        toast.error('Export blocked — latest edits were not saved', { id: t });
-        return;
-      }
+      // Persist latest edits, then export. Trust the 2xx (no brittle round-trip
+      // compare — the backend sanitizes rich text so bytes legitimately differ).
+      await updateCv(cvId, formData);
       setLastSavedSnapshot(currentSnapshot);
       setAutosaveState('saved');
       const blob = await exportPdf(cvId);
@@ -404,7 +386,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     const si = order.indexOf(src), di = order.indexOf(dst);
     if (si < 0 || di < 0) return;
     order.splice(si, 1); order.splice(di, 0, src);
-    setFormData({ ...formData, sectionOrder: order });
+    setFormData(prev => ({ ...prev, sectionOrder: order }));
   };
 
   /* ── Section helpers ── */
@@ -495,7 +477,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         <input
           type="text"
           value={formData.title}
-          onChange={e => setFormData({ ...formData, title: e.target.value })}
+          onChange={e => { const title = e.target.value; setFormData(prev => ({ ...prev, title })); }}
           className="text-[14px] font-semibold text-[#111] dark:text-white bg-transparent border-none outline-none w-44 truncate placeholder:text-gray-300 dark:placeholder:text-[#444] focus:bg-gray-50 dark:focus:bg-white/[0.05] px-2 py-1 rounded-lg transition-colors"
           placeholder="Resume title"
         />
