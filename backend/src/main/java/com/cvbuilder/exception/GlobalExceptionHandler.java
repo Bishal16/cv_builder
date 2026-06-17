@@ -48,6 +48,15 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("BAD_REQUEST", ex.getMessage(), request.getRequestURI()));
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
+        // Thrown when a feature is unavailable/misconfigured (e.g. AI provider has no
+        // API key). Surface the real message + 503 so it isn't an opaque 500.
+        log.warn("Service unavailable: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ErrorResponse.of("SERVICE_UNAVAILABLE", ex.getMessage(), request.getRequestURI()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Map<String, String> fieldErrors = new HashMap<>();
