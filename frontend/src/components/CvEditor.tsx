@@ -678,6 +678,35 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                         />
                       );
                     })}
+
+                    {/* Custom accent colour — opens the native picker (eyedropper on macOS) */}
+                    {(() => {
+                      const ac = formData.accentColor;
+                      const isCustom = !!ac && !ACCENT_SWATCHES.some(s => s.value.toLowerCase() === ac.toLowerCase());
+                      return (
+                        <button
+                          onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'color';
+                            input.value = ac && /^#[0-9a-fA-F]{6}$/.test(ac) ? ac : def.accent;
+                            input.style.cssText = 'position:fixed;left:-9999px;opacity:0';
+                            document.body.appendChild(input);
+                            input.addEventListener('change', () => { setAccent(input.value); input.remove(); });
+                            input.click();
+                          }}
+                          title="Custom colour"
+                          className={`relative w-4 h-4 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${isCustom ? 'ring-2 ring-offset-1 ring-offset-[#f7f7f6] dark:ring-offset-[#161616]' : ''}`}
+                          style={isCustom
+                            ? { backgroundColor: ac, boxShadow: `0 0 0 2px ${ac}` }
+                            : { background: 'conic-gradient(#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)' }}
+                        >
+                          {!isCustom && (
+                            <span className="text-[8px] font-bold text-white leading-none" style={{ textShadow: '0 0 2px rgba(0,0,0,0.6)' }}>+</span>
+                          )}
+                        </button>
+                      );
+                    })()}
+
                     {formData.accentColor && (
                       <button
                         onClick={() => setAccent(undefined)}

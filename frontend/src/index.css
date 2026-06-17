@@ -228,6 +228,14 @@ body {
   color: var(--text-dim);
 }
 
+/* Size picker: Quill's snow theme labels every custom-size option "Normal".
+   Show each option's actual value instead; the default (no data-value) keeps
+   "Normal". Applies to both the dropdown items and the selected label. */
+.rich-text-editor .ql-snow .ql-picker.ql-size .ql-picker-label[data-value]::before,
+.rich-text-editor .ql-snow .ql-picker.ql-size .ql-picker-item[data-value]::before {
+  content: attr(data-value) !important;
+}
+
 .rich-text-editor .ql-snow.ql-toolbar button:hover .ql-stroke,
 .rich-text-editor .ql-snow.ql-toolbar button.ql-active .ql-stroke {
   stroke: var(--primary);
@@ -255,9 +263,75 @@ body {
 }
 
 /* Quill list indentation */
-.ql-snow .ql-editor ul, 
+.ql-snow .ql-editor ul,
 .ql-snow .ql-editor ol {
   padding-left: 1.5em;
+}
+
+/* ── Toolbar polish: make Quill's controls match the app ──────────────── */
+
+/* Rounded hit-areas for buttons and dropdown labels */
+.rich-text-editor .ql-snow.ql-toolbar button,
+.rich-text-editor .ql-snow .ql-picker-label {
+  border-radius: 6px;
+}
+
+/* Dropdown popovers (size / align / color) — app-style rounded card */
+.rich-text-editor .ql-snow .ql-picker-options {
+  border-radius: 10px !important;
+  border: 1px solid var(--input-border) !important;
+  box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.06);
+  padding: 6px;
+  margin-top: 5px;
+  background-color: var(--input-bg);
+}
+
+/* Size & align items: rounded rows with the brand hover/selected accent */
+.rich-text-editor .ql-snow .ql-picker:not(.ql-color-picker) .ql-picker-item {
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+.rich-text-editor .ql-snow .ql-picker:not(.ql-color-picker) .ql-picker-item:hover,
+.rich-text-editor .ql-snow .ql-picker:not(.ql-color-picker) .ql-picker-item.ql-selected {
+  color: var(--primary);
+  background-color: rgba(249, 115, 22, 0.08);
+}
+
+/* Color swatches: tidy rounded chips in a neat grid with a hover ring */
+.rich-text-editor .ql-snow .ql-color-picker .ql-picker-options {
+  width: 176px;
+  padding: 8px;
+}
+.rich-text-editor .ql-snow .ql-color-picker .ql-picker-item {
+  width: 18px;
+  height: 18px;
+  margin: 2px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.rich-text-editor .ql-snow .ql-color-picker .ql-picker-item:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+/* The trailing "custom" swatch → a rainbow "+" that opens the OS color picker */
+.rich-text-editor .ql-snow .ql-color-picker .ql-picker-item[data-value="custom"] {
+  background: conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00) !important;
+  position: relative;
+}
+.rich-text-editor .ql-snow .ql-color-picker .ql-picker-item[data-value="custom"]::after {
+  content: '+';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.6);
 }
 
 /* Select dropdown */

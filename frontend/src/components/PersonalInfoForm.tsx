@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import type { PersonalInfo } from '../types/cv';
 import { AiSuggestPanel } from './AiSuggestPanel';
 import { GrammarPanel } from './GrammarPanel';
+import { RICH_TEXT_MODULES } from '../utils/quillConfig';
 
 interface PersonalInfoFormProps {
   personalInfo: PersonalInfo;
@@ -116,13 +117,7 @@ export function PersonalInfoForm({ personalInfo, onChange }: PersonalInfoFormPro
     onChange({ ...personalInfo, [field]: value });
   };
 
-  const modules = {
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['clean']
-    ],
-  };
+  const modules = RICH_TEXT_MODULES;
 
   return (
     <div className="space-y-4">

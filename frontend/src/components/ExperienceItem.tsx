@@ -5,6 +5,7 @@ import type { Experience } from '../types/cv';
 import { AiSuggestPanel } from './AiSuggestPanel';
 import { BulletLibraryModal } from './BulletLibraryModal';
 import { GrammarPanel } from './GrammarPanel';
+import { RICH_TEXT_MODULES } from '../utils/quillConfig';
 
 interface ExperienceItemProps {
   experience: Experience;
@@ -21,13 +22,7 @@ export function ExperienceItem({ experience, onChange, onRemove }: ExperienceIte
     onChange({ ...experience, [field]: value });
   };
 
-  const modules = {
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['clean']
-    ],
-  };
+  const modules = RICH_TEXT_MODULES;
 
   return (
     <div className="card p-4">

@@ -46,8 +46,12 @@ export function preventHyphenLineBreaks(html: string): string {
     .replace(/<\/p>\s*<p[^>]*>(?=[a-z])/g, ' ')
     .replace(/<\/li>\s*<li[^>]*>(?=[a-z])/g, ' ')
 
-    // 6. Non-breaking hyphen between word chars (prevents hyphen-point line breaks)
-    .replace(/([\p{L}\p{N}])-([\p{L}\p{N}])/gu, `$1${nbHyphen}$2`)
+    // 6. Non-breaking hyphen between word chars (prevents hyphen-point line breaks).
+    //    Skip anything inside a tag (the first alternative matches a whole <...>
+    //    and returns it unchanged) so we never corrupt hyphenated CSS property
+    //    names inside style="" attributes — e.g. font-size, background-color.
+    .replace(/(<[^>]*>)|([\p{L}\p{N}])-([\p{L}\p{N}])/gu,
+      (_m, tag, a, b) => (tag ? tag : `${a}${nbHyphen}${b}`))
 
     // 7. Word Joiner after closing inline tags immediately followed by a letter/digit —
     //    prevents Chromium treating the tag boundary as a line-break opportunity

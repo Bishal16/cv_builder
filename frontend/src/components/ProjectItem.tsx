@@ -1,6 +1,7 @@
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import type { Project } from '../types/cv';
+import { RICH_TEXT_MODULES } from '../utils/quillConfig';
 
 interface ProjectItemProps {
   project: Project;
@@ -13,13 +14,7 @@ export function ProjectItem({ project, onChange, onRemove }: ProjectItemProps) {
     onChange({ ...project, [field]: value });
   };
 
-  const modules = {
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['clean']
-    ],
-  };
+  const modules = RICH_TEXT_MODULES;
 
   return (
     <div className="card p-4">
