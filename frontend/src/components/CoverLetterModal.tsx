@@ -79,7 +79,7 @@ export function CoverLetterModal({ formData, onClose }: Props) {
             <span className="text-[18px]">✉️</span>
             <div>
               <h3 className="font-semibold text-[14px] text-gray-900 dark:text-white">Cover Letter Generator</h3>
-              <p className="text-[11px] text-gray-400 dark:text-[#666] mt-0.5">Generated from your resume by Claude</p>
+              <p className="text-[11px] text-gray-400 dark:text-[#666] mt-0.5">Generated from your resume by AI</p>
             </div>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-colors">

@@ -76,7 +76,7 @@ export function AiSuggestPanel({ request, onApply, onClose }: AiSuggestPanelProp
           {!fetched && !loading && (
             <div className="text-center py-6">
               <p className="text-[13px] text-gray-500 dark:text-[#888] mb-4">
-                Claude will generate 3 alternative versions. Pick the one you like best.
+                AI will generate 3 alternative versions. Pick the one you like best.
               </p>
               <button
                 onClick={fetch}
@@ -90,7 +90,7 @@ export function AiSuggestPanel({ request, onApply, onClose }: AiSuggestPanelProp
           {loading && (
             <div className="flex flex-col items-center py-8 gap-3">
               <div className="w-6 h-6 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
-              <p className="text-[12px] text-gray-400 dark:text-[#666]">Claude is thinking…</p>
+              <p className="text-[12px] text-gray-400 dark:text-[#666]">AI is thinking…</p>
             </div>
           )}
 

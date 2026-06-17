@@ -39,7 +39,7 @@ public class ImportService {
             throw new IllegalArgumentException("Could not extract text from the file. It may be image-based or protected.");
         }
 
-        return parseWithClaude(text);
+        return parseWithLlm(text);
     }
 
     private String extractPdfText(MultipartFile file) throws IOException {
@@ -59,7 +59,7 @@ public class ImportService {
         }
     }
 
-    private CreateCvRequest parseWithClaude(String resumeText) {
+    private CreateCvRequest parseWithLlm(String resumeText) {
         String prompt = """
             Parse the following resume text and return a JSON object that exactly matches this schema.
             Return ONLY the JSON — no markdown fences, no explanation, nothing else.

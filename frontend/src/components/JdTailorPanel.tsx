@@ -110,7 +110,7 @@ export function JdTailorPanel({ formData, onClose }: Props) {
           {loading && (
             <div className="flex flex-col items-center py-8 gap-3">
               <div className="w-6 h-6 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
-              <p className="text-[12px] text-gray-400 dark:text-[#666]">Claude is analysing your resume…</p>
+              <p className="text-[12px] text-gray-400 dark:text-[#666]">AI is analysing your resume…</p>
             </div>
           )}
 

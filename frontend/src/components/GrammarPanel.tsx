@@ -49,7 +49,7 @@ export function GrammarPanel({ text, onApply, onClose }: Props) {
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#2a2a2a] flex-shrink-0">
           <div>
             <h3 className="font-semibold text-[14px] text-gray-900 dark:text-white">Grammar &amp; Spellcheck</h3>
-            <p className="text-[11px] text-gray-400 dark:text-[#666] mt-0.5">Let Claude proofread this text for spelling, grammar, and clarity</p>
+            <p className="text-[11px] text-gray-400 dark:text-[#666] mt-0.5">Let AI proofread this text for spelling, grammar, and clarity</p>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-colors">
             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +83,7 @@ export function GrammarPanel({ text, onApply, onClose }: Props) {
           {loading && (
             <div className="flex flex-col items-center py-8 gap-3">
               <div className="w-6 h-6 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
-              <p className="text-[12px] text-gray-400 dark:text-[#666]">Claude is proofreading…</p>
+              <p className="text-[12px] text-gray-400 dark:text-[#666]">AI is proofreading…</p>
             </div>
           )}
 

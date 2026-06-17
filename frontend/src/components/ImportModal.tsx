@@ -78,7 +78,7 @@ export function ImportModal({ onClose }: Props) {
               <div className="w-8 h-8 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
               <div className="text-center">
                 <p className="text-[13.5px] font-semibold text-[#111111] dark:text-white">{fileName}</p>
-                <p className="text-[12px] text-gray-400 dark:text-[#666] mt-1">Claude is parsing your resume…</p>
+                <p className="text-[12px] text-gray-400 dark:text-[#666] mt-1">AI is parsing your resume…</p>
               </div>
             </div>
           ) : (
@@ -110,7 +110,7 @@ export function ImportModal({ onClose }: Props) {
 
               <div className="mt-4 rounded-lg bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-800 p-3">
                 <p className="text-[11.5px] text-blue-700 dark:text-blue-300 leading-relaxed">
-                  <strong>How it works:</strong> Claude reads the text from your file and fills in the form. You can review and edit everything before saving.
+                  <strong>How it works:</strong> AI reads the text from your file and fills in the form. You can review and edit everything before saving.
                 </p>
               </div>
             </>
