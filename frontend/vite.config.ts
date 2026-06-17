@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
+    host: true, // expose on the LAN so share links work across the network
     proxy: {
       '/api': {
         target: 'http://localhost:8081',

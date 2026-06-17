@@ -27,7 +27,11 @@ export function ShareModal({ cvId, onClose }: Props) {
       });
   }, [cvId]);
 
-  const shareUrl = token ? `${window.location.origin}/r/${token}` : '';
+  // Use a configured public base (e.g. your LAN IP) so links work across the
+  // network even when you're browsing via localhost; fall back to the origin.
+  const publicBase = (import.meta.env.VITE_PUBLIC_BASE_URL as string | undefined)?.replace(/\/$/, '')
+    || window.location.origin;
+  const shareUrl = token ? `${publicBase}/r/${token}` : '';
 
   const handleCreate = async () => {
     setWorking(true);

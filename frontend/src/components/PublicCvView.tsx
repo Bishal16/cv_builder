@@ -4,6 +4,46 @@ import type { Cv } from '../types/cv';
 import { getPublicCv } from '../api/shareApi';
 import { CvPreview, PAGE_WIDTH } from '../templates/CvPreview';
 
+/**
+ * Renders the CV at its true fixed A4 width and scales the whole thing down to
+ * fit the screen — like a PDF page — so the layout never reflows/breaks on
+ * narrow (mobile) viewports. The fixed ratio is preserved at every size.
+ */
+function ScaledCvPage({ cv }: { cv: Cv }) {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [scaledHeight, setScaledHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner) return;
+    // ResizeObserver fires once on observe and on every size change, so all
+    // setState happens inside the callback (not synchronously in the effect).
+    const ro = new ResizeObserver(() => {
+      const s = Math.min(1, outer.clientWidth / PAGE_WIDTH);
+      setScale(s);
+      setScaledHeight(inner.offsetHeight * s);
+    });
+    ro.observe(outer);
+    ro.observe(inner);
+    return () => ro.disconnect();
+  }, [cv]);
+
+  return (
+    <div
+      ref={outerRef}
+      className="bg-white shadow-2xl mx-auto"
+      style={{ width: '100%', maxWidth: PAGE_WIDTH, height: scaledHeight, overflow: 'hidden' }}
+    >
+      <div ref={innerRef} style={{ width: PAGE_WIDTH, transformOrigin: 'top left', transform: `scale(${scale})` }}>
+        <CvPreview cv={cv} containerStyle={{ width: PAGE_WIDTH }} />
+      </div>
+    </div>
+  );
+}
+
 export function PublicCvView() {
   const { token } = useParams<{ token: string }>();
   const [cv, setCv] = useState<Cv | null>(null);
@@ -58,13 +98,8 @@ export function PublicCvView() {
         </a>
       </div>
 
-      <div className="flex justify-center px-4 py-8 sm:py-12">
-        <div
-          className="bg-white shadow-2xl"
-          style={{ width: PAGE_WIDTH, maxWidth: '100%' }}
-        >
-          <CvPreview cv={cv} containerStyle={{ width: '100%' }} />
-        </div>
+      <div className="px-4 py-8 sm:py-12">
+        <ScaledCvPage cv={cv} />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import com.cvbuilder.repository.ShareLinkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -67,6 +68,10 @@ public class ShareService {
                 .map(ShareLink::getToken);
     }
 
+    // readOnly transaction keeps the Hibernate session open so CvMapper can load
+    // the CV's lazy collections (open-in-view is disabled). Without this the
+    // public share page 500s with a LazyInitializationException.
+    @Transactional(readOnly = true)
     public CvDto getPublicCv(String token) {
         ShareLink link = shareLinkRepository.findByToken(token)
                 .filter(ShareLink::isEnabled)

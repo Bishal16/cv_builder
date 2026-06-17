@@ -152,7 +152,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const cv = cvs.find(c => c.id === cvId);
 
   const [formData, setFormData]                   = useState<CVFormData>(defaultFormData);
-  const [expandedSection, setExpandedSection]     = useState<string>('personal');
+  const [expandedSection, setExpandedSection]     = useState<string>(''); // all collapsed by default
   const [showPreview, setShowPreview]             = useState(true);
   const [leftWidth, setLeftWidth]                 = useState(42);
   const [isResizing, setIsResizing]               = useState(false);
