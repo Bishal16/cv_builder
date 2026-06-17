@@ -44,6 +44,23 @@ export async function tailorToJd(req: JdTailorRequest): Promise<JdTailorResponse
   return res.json() as Promise<JdTailorResponse>;
 }
 
+export interface AiUsageStatus {
+  used: number;
+  limit: number;
+  remaining: number;
+  resetsAt?: string | null;
+  windowHours: number;
+}
+
+export async function getAiUsage(): Promise<AiUsageStatus> {
+  const res = await fetch(`${API_BASE}/usage`, { headers: await authHeaders() });
+  if (!res.ok) {
+    const text = await res.text().catch(() => 'Failed to load usage');
+    throw new ApiError(res.status, text);
+  }
+  return res.json() as Promise<AiUsageStatus>;
+}
+
 export interface CoverLetterRequest {
   candidateName?: string;
   cvSummary?: string;

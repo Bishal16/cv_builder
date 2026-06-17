@@ -21,6 +21,12 @@ import java.util.Map;
 @Component
 public class LlmClient {
 
+    private final AiUsageService usageService;
+
+    public LlmClient(AiUsageService usageService) {
+        this.usageService = usageService;
+    }
+
     @Value("${llm.provider:gemini}")
     private String provider;
 
@@ -49,11 +55,14 @@ public class LlmClient {
     /** Send a single prompt and return the model's text. */
     public String complete(String prompt, int maxTokens) {
         String p = provider == null ? "gemini" : provider.toLowerCase().trim();
-        return switch (p) {
+        String result = switch (p) {
             case "anthropic" -> anthropic(prompt, maxTokens);
             case "openai", "groq", "openrouter", "ollama" -> openAiCompatible(prompt, maxTokens);
             default -> gemini(prompt, maxTokens);
         };
+        // Only successful calls count toward the usage window (a 429/error throws above).
+        usageService.record();
+        return result;
     }
 
     /* ── Gemini ─────────────────────────────────────────────────────── */

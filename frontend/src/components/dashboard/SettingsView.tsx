@@ -6,6 +6,7 @@ import { useThemeStore, type ThemeMode } from '../../store/themeStore';
 import { useSettingsStore } from '../../store/settingsStore';
 import { useCvStore } from '../../store/cvStore';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { AiUsageCard } from './AiUsageCard';
 import type { TemplateId } from '../../types/cv';
 
 /* ────────────────────────── primitives ────────────────────────── */
@@ -139,6 +140,7 @@ function ThemeTile({ mode, label, selected, onSelect }: {
 const SECTIONS = [
   { id: 'profile', label: 'Profile' },
   { id: 'security', label: 'Security' },
+  { id: 'usage', label: 'AI Usage' },
   { id: 'appearance', label: 'Appearance' },
   { id: 'preferences', label: 'Preferences' },
   { id: 'data', label: 'Data' },
@@ -341,6 +343,9 @@ export function SettingsView() {
               </div>
             </div>
           </SettingCard>
+
+          {/* AI Usage */}
+          <AiUsageCard />
 
           {/* Appearance */}
           <SettingCard
