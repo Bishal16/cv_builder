@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final SampleCvService sampleCvService;
 
     @Override
     @Transactional
@@ -40,6 +41,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         User user = userRepository.findByProviderAndProviderId(registrationId, providerId)
             .orElseGet(() -> userRepository.findByEmail(email).orElse(null));
 
+        boolean isNewUser = user == null;
         if (user == null) {
             user = User.builder()
                 .email(email)
@@ -62,7 +64,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             }
         }
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        if (isNewUser) {
+            sampleCvService.seedForUser(savedUser);
+        }
         return oAuth2User;
     }
 

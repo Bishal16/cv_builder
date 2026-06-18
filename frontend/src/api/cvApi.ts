@@ -9,10 +9,12 @@ const API_BASE_URL = '/api/v1';
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  code?: string;
+  constructor(status: number, message: string, code?: string) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -40,7 +42,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const errorText = await response.text().catch(() => 'Unknown error');
     try {
       const errorJson = JSON.parse(errorText);
-      throw new ApiError(response.status, errorJson.message || errorJson.error || 'Unknown error');
+      throw new ApiError(response.status, errorJson.message || errorJson.error || 'Unknown error', errorJson.code);
     } catch (e) {
       if (e instanceof ApiError) throw e;
       throw new ApiError(response.status, errorText);
@@ -71,8 +73,9 @@ export interface UserDetails {
 }
 
 export interface AuthResponse {
-  token: string;
+  token: string | null;
   user: UserDetails;
+  emailVerificationRequired?: boolean;
 }
 
 // Auth API
@@ -92,6 +95,35 @@ export async function register(userData: RegisterData): Promise<AuthResponse> {
     body: JSON.stringify(userData),
   });
   return handleResponse<AuthResponse>(response);
+}
+
+// Auth: verify the 6-digit OTP emailed at signup; returns a real session on success
+export async function verifyOtp(email: string, code: string): Promise<AuthResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+    method: 'POST',
+    headers: await getHeaders(false),
+    body: JSON.stringify({ email, code }),
+  });
+  return handleResponse<AuthResponse>(response);
+}
+
+// Auth: resend the OTP code
+export async function resendOtp(email: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
+    method: 'POST',
+    headers: await getHeaders(false),
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => 'Could not resend');
+    try {
+      const j = JSON.parse(text);
+      throw new ApiError(response.status, j.message || j.error || 'Could not resend', j.code);
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      throw new ApiError(response.status, text);
+    }
+  }
 }
 
 // Auth: fetch current user (used by OAuthCallback before authStore is populated)

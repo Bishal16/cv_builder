@@ -41,6 +41,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("INVALID_CREDENTIALS", ex.getMessage(), request.getRequestURI()));
     }
 
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<ErrorResponse> handleEmailNotVerified(EmailNotVerifiedException ex, HttpServletRequest request) {
+        log.warn("Login blocked (unverified): {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of("EMAIL_NOT_VERIFIED", ex.getMessage(), request.getRequestURI()));
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
         log.warn("Bad request: {}", ex.getMessage());

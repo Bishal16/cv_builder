@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { login, register } from '../api';
+import { login, register, type AuthResponse } from '../api';
+import { ApiError } from '../api/cvApi';
 import { useAuthStore } from '../store/authStore';
 import { Logo } from './Logo';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
+import { OtpStep } from './OtpStep';
 
 interface AuthScreenProps {
   onSuccess: () => void;
@@ -110,7 +112,15 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [pwFocused,    setPwFocused]    = useState(false);
   const [showForgot,   setShowForgot]   = useState(false);
+  const [otpEmail,     setOtpEmail]     = useState<string | null>(null); // non-null = OTP step
   const [formData, setFormData] = useState({ email: '', password: '', firstName: '', lastName: '' });
+
+  const completeAuth = (res: AuthResponse) => {
+    if (res.token) {
+      setAuth(res.user, res.token);
+      onSuccess();
+    }
+  };
 
   const set = (key: keyof typeof formData) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormData(prev => ({ ...prev, [key]: e.target.value }));
@@ -127,16 +137,27 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
     try {
       if (isLogin) {
         const res = await login({ email: formData.email, password: formData.password });
-        setAuth(res.user, res.token);
+        setAuth(res.user, res.token!);
         toast.success(`Welcome back, ${res.user.firstName}!`);
+        onSuccess();
       } else {
         const res = await register(formData);
-        setAuth(res.user, res.token);
-        toast.success('Account created!');
+        if (res.emailVerificationRequired) {
+          setOtpEmail(formData.email);
+          toast.success('We emailed you a 6-digit code');
+        } else {
+          completeAuth(res);
+          toast.success('Account created!');
+        }
       }
-      onSuccess();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Authentication failed');
+      // Unverified existing account → backend resent an OTP; go to the verify step.
+      if (err instanceof ApiError && err.code === 'EMAIL_NOT_VERIFIED') {
+        setOtpEmail(formData.email);
+        toast('Verify your email — we sent you a code', { icon: '✉️' });
+      } else {
+        toast.error(err instanceof Error ? err.message : 'Authentication failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -190,6 +211,15 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
 
       {/* ── Form area ───────────────────────────────────────────────────── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 24px 48px', position: 'relative' }}>
+
+        {otpEmail ? (
+          <OtpStep
+            email={otpEmail}
+            onVerified={(res) => completeAuth(res)}
+            onBack={() => setOtpEmail(null)}
+          />
+        ) : (
+        <>
 
         {/* Page heading — above the card */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
@@ -350,6 +380,8 @@ export function AuthScreen({ onSuccess }: AuthScreenProps) {
           {' '}and{' '}
           <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>Privacy Policy</span>.
         </p>
+        </>
+        )}
       </div>
 
       {showForgot && <ForgotPasswordModal onClose={() => setShowForgot(false)} />}

@@ -11,6 +11,7 @@ import com.cvbuilder.dto.VerifyEmailRequest;
 import com.cvbuilder.entity.EmailVerificationToken;
 import com.cvbuilder.entity.PasswordResetToken;
 import com.cvbuilder.entity.User;
+import com.cvbuilder.exception.EmailNotVerifiedException;
 import com.cvbuilder.exception.InvalidCredentialsException;
 import com.cvbuilder.exception.UserAlreadyExistsException;
 import com.cvbuilder.repository.EmailVerificationTokenRepository;
@@ -21,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,12 +30,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private static final int OTP_EXPIRY_MINUTES = 10;
+    private static final int MAX_OTP_ATTEMPTS = 5;
+    private static final int RESEND_COOLDOWN_SECONDS = 30;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final PasswordResetTokenRepository resetTokenRepository;
     private final EmailVerificationTokenRepository verificationTokenRepository;
     private final EmailService emailService;
+    private final SampleCvService sampleCvService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -51,12 +59,17 @@ public class AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        sendVerificationToken(savedUser);
-        String token = jwtService.generateToken(savedUser.getId(), savedUser.getEmail());
+        sampleCvService.seedForUser(savedUser);
+        sendOtp(savedUser);
 
-        return mapToAuthResponse(savedUser, token);
+        // No session yet — the client must verify the emailed OTP first.
+        return AuthResponse.builder()
+                .emailVerificationRequired(true)
+                .user(toUserDetailsDto(savedUser))
+                .build();
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
@@ -65,9 +78,79 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
-        String token = jwtService.generateToken(user.getId(), user.getEmail());
+        if (!user.isEmailVerified()) {
+            sendOtp(user); // re-send a fresh code so they can verify now
+            throw new EmailNotVerifiedException(
+                    "Please verify your email — we've sent a code to " + user.getEmail());
+        }
 
+        String token = jwtService.generateToken(user.getId(), user.getEmail());
         return mapToAuthResponse(user, token);
+    }
+
+    @Transactional
+    public AuthResponse verifyOtp(String email, String code) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid verification request"));
+
+        // Must NOT short-circuit for verified users — that would hand out a session
+        // for any email + any code (auth bypass). A token is only issued after a
+        // valid OTP for an unverified account below.
+        if (user.isEmailVerified()) {
+            throw new IllegalArgumentException("This email is already verified. Please sign in.");
+        }
+
+        EmailVerificationToken evt = verificationTokenRepository.findByUser_Id(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("No active code. Please request a new one."));
+
+        if (evt.isUsed() || evt.isExpired()) {
+            throw new IllegalArgumentException("This code has expired. Please request a new one.");
+        }
+        if (evt.getAttempts() >= MAX_OTP_ATTEMPTS) {
+            throw new IllegalArgumentException("Too many attempts. Please request a new code.");
+        }
+        if (evt.getCode() == null || !evt.getCode().equals(code.trim())) {
+            evt.setAttempts(evt.getAttempts() + 1);
+            verificationTokenRepository.save(evt);
+            throw new InvalidCredentialsException("Incorrect code. Please try again.");
+        }
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
+        evt.setUsed(true);
+        verificationTokenRepository.save(evt);
+
+        return mapToAuthResponse(user, jwtService.generateToken(user.getId(), user.getEmail()));
+    }
+
+    @Transactional
+    public void resendOtp(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null || user.isEmailVerified()) {
+            return; // stay quiet — don't reveal account state
+        }
+        verificationTokenRepository.findByUser_Id(user.getId()).ifPresent(evt -> {
+            if (evt.getCreatedAt() != null
+                    && evt.getCreatedAt().isAfter(LocalDateTime.now().minusSeconds(RESEND_COOLDOWN_SECONDS))) {
+                throw new IllegalArgumentException("Please wait a few seconds before requesting another code.");
+            }
+        });
+        sendOtp(user);
+    }
+
+    private void sendOtp(User user) {
+        verificationTokenRepository.deleteAllByUserId(user.getId());
+        String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+        EmailVerificationToken evt = EmailVerificationToken.builder()
+                .user(user)
+                .token(UUID.randomUUID().toString())
+                .code(code)
+                .attempts(0)
+                .expiresAt(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES))
+                .used(false)
+                .build();
+        verificationTokenRepository.save(evt);
+        emailService.sendOtpEmail(user.getEmail(), code);
     }
 
     @Transactional

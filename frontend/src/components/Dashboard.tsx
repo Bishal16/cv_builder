@@ -528,12 +528,18 @@ function ResumeCard({ cv, onEdit, onDuplicate, onCreateVariant, onExport, onDele
         >
           {meta.label}
         </span>
-        <span className={`
-          text-[10px] font-semibold px-2 py-0.5 rounded-md
-          ${isDraft ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}
-        `}>
-          {isDraft ? 'Draft' : 'Complete'}
-        </span>
+        {cv.title.trim().endsWith('(Sample)') ? (
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300">
+            Sample
+          </span>
+        ) : (
+          <span className={`
+            text-[10px] font-semibold px-2 py-0.5 rounded-md
+            ${isDraft ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}
+          `}>
+            {isDraft ? 'Draft' : 'Complete'}
+          </span>
+        )}
       </div>
 
       {/* Completion bar */}

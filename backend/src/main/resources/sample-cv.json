@@ -1,0 +1,77 @@
+{
+  "title": "Sam Altman — Senior Software Engineer (Sample)",
+  "templateId": "MODERN",
+  "sectionOrder": ["personal", "experience", "skills", "projects", "education", "certifications", "awards", "languages"],
+  "personalInfo": {
+    "name": "Sam Altman",
+    "email": "sam@example.com",
+    "phone": "+1 (415) 555-0162",
+    "location": "San Francisco, CA",
+    "linkedinUrl": "https://linkedin.com/in/sam-eng",
+    "githubUrl": "https://github.com/sam-eng",
+    "summary": "<p>Senior Software Engineer with 8+ years building reliable, high-scale backend and full-stack systems. Specializes in distributed services, developer platforms, and turning ambiguous product goals into shipped, well-tested software. Comfortable leading projects end to end and mentoring engineers.</p>"
+  },
+  "experiences": [
+    {
+      "company": "Stripe",
+      "role": "Senior Software Engineer",
+      "startDate": "Jan 2021",
+      "endDate": "Present",
+      "description": "<ul><li>Led design of a payments orchestration service handling 40k+ requests/sec, cutting p99 latency by 38%.</li><li>Drove migration of a monolith module to event-driven microservices, reducing deploy times from 45m to 6m.</li><li>Mentored 4 engineers and established the team's testing and code-review standards.</li></ul>"
+    },
+    {
+      "company": "Airbnb",
+      "role": "Software Engineer",
+      "startDate": "Jul 2018",
+      "endDate": "Dec 2020",
+      "description": "<ul><li>Built a GraphQL pricing API used by 12M+ daily users, improving cache hit rate to 94%.</li><li>Shipped an experimentation framework adopted by 20+ teams, accelerating A/B test setup by 70%.</li></ul>"
+    },
+    {
+      "company": "Shopify",
+      "role": "Software Engineer",
+      "startDate": "Aug 2016",
+      "endDate": "Jun 2018",
+      "description": "<ul><li>Developed merchant analytics dashboards in React/Node, serving 500k+ stores.</li><li>Reduced background job failures by 60% by redesigning the retry and queue strategy.</li></ul>"
+    }
+  ],
+  "educations": [
+    {
+      "institution": "University of Waterloo",
+      "degree": "B.S.",
+      "field": "Computer Science",
+      "graduationYear": 2016
+    }
+  ],
+  "skills": [
+    { "name": "TypeScript", "category": "Languages", "level": "EXPERT" },
+    { "name": "Java", "category": "Languages", "level": "ADVANCED" },
+    { "name": "Go", "category": "Languages", "level": "INTERMEDIATE" },
+    { "name": "React", "category": "Frontend", "level": "EXPERT" },
+    { "name": "Node.js", "category": "Backend", "level": "EXPERT" },
+    { "name": "Spring Boot", "category": "Backend", "level": "ADVANCED" },
+    { "name": "PostgreSQL", "category": "Data", "level": "ADVANCED" },
+    { "name": "AWS", "category": "Cloud", "level": "ADVANCED" },
+    { "name": "Kubernetes", "category": "Cloud", "level": "INTERMEDIATE" },
+    { "name": "GraphQL", "category": "Backend", "level": "ADVANCED" },
+    { "name": "Redis", "category": "Data", "level": "ADVANCED" },
+    { "name": "CI/CD", "category": "Tooling", "level": "ADVANCED" }
+  ],
+  "projects": [
+    {
+      "name": "ratelimit-go (open source)",
+      "description": "<p>A lightweight distributed rate limiter in Go with Redis backing. 1.2k+ GitHub stars; used in production by several startups.</p>",
+      "url": "https://github.com/sam-eng/ratelimit-go"
+    }
+  ],
+  "certifications": [
+    { "name": "AWS Certified Solutions Architect – Professional", "issuer": "Amazon Web Services", "issueDate": "2022", "expiryDate": "2025" },
+    { "name": "Certified Kubernetes Administrator (CKA)", "issuer": "The Linux Foundation", "issueDate": "2021", "expiryDate": "2024" }
+  ],
+  "languages": [
+    { "name": "English", "proficiency": "Native" }
+  ],
+  "awards": [
+    { "title": "Engineering Excellence Award", "issuer": "Stripe", "date": "2023", "description": "<p>Recognized for leading the payments orchestration redesign that cut p99 latency by 38%.</p>" },
+    { "title": "Global Hackathon — 1st Place", "issuer": "Airbnb", "date": "2019", "description": "<p>Built a real-time pricing prototype that won across 60+ competing teams.</p>" }
+  ]
+}

@@ -44,6 +44,8 @@ class AuthServiceTest {
     private EmailVerificationTokenRepository verificationTokenRepository;
     @Mock
     private EmailService emailService;
+    @Mock
+    private SampleCvService sampleCvService;
 
     @InjectMocks
     private AuthService authService;
@@ -62,7 +64,7 @@ class AuthServiceTest {
     // ---------------------------------------------------------------------
 
     @Test
-    void register_createsUserAndReturnsToken() {
+    void register_createsUserAndRequiresOtpVerification() {
         RegisterRequest request = registerRequest();
         UUID savedId = UUID.randomUUID();
 
@@ -73,21 +75,23 @@ class AuthServiceTest {
             u.setId(savedId);
             return u;
         });
-        when(jwtService.generateToken(savedId, "new@example.com")).thenReturn("jwt-token");
 
         AuthResponse response = authService.register(request);
 
-        assertThat(response.getToken()).isEqualTo("jwt-token");
-        assertThat(response.getUser().getId()).isEqualTo(savedId);
+        // No session is issued until the email is verified via OTP.
+        assertThat(response.getToken()).isNull();
+        assertThat(response.isEmailVerificationRequired()).isTrue();
         assertThat(response.getUser().getEmail()).isEqualTo("new@example.com");
-        assertThat(response.getUser().getFirstName()).isEqualTo("New");
-        assertThat(response.getUser().getLastName()).isEqualTo("User");
+
+        // An OTP was generated and emailed.
+        verify(emailService).sendOtpEmail(eq("new@example.com"), anyString());
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         User persisted = userCaptor.getValue();
         assertThat(persisted.getPassword()).isEqualTo("ENCODED");
         assertThat(persisted.getProvider()).isEqualTo("local");
+        assertThat(persisted.isEmailVerified()).isFalse();
     }
 
     @Test
@@ -113,7 +117,7 @@ class AuthServiceTest {
         UUID userId = UUID.randomUUID();
         User user = User.builder()
                 .id(userId).email("a@example.com").password("ENCODED")
-                .firstName("A").lastName("B").build();
+                .firstName("A").lastName("B").emailVerified(true).build();
 
         LoginRequest request = LoginRequest.builder()
                 .email("a@example.com").password("raw-pass").build();

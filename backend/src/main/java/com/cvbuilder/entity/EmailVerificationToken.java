@@ -26,6 +26,13 @@ public class EmailVerificationToken {
     @Column(nullable = false, unique = true)
     private String token;
 
+    /** 6-digit OTP code emailed to the user (matched per user, not globally unique). */
+    @Column(length = 6)
+    private String code;
+
+    @Column(nullable = false)
+    private int attempts;
+
     @Column(nullable = false)
     private LocalDateTime expiresAt;
 

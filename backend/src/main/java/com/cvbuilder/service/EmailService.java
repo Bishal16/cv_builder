@@ -48,6 +48,46 @@ public class EmailService {
         }
     }
 
+    public void sendOtpEmail(String toEmail, String code) {
+        if (mailHost == null || mailHost.isBlank()) {
+            log.info("=== EMAIL VERIFICATION OTP (no SMTP configured) ===");
+            log.info("To: {}", toEmail);
+            log.info("Code: {}", code);
+            log.info("===================================================");
+            return;
+        }
+        try {
+            var message = mailSender.createMimeMessage();
+            var helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(toEmail);
+            helper.setSubject(code + " is your CV Builder verification code");
+            helper.setText(buildOtpHtml(code), true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("Failed to send OTP email to {}: {}", toEmail, e.getMessage());
+            throw new RuntimeException("Failed to send verification code");
+        }
+    }
+
+    private String buildOtpHtml(String code) {
+        return """
+            <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#ffffff">
+              <h2 style="font-size:20px;font-weight:700;color:#111111;margin:0 0 8px">Verify your email</h2>
+              <p style="font-size:14px;color:#6b7280;margin:0 0 20px">
+                Enter this code in CV Builder to finish creating your account. It expires in 10 minutes.
+              </p>
+              <div style="font-size:34px;font-weight:800;letter-spacing:10px;color:#111111;
+                          background:#f3f4f6;border-radius:10px;padding:16px 0;text-align:center">
+                %s
+              </div>
+              <p style="font-size:12px;color:#9ca3af;margin:20px 0 0">
+                If you didn't try to sign up, you can ignore this email.
+              </p>
+            </div>
+            """.formatted(code);
+    }
+
     public void sendVerificationEmail(String toEmail, String token) {
         String verifyUrl = frontendBaseUrl + "/verify-email?token=" + token;
 

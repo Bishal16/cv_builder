@@ -13,6 +13,8 @@ export {
   exportPdf,
   verifyEmail,
   resendVerification,
+  verifyOtp,
+  resendOtp,
 } from './cvApi';
 
 export type {

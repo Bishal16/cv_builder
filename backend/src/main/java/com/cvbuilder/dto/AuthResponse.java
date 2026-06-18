@@ -13,6 +13,8 @@ import java.util.UUID;
 public class AuthResponse {
     private String token;
     private UserDetailsDto user;
+    /** When true, the client must verify via OTP before a session is issued (token is null). */
+    private boolean emailVerificationRequired;
 
     @Data
     @Builder

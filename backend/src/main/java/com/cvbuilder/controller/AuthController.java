@@ -5,9 +5,11 @@ import com.cvbuilder.dto.ChangePasswordRequest;
 import com.cvbuilder.dto.ForgotPasswordRequest;
 import com.cvbuilder.dto.LoginRequest;
 import com.cvbuilder.dto.RegisterRequest;
+import com.cvbuilder.dto.ResendOtpRequest;
 import com.cvbuilder.dto.ResetPasswordRequest;
 import com.cvbuilder.dto.UpdateProfileRequest;
 import com.cvbuilder.dto.VerifyEmailRequest;
+import com.cvbuilder.dto.VerifyOtpRequest;
 import com.cvbuilder.entity.User;
 import com.cvbuilder.service.AuthService;
 import jakarta.validation.Valid;
@@ -68,6 +70,17 @@ public class AuthController {
     @PostMapping("/verify-email")
     public ResponseEntity<Void> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
         authService.verifyEmail(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<AuthResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyOtp(request.getEmail(), request.getCode()));
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<Void> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
+        authService.resendOtp(request.getEmail());
         return ResponseEntity.noContent().build();
     }
 
