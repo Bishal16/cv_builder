@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.InputStream;
 
 /**
- * Seeds a complete, ready-to-explore "Sam Altman" sample CV into a brand-new
+ * Seeds a complete, ready-to-explore "John Doe" sample CV into a brand-new
  * account so the dashboard is never empty — a showcase + first-run experience.
  * The seeded CV is a normal, fully editable/deletable CV owned by the user.
  */

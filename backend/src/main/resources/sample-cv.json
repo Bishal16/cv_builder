@@ -1,77 +1,88 @@
 {
-  "title": "Sam Altman — Senior Software Engineer (Sample)",
-  "templateId": "MODERN",
-  "sectionOrder": ["personal", "experience", "skills", "projects", "education", "certifications", "awards", "languages"],
+  "title": "John Doe — Staff Software Engineer (Sample)",
+  "templateId": "CLASSIC",
+  "sectionOrder": ["personal", "experience", "education", "skills", "projects", "certifications", "languages", "awards"],
   "personalInfo": {
-    "name": "Sam Altman",
-    "email": "sam@example.com",
-    "phone": "+1 (415) 555-0162",
+    "name": "John Doe",
+    "email": "john.doe@email.com",
+    "phone": "+1 (415) 555-0142",
     "location": "San Francisco, CA",
-    "linkedinUrl": "https://linkedin.com/in/sam-eng",
-    "githubUrl": "https://github.com/sam-eng",
-    "summary": "<p>Senior Software Engineer with 8+ years building reliable, high-scale backend and full-stack systems. Specializes in distributed services, developer platforms, and turning ambiguous product goals into shipped, well-tested software. Comfortable leading projects end to end and mentoring engineers.</p>"
+    "linkedinUrl": "linkedin.com/in/johndoe",
+    "githubUrl": "github.com/johndoe",
+    "summary": "<p>Product-minded software engineer with 9+ years building high-scale distributed systems and consumer-facing applications. Led cross-functional teams of 4–10 engineers across two time zones; shipped features used by 50M+ users. Passionate about reliability engineering, developer tooling, and mentoring junior engineers.</p>"
   },
   "experiences": [
     {
       "company": "Stripe",
-      "role": "Senior Software Engineer",
-      "startDate": "Jan 2021",
-      "endDate": "Present",
-      "description": "<ul><li>Led design of a payments orchestration service handling 40k+ requests/sec, cutting p99 latency by 38%.</li><li>Drove migration of a monolith module to event-driven microservices, reducing deploy times from 45m to 6m.</li><li>Mentored 4 engineers and established the team's testing and code-review standards.</li></ul>"
+      "role": "Staff Software Engineer",
+      "startDate": "Jan 2022",
+      "endDate": "",
+      "description": "<ul><li>Led migration of payment-routing layer to event-driven architecture, cutting p99 latency by 38% and eliminating 3 classes of race conditions</li><li>Designed idempotency framework adopted by 14 internal teams, reducing duplicate-charge incidents to zero</li><li>Drove engineering-wide initiative to standardise service observability; reduced MTTR from 42 min to 11 min</li><li>Mentored 5 engineers to promotion; conducted 30+ hiring interviews</li></ul>"
     },
     {
       "company": "Airbnb",
-      "role": "Software Engineer",
-      "startDate": "Jul 2018",
-      "endDate": "Dec 2020",
-      "description": "<ul><li>Built a GraphQL pricing API used by 12M+ daily users, improving cache hit rate to 94%.</li><li>Shipped an experimentation framework adopted by 20+ teams, accelerating A/B test setup by 70%.</li></ul>"
+      "role": "Senior Software Engineer",
+      "startDate": "Aug 2018",
+      "endDate": "Dec 2021",
+      "description": "<ul><li>Built search-ranking experimentation pipeline processing 40M events/day with sub-second SLA</li><li>Reduced infrastructure cost by $400K/yr through query optimisation and cache redesign</li><li>Re-architected host-calendar sync service, cutting booking conflicts by 62%</li><li>Owned on-call rotation for core search; drove reliability from 99.7% → 99.97% uptime</li></ul>"
     },
     {
-      "company": "Shopify",
+      "company": "Palantir Technologies",
       "role": "Software Engineer",
-      "startDate": "Aug 2016",
-      "endDate": "Jun 2018",
-      "description": "<ul><li>Developed merchant analytics dashboards in React/Node, serving 500k+ stores.</li><li>Reduced background job failures by 60% by redesigning the retry and queue strategy.</li></ul>"
+      "startDate": "Jul 2015",
+      "endDate": "Jul 2018",
+      "description": "<ul><li>Delivered data-integration pipelines for three Fortune 500 clients in finance and healthcare verticals</li><li>Built internal ETL orchestration framework now used across 8 product lines</li><li>Improved pipeline throughput 4× by introducing columnar storage and vectorised processing</li></ul>"
     }
   ],
   "educations": [
     {
-      "institution": "University of Waterloo",
+      "institution": "University of California, Berkeley",
       "degree": "B.S.",
       "field": "Computer Science",
-      "graduationYear": 2016
+      "graduationYear": 2015
+    },
+    {
+      "institution": "Stanford University",
+      "degree": "M.S.",
+      "field": "Distributed Systems (part-time)",
+      "graduationYear": 2019
     }
   ],
   "skills": [
     { "name": "TypeScript", "category": "Languages", "level": "EXPERT" },
-    { "name": "Java", "category": "Languages", "level": "ADVANCED" },
-    { "name": "Go", "category": "Languages", "level": "INTERMEDIATE" },
+    { "name": "Go", "category": "Languages", "level": "EXPERT" },
+    { "name": "Python", "category": "Languages", "level": "ADVANCED" },
+    { "name": "Java", "category": "Languages", "level": "INTERMEDIATE" },
+    { "name": "PostgreSQL", "category": "Infrastructure", "level": "EXPERT" },
+    { "name": "Kubernetes", "category": "Infrastructure", "level": "ADVANCED" },
+    { "name": "Kafka", "category": "Infrastructure", "level": "ADVANCED" },
+    { "name": "Terraform", "category": "Infrastructure", "level": "INTERMEDIATE" },
     { "name": "React", "category": "Frontend", "level": "EXPERT" },
-    { "name": "Node.js", "category": "Backend", "level": "EXPERT" },
-    { "name": "Spring Boot", "category": "Backend", "level": "ADVANCED" },
-    { "name": "PostgreSQL", "category": "Data", "level": "ADVANCED" },
-    { "name": "AWS", "category": "Cloud", "level": "ADVANCED" },
-    { "name": "Kubernetes", "category": "Cloud", "level": "INTERMEDIATE" },
-    { "name": "GraphQL", "category": "Backend", "level": "ADVANCED" },
-    { "name": "Redis", "category": "Data", "level": "ADVANCED" },
-    { "name": "CI/CD", "category": "Tooling", "level": "ADVANCED" }
+    { "name": "GraphQL", "category": "Frontend", "level": "ADVANCED" }
   ],
   "projects": [
     {
-      "name": "ratelimit-go (open source)",
-      "description": "<p>A lightweight distributed rate limiter in Go with Redis backing. 1.2k+ GitHub stars; used in production by several startups.</p>",
-      "url": "https://github.com/sam-eng/ratelimit-go"
+      "name": "OpenMetrics Dashboard",
+      "description": "<p>Open-source observability dashboard with 4.1K GitHub stars. Real-time streaming charts over WebSocket, pluggable datasource adapters for Prometheus, Datadog, and CloudWatch.</p>",
+      "url": "github.com/johndoe/openmetrics"
+    },
+    {
+      "name": "FlowQueue",
+      "description": "<p>Lightweight distributed task queue in Go with at-least-once delivery guarantees, dead-letter queues, and a web UI. Used in production by 3 startups.</p>",
+      "url": "github.com/johndoe/flowqueue"
     }
   ],
   "certifications": [
-    { "name": "AWS Certified Solutions Architect – Professional", "issuer": "Amazon Web Services", "issueDate": "2022", "expiryDate": "2025" },
-    { "name": "Certified Kubernetes Administrator (CKA)", "issuer": "The Linux Foundation", "issueDate": "2021", "expiryDate": "2024" }
+    { "name": "AWS Solutions Architect – Professional", "issuer": "Amazon Web Services", "issueDate": "2023-04", "expiryDate": "2026-04" },
+    { "name": "Certified Kubernetes Administrator (CKA)", "issuer": "Cloud Native Computing Foundation", "issueDate": "2022-09", "expiryDate": "2025-09" }
   ],
   "languages": [
-    { "name": "English", "proficiency": "Native" }
+    { "name": "English", "proficiency": "Native" },
+    { "name": "Spanish", "proficiency": "Conversational" },
+    { "name": "Mandarin", "proficiency": "Basic" }
   ],
   "awards": [
-    { "title": "Engineering Excellence Award", "issuer": "Stripe", "date": "2023", "description": "<p>Recognized for leading the payments orchestration redesign that cut p99 latency by 38%.</p>" },
-    { "title": "Global Hackathon — 1st Place", "issuer": "Airbnb", "date": "2019", "description": "<p>Built a real-time pricing prototype that won across 60+ competing teams.</p>" }
+    { "title": "Engineering Excellence Award", "issuer": "Stripe", "date": "2023-11", "description": "Recognised for the payment-routing reliability initiative." },
+    { "title": "Best Paper – Systems Track", "issuer": "Bay Area Systems Conference", "date": "2020-08", "description": "Co-authored paper on low-latency event-sourcing patterns." }
   ]
 }
