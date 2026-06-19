@@ -19,6 +19,17 @@ function applyResolved(resolved: ResolvedTheme) {
   root.style.colorScheme = resolved;
 }
 
+// Read the theme the inline boot script in index.html already applied to <html>.
+// This keeps the store's initial `resolved` in sync with the DOM before
+// rehydration runs, so components reading `resolved` (e.g. the editor canvas)
+// match the rest of the page on first paint instead of defaulting to dark.
+function initialResolved(): ResolvedTheme {
+  if (typeof document !== 'undefined' && document.documentElement.classList.contains('dark')) {
+    return 'dark';
+  }
+  return 'light';
+}
+
 
 /* ── System media-query listener ───────────────────────────────── */
 
@@ -65,7 +76,7 @@ export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       mode: 'system' as ThemeMode,
-      resolved: 'dark' as ResolvedTheme,
+      resolved: initialResolved(),
 
       setMode: (mode) => {
         const resolved = activate(mode, set);

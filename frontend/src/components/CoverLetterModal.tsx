@@ -28,8 +28,18 @@ export function CoverLetterModal({ formData, onClose }: Props) {
   const [loading, setLoading] = useState(false);
   const [letter, setLetter] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ company?: string; role?: string }>({});
+
+  const validate = () => {
+    const errors: { company?: string; role?: string } = {};
+    if (!company.trim()) errors.company = 'Company is required';
+    if (!role.trim()) errors.role = 'Role is required';
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleGenerate = async () => {
+    if (!validate()) return;
     setLoading(true);
     setError(null);
     try {
@@ -97,19 +107,29 @@ export function CoverLetterModal({ formData, onClose }: Props) {
                   <label className="block text-[12px] font-semibold text-gray-700 dark:text-[#bbb] mb-1.5">Company</label>
                   <input
                     value={company}
-                    onChange={e => setCompany(e.target.value)}
+                    onChange={e => { setCompany(e.target.value); if (fieldErrors.company) setFieldErrors(prev => ({ ...prev, company: undefined })); }}
                     placeholder="e.g. Acme Inc."
-                    className="w-full px-3 py-2 text-[13px] rounded-lg border border-gray-200 dark:border-[#3a3a3a] bg-white dark:bg-[#111] text-gray-800 dark:text-white outline-none focus:border-[#F97316] focus:ring-[3px] focus:ring-[#F97316]/12 transition-all placeholder:text-gray-400"
+                    className={`w-full px-3 py-2 text-[13px] rounded-lg border bg-white dark:bg-[#111] text-gray-800 dark:text-white outline-none focus:ring-[3px] transition-all placeholder:text-gray-400 ${
+                      fieldErrors.company
+                        ? 'border-rose-400 dark:border-rose-500 focus:border-rose-400 focus:ring-rose-400/12'
+                        : 'border-gray-200 dark:border-[#3a3a3a] focus:border-[#F97316] focus:ring-[#F97316]/12'
+                    }`}
                   />
+                  {fieldErrors.company && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.company}</p>}
                 </div>
                 <div>
                   <label className="block text-[12px] font-semibold text-gray-700 dark:text-[#bbb] mb-1.5">Role</label>
                   <input
                     value={role}
-                    onChange={e => setRole(e.target.value)}
+                    onChange={e => { setRole(e.target.value); if (fieldErrors.role) setFieldErrors(prev => ({ ...prev, role: undefined })); }}
                     placeholder="e.g. Senior Engineer"
-                    className="w-full px-3 py-2 text-[13px] rounded-lg border border-gray-200 dark:border-[#3a3a3a] bg-white dark:bg-[#111] text-gray-800 dark:text-white outline-none focus:border-[#F97316] focus:ring-[3px] focus:ring-[#F97316]/12 transition-all placeholder:text-gray-400"
+                    className={`w-full px-3 py-2 text-[13px] rounded-lg border bg-white dark:bg-[#111] text-gray-800 dark:text-white outline-none focus:ring-[3px] transition-all placeholder:text-gray-400 ${
+                      fieldErrors.role
+                        ? 'border-rose-400 dark:border-rose-500 focus:border-rose-400 focus:ring-rose-400/12'
+                        : 'border-gray-200 dark:border-[#3a3a3a] focus:border-[#F97316] focus:ring-[#F97316]/12'
+                    }`}
                   />
+                  {fieldErrors.role && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.role}</p>}
                 </div>
               </div>
 

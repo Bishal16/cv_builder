@@ -650,7 +650,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
         <button
           onClick={handleDownloadPdf}
           disabled={isExporting}
-          className="flex items-center gap-1.5 text-[12.5px] font-semibold px-4 py-[7px] bg-[#111111] dark:bg-white hover:bg-[#2a2a2a] dark:hover:bg-gray-100 active:scale-[0.98] text-white dark:text-[#111111] rounded-lg transition-all disabled:opacity-50 shrink-0 ml-1"
+          className="flex items-center gap-1.5 text-[12.5px] font-semibold px-4 py-[7px] bg-[#F97316] hover:bg-orange-600 active:scale-[0.98] text-white rounded-lg transition-all disabled:opacity-50 shrink-0 ml-1"
         >
           {isExporting ? (
             <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
@@ -688,7 +688,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                 {/* Left fade + chevron */}
                 {stripEdges.left && (
                   <>
-                    <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 z-10 rounded-l-lg bg-gradient-to-r from-gray-100 dark:from-[#1e1e1e] to-transparent" />
+                    <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 z-10 rounded-l-lg bg-gradient-to-r from-gray-200 dark:from-[#0d0d0d] to-transparent" />
                     <button
                       type="button"
                       onClick={() => scrollStrip(-1)}
@@ -703,7 +703,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                 <div
                   ref={templateStripRef}
                   onScroll={updateStripEdges}
-                  className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-lg p-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  className="flex items-center gap-0.5 bg-gray-200 dark:bg-[#0d0d0d] ring-1 ring-black/[0.06] dark:ring-white/[0.08] rounded-lg p-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 >
                   {TEMPLATES.map(t => (
                     <button
@@ -734,7 +734,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                 {/* Right fade + chevron */}
                 {stripEdges.right && (
                   <>
-                    <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 z-10 rounded-r-lg bg-gradient-to-l from-gray-100 dark:from-[#1e1e1e] to-transparent" />
+                    <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 z-10 rounded-r-lg bg-gradient-to-l from-gray-200 dark:from-[#0d0d0d] to-transparent" />
                     <button
                       type="button"
                       onClick={() => scrollStrip(1)}
@@ -832,7 +832,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                   </div>
 
                   {/* Font toggle */}
-                  <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-md p-0.5">
+                  <div className="flex items-center gap-0.5 bg-gray-200 dark:bg-[#0d0d0d] ring-1 ring-black/[0.06] dark:ring-white/[0.08] rounded-md p-0.5">
                     {(['sans', 'serif'] as FontChoice[]).map(f => (
                       <button
                         key={f}
@@ -850,7 +850,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
                   </div>
 
                   {/* Density toggle */}
-                  <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-md p-0.5">
+                  <div className="flex items-center gap-0.5 bg-gray-200 dark:bg-[#0d0d0d] ring-1 ring-black/[0.06] dark:ring-white/[0.08] rounded-md p-0.5">
                     {densities.map(d => (
                       <button
                         key={d.id}
