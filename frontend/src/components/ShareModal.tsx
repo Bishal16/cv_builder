@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { enableShare, disableShare, getShareToken } from '../api/shareApi';
+import { enableShare, disableShare, getShareToken, getShareConfig } from '../api/shareApi';
 
 interface Props {
   cvId: string;
@@ -11,27 +11,26 @@ export function ShareModal({ cvId, onClose }: Props) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
+  const [shareBaseUrl, setShareBaseUrl] = useState(window.location.origin);
   const fetched = useRef(false);
 
   useEffect(() => {
     if (fetched.current) return;
     fetched.current = true;
 
-    getShareToken(cvId)
-      .then((t) => {
-        setToken(t);
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+    Promise.all([
+      getShareToken(cvId),
+      getShareConfig(),
+    ]).then(([t, baseUrl]) => {
+      setToken(t);
+      setShareBaseUrl(baseUrl);
+      setLoading(false);
+    }).catch(() => {
+      setLoading(false);
+    });
   }, [cvId]);
 
-  // Use a configured public base (e.g. your LAN IP) so links work across the
-  // network even when you're browsing via localhost; fall back to the origin.
-  const publicBase = (import.meta.env.VITE_PUBLIC_BASE_URL as string | undefined)?.replace(/\/$/, '')
-    || window.location.origin;
-  const shareUrl = token ? `${publicBase}/r/${token}` : '';
+  const shareUrl = token ? `${shareBaseUrl}/r/${token}` : '';
 
   const handleCreate = async () => {
     setWorking(true);

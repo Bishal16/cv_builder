@@ -42,7 +42,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const errorText = await response.text().catch(() => 'Unknown error');
     try {
       const errorJson = JSON.parse(errorText);
-      throw new ApiError(response.status, errorJson.message || errorJson.error || 'Unknown error', errorJson.code);
+      const fieldErrors: Record<string, string> | undefined = errorJson.fieldErrors;
+      const message = fieldErrors && Object.keys(fieldErrors).length > 0
+        ? Object.values(fieldErrors).join('. ')
+        : (errorJson.message || errorJson.error || 'Unknown error');
+      throw new ApiError(response.status, message, errorJson.code);
     } catch (e) {
       if (e instanceof ApiError) throw e;
       throw new ApiError(response.status, errorText);

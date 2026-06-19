@@ -3,9 +3,16 @@ package com.cvbuilder.controller;
 import com.cvbuilder.dto.CvDto;
 import com.cvbuilder.service.ShareService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URI;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,6 +21,9 @@ import java.util.UUID;
 public class ShareController {
 
     private final ShareService shareService;
+
+    @Value("${cvbuilder.frontend.base-url}")
+    private String frontendBaseUrl;
 
     @PostMapping("/api/v1/cv/{id}/share")
     public ResponseEntity<Map<String, String>> createShare(@PathVariable UUID id) {
@@ -37,5 +47,43 @@ public class ShareController {
     @GetMapping("/api/v1/public/cv/{token}")
     public ResponseEntity<CvDto> getPublicCv(@PathVariable String token) {
         return ResponseEntity.ok(shareService.getPublicCv(token));
+    }
+
+    @GetMapping("/api/v1/public/config")
+    public ResponseEntity<Map<String, String>> getPublicConfig() {
+        return ResponseEntity.ok(Map.of("shareBaseUrl", resolveShareBaseUrl()));
+    }
+
+    private String resolveShareBaseUrl() {
+        try {
+            URI uri = URI.create(frontendBaseUrl);
+            String host = uri.getHost();
+            if (!"localhost".equals(host) && !"127.0.0.1".equals(host)) {
+                return frontendBaseUrl;
+            }
+            String lanIp = detectLanIp();
+            int port = uri.getPort();
+            return uri.getScheme() + "://" + lanIp + (port > 0 ? ":" + port : "");
+        } catch (Exception e) {
+            return frontendBaseUrl;
+        }
+    }
+
+    private String detectLanIp() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface iface = interfaces.nextElement();
+                if (iface.isLoopback() || !iface.isUp()) continue;
+                Enumeration<InetAddress> addresses = iface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+                    if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ignored) {}
+        return "localhost";
     }
 }

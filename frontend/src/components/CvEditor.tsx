@@ -27,7 +27,7 @@ import { ProjectList } from './ProjectList';
 import { CertificationList } from './CertificationList';
 import { LanguageList } from './LanguageList';
 import { AwardList } from './AwardList';
-import { MultiPagePreview, PAGE_WIDTH } from '../templates/CvPreview';
+import { MultiPagePreview, CvPreview, PAGE_WIDTH, PAGE_HEIGHT } from '../templates/CvPreview';
 import { ACCENT_SWATCHES, TEMPLATE_DEFAULTS, type FontChoice, type Density } from '../templates/customization';
 import { computeAtsScore, type AtsResult } from '../utils/atsScore';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -128,21 +128,64 @@ const SECTIONS: Record<SectionId, { label: string; path: string }> = {
   },
 };
 
-const TEMPLATES: { id: TemplateId; label: string; desc: string; atsSafe: boolean }[] = [
-  { id: 'CLASSIC',   label: 'Classic',   desc: 'Traditional',    atsSafe: false },
-  { id: 'MODERN',    label: 'Modern',    desc: 'Clean & bold',   atsSafe: false },
-  { id: 'ATS',       label: 'ATS',       desc: 'Bot-friendly',   atsSafe: true  },
-  { id: 'PRO',       label: 'Pro',       desc: 'Academic',       atsSafe: false },
-  { id: 'MINIMAL',   label: 'Minimal',   desc: 'Clean & spare',  atsSafe: true  },
-  { id: 'EXECUTIVE', label: 'Executive', desc: 'Corporate',      atsSafe: false },
-  { id: 'TECH',      label: 'Tech',      desc: 'Engineer',       atsSafe: false },
-  { id: 'GRADUATE',  label: 'Graduate',  desc: 'Entry level',    atsSafe: true  },
-  { id: 'SIDEBAR',   label: 'Sidebar',   desc: 'Colored rail',   atsSafe: false },
-  { id: 'COMPACT',   label: 'Compact',   desc: 'Dense one-page', atsSafe: true  },
-  { id: 'TIMELINE',  label: 'Timeline',  desc: 'Dated rail',     atsSafe: false },
-  { id: 'AURORA',    label: 'Aurora',    desc: 'Photo header',   atsSafe: false },
-  { id: 'POLISHED',  label: 'Polished',  desc: 'Photo sidebar',  atsSafe: false },
+// `colorAware` = template actually renders the accent colour. The four fixed
+// templates (Classic/ATS/Pro/Minimal) ignore the accent, so the Style row's
+// swatches do nothing on them — we surface that in the UI instead of hiding it.
+const TEMPLATES: { id: TemplateId; label: string; desc: string; atsSafe: boolean; colorAware: boolean }[] = [
+  { id: 'CLASSIC',   label: 'Classic',   desc: 'Traditional',    atsSafe: false, colorAware: false },
+  { id: 'MODERN',    label: 'Modern',    desc: 'Clean & bold',   atsSafe: false, colorAware: true  },
+  { id: 'ATS',       label: 'ATS',       desc: 'Bot-friendly',   atsSafe: true,  colorAware: false },
+  { id: 'PRO',       label: 'Pro',       desc: 'Academic',       atsSafe: false, colorAware: false },
+  { id: 'MINIMAL',   label: 'Minimal',   desc: 'Clean & spare',  atsSafe: true,  colorAware: false },
+  { id: 'EXECUTIVE', label: 'Executive', desc: 'Corporate',      atsSafe: false, colorAware: true  },
+  { id: 'TECH',      label: 'Tech',      desc: 'Engineer',       atsSafe: false, colorAware: true  },
+  { id: 'GRADUATE',  label: 'Graduate',  desc: 'Entry level',    atsSafe: true,  colorAware: true  },
+  { id: 'SIDEBAR',   label: 'Sidebar',   desc: 'Colored rail',   atsSafe: false, colorAware: true  },
+  { id: 'COMPACT',   label: 'Compact',   desc: 'Dense one-page', atsSafe: true,  colorAware: true  },
+  { id: 'TIMELINE',  label: 'Timeline',  desc: 'Dated rail',     atsSafe: false, colorAware: true  },
+  { id: 'AURORA',    label: 'Aurora',    desc: 'Photo header',   atsSafe: false, colorAware: true  },
+  { id: 'POLISHED',  label: 'Polished',  desc: 'Photo sidebar',  atsSafe: false, colorAware: true  },
 ];
+
+/* Gallery thumbnail that only renders its (expensive) CvPreview once it
+   scrolls into view. Until then it shows a cheap skeleton, so opening the
+   gallery never pays for all 13 full template renders at once. */
+function LazyTemplateThumb({ cv, scale, width, height }: { cv: Cv; scale: number; width: number; height: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (visible) return;
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      entries => { if (entries.some(e => e.isIntersecting)) { setVisible(true); io.disconnect(); } },
+      { rootMargin: '200px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [visible]);
+
+  return (
+    <div
+      ref={ref}
+      className="relative mx-auto mt-2 overflow-hidden rounded-md bg-white shadow-sm"
+      style={{ width, height }}
+    >
+      {visible ? (
+        <>
+          <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: PAGE_WIDTH, height: PAGE_HEIGHT }}>
+            <CvPreview cv={cv} />
+          </div>
+          {/* fade the clipped bottom so it doesn't look abruptly cut off */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent" />
+        </>
+      ) : (
+        <div className="w-full h-full bg-gray-50 dark:bg-[#222] animate-pulse" />
+      )}
+    </div>
+  );
+}
 
 /* ─────────────────────────────────────────────────────────────── */
 
@@ -168,6 +211,7 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const [showJdTailor, setShowJdTailor]           = useState(false);
   const [showCoverLetter, setShowCoverLetter]     = useState(false);
   const [showShare, setShowShare]                 = useState(false);
+  const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [mobileWarningDismissed, setMobileWarningDismissed] = useState(
     () => typeof window !== 'undefined' && window.innerWidth >= 768
   );
@@ -177,6 +221,21 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
   const autosaveTimer = useRef<number | null>(null);
   const savingRef     = useRef(false); // a save is currently in flight
   const pendingRef    = useRef(false); // a change landed while a save was in flight
+
+  /* Template strip horizontal-scroll affordance (fades + chevrons). */
+  const templateStripRef = useRef<HTMLDivElement>(null);
+  const [stripEdges, setStripEdges] = useState({ left: false, right: false });
+  const updateStripEdges = useCallback(() => {
+    const el = templateStripRef.current;
+    if (!el) return;
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    setStripEdges({
+      left: scrollLeft > 1,
+      right: scrollLeft + clientWidth < scrollWidth - 1,
+    });
+  }, []);
+  const scrollStrip = (dir: -1 | 1) =>
+    templateStripRef.current?.scrollBy({ left: dir * 160, behavior: 'smooth' });
 
   const fitZoom = showPreview
     ? Math.floor(((window.innerWidth * (100 - leftWidth) / 100) - 48) / PAGE_WIDTH * 100)
@@ -218,6 +277,13 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
     }
     return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
   }, [isResizing]);
+
+  /* ── Template strip edge detection (mount + resize + panel resize) ── */
+  useEffect(() => {
+    updateStripEdges();
+    window.addEventListener('resize', updateStripEdges);
+    return () => window.removeEventListener('resize', updateStripEdges);
+  }, [updateStripEdges, leftWidth, showPreview]);
 
   /* ── Updaters ── */
   // Functional updaters: always read the latest state. A plain `{ ...formData }`
@@ -616,35 +682,82 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
               <span className="text-[10.5px] font-semibold text-gray-400 dark:text-[#555] uppercase tracking-widest shrink-0">
                 Template
               </span>
-              <div className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-lg p-0.5 overflow-x-auto min-w-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {TEMPLATES.map(t => (
-                  <button
-                    key={t.id}
-                    onClick={() => updateTemplate(t.id)}
-                    title={`${t.desc} — ${t.atsSafe ? 'ATS-safe single-column' : 'Design layout (multi-column)'}`}
-                    className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all whitespace-nowrap shrink-0 ${
-                      formData.templateId === t.id
-                        ? 'bg-white dark:bg-[#2a2a2a] text-[#111] dark:text-white shadow-sm'
-                        : 'text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]'
-                    }`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${t.atsSafe ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                    {t.label}
-                  </button>
-                ))}
+              {/* Scrollable strip with edge fades + chevrons so it's obvious
+                  there are more templates than fit. */}
+              <div className="relative min-w-0">
+                {/* Left fade + chevron */}
+                {stripEdges.left && (
+                  <>
+                    <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 z-10 rounded-l-lg bg-gradient-to-r from-gray-100 dark:from-[#1e1e1e] to-transparent" />
+                    <button
+                      type="button"
+                      onClick={() => scrollStrip(-1)}
+                      aria-label="Scroll templates left"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-5 h-5 flex items-center justify-center rounded-full bg-white dark:bg-[#2a2a2a] text-gray-500 dark:text-[#aaa] shadow-sm hover:text-[#111] dark:hover:text-white"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                    </button>
+                  </>
+                )}
+
+                <div
+                  ref={templateStripRef}
+                  onScroll={updateStripEdges}
+                  className="flex items-center gap-0.5 bg-gray-100 dark:bg-[#1e1e1e] rounded-lg p-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                >
+                  {TEMPLATES.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => updateTemplate(t.id)}
+                      title={`${t.desc} — ${t.atsSafe ? 'ATS-safe single-column' : 'Design layout (multi-column)'}${t.colorAware ? ' · supports colour theme' : ' · fixed colour'}`}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded-md transition-all whitespace-nowrap shrink-0 ${
+                        formData.templateId === t.id
+                          ? 'bg-white dark:bg-[#2a2a2a] text-[#111] dark:text-white shadow-sm'
+                          : 'text-gray-400 dark:text-[#666] hover:text-gray-600 dark:hover:text-[#aaa]'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${t.atsSafe ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                      {t.label}
+                      {/* Colour-theme indicator: a swatch showing the active
+                          accent for the selected template, else the template's
+                          native default. Absent = fixed-colour template. */}
+                      {t.colorAware && (
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0 ring-1 ring-black/10"
+                          style={{ backgroundColor: formData.templateId === t.id ? (formData.accentColor ?? TEMPLATE_DEFAULTS[t.id].accent) : TEMPLATE_DEFAULTS[t.id].accent }}
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Right fade + chevron */}
+                {stripEdges.right && (
+                  <>
+                    <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 z-10 rounded-r-lg bg-gradient-to-l from-gray-100 dark:from-[#1e1e1e] to-transparent" />
+                    <button
+                      type="button"
+                      onClick={() => scrollStrip(1)}
+                      aria-label="Scroll templates right"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-5 h-5 flex items-center justify-center rounded-full bg-white dark:bg-[#2a2a2a] text-gray-500 dark:text-[#aaa] shadow-sm hover:text-[#111] dark:hover:text-white"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    </button>
+                  </>
+                )}
               </div>
-              {/* ATS safety context for the active template */}
-              {(() => {
-                const active = TEMPLATES.find(t => t.id === formData.templateId);
-                if (!active) return null;
-                return (
-                  <p className={`text-[10px] mt-1 ${active.atsSafe ? 'text-emerald-500' : 'text-amber-500'}`}>
-                    {active.atsSafe
-                      ? '✓ ATS-safe — single-column layout, optimised for automated parsers.'
-                      : '⚠ Design layout — multi-column. Switch to ATS, Minimal, Compact or Graduate for maximum parse accuracy.'}
-                  </p>
-                );
-              })()}
+
+              {/* Visual gallery trigger — see every template rendered with your
+                  own data, then pick one. */}
+              <button
+                type="button"
+                onClick={() => setShowTemplateGallery(true)}
+                title="Browse all templates with live previews"
+                className="shrink-0 flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md text-gray-500 dark:text-[#888] hover:text-[#111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#1e1e1e] transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+                Browse all
+              </button>
             </div>
 
             {/* Customize row — accent / font / density */}
@@ -1047,6 +1160,72 @@ export function CvEditor({ cvId, onBack }: CvEditorProps) {
           onClose={() => setShowShare(false)}
         />
       )}
+
+      {/* Template gallery — live thumbnails of every template rendered with the
+          user's own data. Mounted only while open (13 previews aren't cheap). */}
+      {showTemplateGallery && (() => {
+        const THUMB_SCALE = 0.24;
+        const THUMB_W = Math.round(PAGE_WIDTH * THUMB_SCALE); // ~191px
+        const THUMB_H = 250; // clip to the top of the page — enough to compare
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6" onClick={() => setShowTemplateGallery(false)}>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+            <div
+              className="relative bg-white dark:bg-[#1b1b1b] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#333] flex flex-col max-h-[88vh] w-full max-w-4xl overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-[#2a2a2a]">
+                <div>
+                  <h2 className="text-[15px] font-semibold text-[#111] dark:text-white">Choose a template</h2>
+                  <p className="text-[12px] text-gray-400 dark:text-[#777]">Previewed with your own CV. Click one to apply it.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowTemplateGallery(false)}
+                  aria-label="Close"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-[#111] dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-colors"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              <div className="overflow-y-auto custom-scrollbar p-5">
+                <div
+                  className="grid gap-5 justify-center"
+                  style={{ gridTemplateColumns: `repeat(auto-fill, ${THUMB_W + 24}px)` }}
+                >
+                  {TEMPLATES.map(t => {
+                    const active = formData.templateId === t.id;
+                    const thumbCv: Cv = { ...previewCv, templateId: t.id };
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => { updateTemplate(t.id); setShowTemplateGallery(false); }}
+                        className={`group flex flex-col items-stretch rounded-xl border-2 transition-all text-left ${
+                          active
+                            ? 'border-[#F97316] ring-2 ring-[#F97316]/20'
+                            : 'border-gray-200 dark:border-[#2e2e2e] hover:border-gray-300 dark:hover:border-[#444]'
+                        }`}
+                      >
+                        <LazyTemplateThumb cv={thumbCv} scale={THUMB_SCALE} width={THUMB_W} height={THUMB_H} />
+                        <div className="flex items-center gap-1.5 px-2.5 py-2">
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${t.atsSafe ? 'bg-emerald-400' : 'bg-amber-400'}`} title={t.atsSafe ? 'ATS-safe' : 'Design layout'} />
+                          <span className="text-[12.5px] font-medium text-[#111] dark:text-white">{t.label}</span>
+                          {t.colorAware && (
+                            <span className="w-2 h-2 rounded-full shrink-0 ring-1 ring-black/10" style={{ backgroundColor: active ? (formData.accentColor ?? TEMPLATE_DEFAULTS[t.id].accent) : TEMPLATE_DEFAULTS[t.id].accent }} title="Supports colour theme" />
+                          )}
+                          {active && <span className="ml-auto text-[10px] font-semibold text-[#F97316] uppercase tracking-wide">Active</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

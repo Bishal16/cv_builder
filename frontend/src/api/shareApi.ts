@@ -48,6 +48,13 @@ export async function getShareToken(cvId: string): Promise<string | null> {
   return data.token ?? null;
 }
 
+export async function getShareConfig(): Promise<string> {
+  const res = await fetch(`${API_BASE}/public/config`);
+  if (!res.ok) return window.location.origin;
+  const data = await res.json() as { shareBaseUrl: string };
+  return data.shareBaseUrl;
+}
+
 export async function getPublicCv(token: string): Promise<Cv> {
   const res = await fetch(`${API_BASE}/public/cv/${token}`, {
     headers: { 'Content-Type': 'application/json' },

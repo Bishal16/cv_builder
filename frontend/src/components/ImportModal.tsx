@@ -1,9 +1,19 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { importResume } from '../api/aiApi';
+import { extractResumeText, parseResumeText } from '../api/aiApi';
 import { useCvStore } from '../store/cvStore';
 import type { CreateCvRequest } from '../types/cv';
+
+type Stage = 'idle' | 'extracting' | 'parsing' | 'creating';
+
+const STAGE_LABELS: Record<Exclude<Stage, 'idle'>, string> = {
+  extracting: 'Reading your file…',
+  parsing: 'AI is parsing your resume…',
+  creating: 'Building your CV…',
+};
+
+const STAGE_ORDER: Exclude<Stage, 'idle'>[] = ['extracting', 'parsing', 'creating'];
 
 interface Props {
   onClose: () => void;
@@ -12,10 +22,12 @@ interface Props {
 export function ImportModal({ onClose }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [stage, setStage] = useState<Stage>('idle');
   const [fileName, setFileName] = useState('');
   const { createCv } = useCvStore();
   const navigate = useNavigate();
+
+  const loading = stage !== 'idle';
 
   const processFile = async (file: File) => {
     const ext = file.name.split('.').pop()?.toLowerCase();
@@ -28,18 +40,25 @@ export function ImportModal({ onClose }: Props) {
       return;
     }
     setFileName(file.name);
-    setLoading(true);
+
     try {
-      const parsed = await importResume(file) as CreateCvRequest;
+      setStage('extracting');
+      const { text } = await extractResumeText(file);
+
+      setStage('parsing');
+      const parsed = await parseResumeText(text) as CreateCvRequest;
+
+      setStage('creating');
       const cv = await createCv({
         ...parsed,
         title: parsed.title || file.name.replace(/\.(pdf|docx)$/i, '') + ' (imported)',
       });
+
       toast.success('Resume imported successfully');
       navigate(`/cv/${cv.id}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Import failed');
-      setLoading(false);
+      setStage('idle');
       setFileName('');
     }
   };
@@ -56,6 +75,8 @@ export function ImportModal({ onClose }: Props) {
     const f = e.dataTransfer.files?.[0];
     if (f) processFile(f);
   };
+
+  const currentStepIndex = stage === 'idle' ? -1 : STAGE_ORDER.indexOf(stage as Exclude<Stage, 'idle'>);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -74,11 +95,35 @@ export function ImportModal({ onClose }: Props) {
 
         <div className="p-5">
           {loading ? (
-            <div className="flex flex-col items-center py-10 gap-3">
+            <div className="flex flex-col items-center py-8 gap-4">
               <div className="w-8 h-8 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+
               <div className="text-center">
                 <p className="text-[13.5px] font-semibold text-[#111111] dark:text-white">{fileName}</p>
-                <p className="text-[12px] text-gray-400 dark:text-[#666] mt-1">AI is parsing your resume…</p>
+                <p className="text-[12px] text-gray-400 dark:text-[#666] mt-1">
+                  {STAGE_LABELS[stage as Exclude<Stage, 'idle'>]}
+                </p>
+              </div>
+
+              {/* Step indicators */}
+              <div className="flex items-center gap-2 mt-1">
+                {STAGE_ORDER.map((s, i) => {
+                  const done = i < currentStepIndex;
+                  const active = i === currentStepIndex;
+                  return (
+                    <div key={s} className="flex items-center gap-2">
+                      <div className={`flex items-center gap-1.5 ${active ? 'opacity-100' : done ? 'opacity-60' : 'opacity-25'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full transition-colors ${active ? 'bg-[#F97316]' : done ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                        <span className={`text-[11px] ${active ? 'text-[#F97316] font-medium' : done ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-600'}`}>
+                          {s === 'extracting' ? 'Extract' : s === 'parsing' ? 'Parse' : 'Save'}
+                        </span>
+                      </div>
+                      {i < STAGE_ORDER.length - 1 && (
+                        <div className={`w-6 h-px ${i < currentStepIndex ? 'bg-green-400' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -110,7 +155,7 @@ export function ImportModal({ onClose }: Props) {
 
               <div className="mt-4 rounded-lg bg-blue-50 dark:bg-blue-900/15 border border-blue-100 dark:border-blue-800 p-3">
                 <p className="text-[11.5px] text-blue-700 dark:text-blue-300 leading-relaxed">
-                  <strong>How it works:</strong> AI reads the text from your file and fills in the form. You can review and edit everything before saving.
+                  <strong>How it works:</strong> AI reads the text from your file and fills in the form. You can review and edit everything after importing.
                 </p>
               </div>
             </>

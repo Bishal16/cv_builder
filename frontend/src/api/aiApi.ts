@@ -86,6 +86,40 @@ export async function generateCoverLetter(req: CoverLetterRequest): Promise<stri
   return data.coverLetter;
 }
 
+export async function extractResumeText(file: File): Promise<{ text: string }> {
+  const token = useAuthStore.getState().token;
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch('/api/v1/import/extract', {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => 'Failed to read file');
+    throw new ApiError(res.status, text);
+  }
+  return res.json() as Promise<{ text: string }>;
+}
+
+export async function parseResumeText(text: string): Promise<unknown> {
+  const token = useAuthStore.getState().token;
+  const res = await fetch('/api/v1/import/parse', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) {
+    const msg = await res.text().catch(() => 'AI parsing failed');
+    throw new ApiError(res.status, msg);
+  }
+  return res.json();
+}
+
+/** @deprecated Use extractResumeText + parseResumeText for stage-aware progress. */
 export async function importResume(file: File): Promise<unknown> {
   const token = useAuthStore.getState().token;
   const form = new FormData();
