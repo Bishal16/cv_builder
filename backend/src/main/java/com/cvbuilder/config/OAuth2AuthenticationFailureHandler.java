@@ -33,15 +33,29 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
             }
         }
 
+        String baseUrl = resolveFrontendBaseUrl(request);
+
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
 
-        String targetUrl = UriComponentsBuilder.fromUriString(frontendBaseUrl + "/auth")
+        String targetUrl = UriComponentsBuilder.fromUriString(baseUrl + "/auth")
             .queryParam("error", errorCode)
             .build().toUriString();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    /** Redirect back to the origin the user started from, falling back to the configured URL. */
+    private String resolveFrontendBaseUrl(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object origin = session.getAttribute(OAuth2OriginCapturingFilter.SESSION_ATTR);
+            if (origin instanceof String s && !s.isBlank()) {
+                return s;
+            }
+        }
+        return frontendBaseUrl;
     }
 }

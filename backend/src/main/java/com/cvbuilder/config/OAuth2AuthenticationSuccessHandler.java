@@ -40,16 +40,30 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         String token = jwtService.generateToken(user.getId(), user.getEmail());
 
+        String baseUrl = resolveFrontendBaseUrl(request);
+
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
 
-        String targetUrl = UriComponentsBuilder.fromUriString(frontendBaseUrl + "/oauth/callback")
+        String targetUrl = UriComponentsBuilder.fromUriString(baseUrl + "/oauth/callback")
             .queryParam("token", token)
             .build().toUriString();
 
         clearAuthenticationAttributes(request);
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    /** Redirect back to the origin the user started from, falling back to the configured URL. */
+    private String resolveFrontendBaseUrl(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object origin = session.getAttribute(OAuth2OriginCapturingFilter.SESSION_ATTR);
+            if (origin instanceof String s && !s.isBlank()) {
+                return s;
+            }
+        }
+        return frontendBaseUrl;
     }
 }

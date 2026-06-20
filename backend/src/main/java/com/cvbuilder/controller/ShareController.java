@@ -70,20 +70,44 @@ public class ShareController {
     }
 
     private String detectLanIp() {
+        String best = null;
+        int bestScore = Integer.MIN_VALUE;
         try {
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
             while (interfaces.hasMoreElements()) {
                 NetworkInterface iface = interfaces.nextElement();
-                if (iface.isLoopback() || !iface.isUp()) continue;
+                if (iface.isLoopback() || iface.isPointToPoint() || iface.isVirtual() || !iface.isUp()) continue;
+                if (isVirtualInterface(iface.getName())) continue;
                 Enumeration<InetAddress> addresses = iface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     InetAddress addr = addresses.nextElement();
-                    if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
-                        return addr.getHostAddress();
+                    if (!(addr instanceof Inet4Address) || addr.isLoopbackAddress() || addr.isLinkLocalAddress()) continue;
+                    int score = scoreCandidate(addr.getHostAddress());
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = addr.getHostAddress();
                     }
                 }
             }
         } catch (SocketException ignored) {}
-        return "localhost";
+        return best != null ? best : "localhost";
+    }
+
+    /** Skip Docker bridges, VPNs, and other virtual adapters that expose non-LAN private IPs. */
+    private boolean isVirtualInterface(String name) {
+        if (name == null) return false;
+        String n = name.toLowerCase();
+        return n.startsWith("docker") || n.startsWith("br-") || n.startsWith("veth")
+                || n.startsWith("virbr") || n.startsWith("vmnet") || n.startsWith("vboxnet")
+                || n.startsWith("tun") || n.startsWith("tap") || n.startsWith("zt")
+                || n.startsWith("wg") || n.startsWith("utun");
+    }
+
+    /** Prefer typical home/office LAN ranges over Docker's 172.16.0.0/12 default. */
+    private int scoreCandidate(String ip) {
+        if (ip.startsWith("192.168.")) return 3;
+        if (ip.startsWith("10.")) return 2;
+        if (ip.startsWith("172.")) return 1; // Docker default range — last resort
+        return 0;
     }
 }

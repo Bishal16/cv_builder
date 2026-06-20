@@ -2,6 +2,37 @@ import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { enableShare, disableShare, getShareToken, getShareConfig } from '../api/shareApi';
 
+/**
+ * Copy text to the clipboard, falling back to a temporary textarea +
+ * execCommand for non-secure contexts. The async Clipboard API is only
+ * available over HTTPS or on localhost, so plain-http LAN access
+ * (e.g. http://192.168.x.x:5173) would otherwise throw.
+ */
+async function copyToClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // fall through to the legacy path below
+    }
+  }
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.setAttribute('readonly', '');
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
+
 interface Props {
   cvId: string;
   onClose: () => void;
@@ -57,10 +88,9 @@ export function ShareModal({ cvId, onClose }: Props) {
   };
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
+    if (await copyToClipboard(shareUrl)) {
       toast.success('Link copied');
-    } catch {
+    } else {
       toast.error('Could not copy link.');
     }
   };
